@@ -1,61 +1,30 @@
 #!/bin/python3
+import re
+
+
+class vcdException(Exception):
+    pass
+
+
+vcdHeader = {}
+vcdHeader["scope"] = {}
+currScope = []
+
 
 def buildfromtokens(token):
     collector = []
     while(True):
-        current_token = next(token)    
+        current_token = next(token)
         if(current_token == "$end"):
             break
         collector.append(current_token)
     collected = " ".join(collector)
     return collected
 
-def vcd_date(token):
-    collected = buildfromtokens(tokens)
-    return collected
 
-def vcd_version(token):
-    collected = buildfromtokens(tokens)
-    return collected
-
-def vcd_timescale(token):
-    collected = buildfromtokens(tokens)
-    return collected
-
-def vcd_scope(token):
-    collected = buildfromtokens(tokens)
-    return collected
-
-def vcd_var(token):
-    collected = buildfromtokens(tokens)
-    return collected
-
-def vcd_upscope(token):
-    collected = buildfromtokens(tokens)
-    return collected
-
-def vcd_enddefinitions(token):
-    collected = buildfromtokens(tokens)
-    return collected
-
-def vcd_comment(token):
-    collected = buildfromtokens(tokens)
-    return collected
-
-vcd_keywords = {
-    "$comment":        vcd_comment,
-    "$date":           vcd_date,
-    "$enddefinitions": vcd_enddefinitions,
-    "$scope":          vcd_scope,
-    "$timescale":      vcd_timescale,
-    "$upscope":        vcd_upscope,
-    "$var":            vcd_var,
-    "$version":        vcd_version,
-    # "$end":            vcd_end,
-}
-
-
-fid = open("./dummy-vivado.vcd")
+# fileName = "./dummy-vivado.vcd"
+fileName = "./dummy-modelsim.vcd"
+fid = open(fileName)
 
 
 def token_generator(fid):
@@ -63,42 +32,71 @@ def token_generator(fid):
         for word in line.split():
             yield word
 
+
 tokens = token_generator(fid)
 
+# extract header
 while(True):
-    # extract informations from value change dump
-    
-    handler = None
-    keyword = None
-    try:
-        keyword = next(tokens)
-        handler = vcd_keywords[keyword]
-    except KeyError:
-        print("undefined command: %s" % (keyword))
+    # extract header from value change dump
+    keyword = next(tokens)
+    # process extracted data
+    if(keyword == "$comment"):
+        comment = buildfromtokens(tokens)
+        # print("comment: %s" % comment)
+        vcdHeader[keyword[1:]] = comment
+
+    if(keyword == "$date"):
+        date = buildfromtokens(tokens)
+        # print("date: %s" % date)
+        vcdHeader[keyword[1:]] = date
+
+    elif(keyword == "$version"):
+        version = buildfromtokens(tokens)
+        # print("version: %s" % version)
+        vcdHeader[keyword[1:]] = version
+
+    elif(keyword == "$timescale"):
+        timescale = buildfromtokens(tokens)
+        # print("timescale: %s" % timescale)
+        vcdHeader[keyword[1:]] = timescale
+
+    elif(keyword == "$scope"):
+        scope = buildfromtokens(tokens)
+        currScope.append(scope)
+        # print("->".join(currScope))
+        vcdHeader["scope"]["->".join(currScope)] = []
+
+    elif(keyword == "$upscope"):
+        upscope = buildfromtokens(tokens)
+        # print("upscope: %s" % upscope)
+        currScope.pop()
+
+    elif(keyword == "$var"):
+        var = buildfromtokens(tokens)
+        # print("var: %s" % var)
+        match = re.match("^wire\\s+([0-9]+)\\s+(\\S*)\\s+(.*)$", var)
+        if match is not None:
+            width = match.groups()[0]
+            identifier = match.groups()[1]
+            name = match.groups()[2]
+            print("width: %s\tidentifier: %s\tname: %s" %
+                  (width, identifier, name))
+            # print(width)
+        else:
+            raise vcdException("unable to parse variable: %s" % var)
+
+        vcdHeader["scope"]["->".join(currScope)].append(var)
+
+    elif(keyword == "$enddefinitions"):
+        enddefinition = buildfromtokens(tokens)
+        # print("enddefinition: %s" % enddefinition)
         break
 
-    #process extracted data
-    if(keyword == "$date"):
-        date = handler(tokens)
-        print("date: %s" % date)
-    elif(keyword == "$version"):
-        version = handler(tokens)
-        print("version: %s" % version)
-    elif(keyword == "$timescale"):
-        timescale = handler(tokens)
-        print("timescale: %s" % timescale)
-    elif(keyword == "$scope"):
-        scope = handler(tokens)
-        print("scope: %s" % scope)
-    elif(keyword == "$var"):
-        var = handler(tokens)
-        print("var: %s" % var)
-    elif(keyword == "$upscope"):
-        print("upscope")
-        handler(tokens)
-    elif(keyword == "$enddefinitions"):
-        print("enddefinition")
-        enddefinition = handler(tokens)
-        print("enddefinition: %s" % enddefinition)
     else:
-        break
+        raise vcdException("undefined keyword: %s" % keyword)
+
+# extract simulation values
+while(True):
+    break
+
+print(vcdHeader)
