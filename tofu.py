@@ -6,11 +6,6 @@ class vcdException(Exception):
     pass
 
 
-vcdHeader = {}
-vcdHeader["scope"] = {}
-currScope = []
-
-
 def buildfromtokens(token):
     collector = []
     while(True):
@@ -22,8 +17,15 @@ def buildfromtokens(token):
     return collected
 
 
-# fileName = "./dummy-vivado.vcd"
-fileName = "./dummy-modelsim.vcd"
+def identifierToName(vcdHeader, scope):
+    blah = {}
+    for var in vcdHeader["scope"][scope].keys():
+        blah[vcdHeader["scope"][scope][var]["identifier"]] = var
+    return blah
+
+
+fileName = "./dummy-vivado.vcd"
+# fileName = "./dummy-modelsim.vcd"
 fid = open(fileName)
 
 
@@ -34,6 +36,12 @@ def token_generator(fid):
 
 
 tokens = token_generator(fid)
+
+
+
+vcdHeader = {}
+vcdHeader["scope"] = {}
+currScope = []
 
 # extract header
 while(True):
@@ -79,8 +87,7 @@ while(True):
             width = match.groups()[0]
             identifier = match.groups()[1]
             name = match.groups()[2]
-            print("width: %s\tidentifier: %s\tname: %s" %
-                  (width, identifier, name))
+            # print("width: %s\tidentifier: %s\tname: %s" % (width, identifier, name))
             # print(width)
         else:
             raise vcdException("unable to parse variable: %s" % var)
@@ -96,36 +103,54 @@ while(True):
         raise vcdException("undefined keyword: %s" % keyword)
 
 
+# scope = "module lwc_tb->module uut->module Inst_Cipher"
+scope = "module LWC_TB->module uut->module Inst_Cipher"
+blah = identifierToName(vcdHeader, scope)
+
+
 # extract simulation values
 for current_token in tokens:
     # print(current_token)
 
     match_time = re.match("^#([0-9]+)$", current_token)
     match_update_scalar = re.match("^([01xXzZ])(.+)$", current_token)
-    match_update_vector = re.match("^([bB][01]+)$", current_token)
+    match_update_vector = re.match("^([bB][01xXzZ]+)$", current_token)
     match_dumpvars = re.match("^(\\$dumpvars)$", current_token)
 
     if match_time is not None:
         time = int(match_time.groups()[0])
         # print("time: %s" % time)
-    
+
     elif match_dumpvars is not None:
-        #extract initial value
-        #das fehlt noch
-        while(True):
-            current_token = next(tokens)
-            if(current_token == "$end"):
+        # extract initial value
+        for dumpvar_token in tokens:
+            if(dumpvar_token == "$end"):
                 break
+            match_dumpvar_scalar = re.match("^([01xXzZ])(.+)$", dumpvar_token)
+            match_dumpvar_vector = re.match("^([bB][01xXzZ]+)$", dumpvar_token)
+            if match_dumpvar_scalar is not None:
+                # update signal values
+                val = match_dumpvar_scalar.groups()[0]
+                var = match_dumpvar_scalar.groups()[1]
+                # print("intial: %s %s" % (val, var))
+
+            elif match_dumpvar_vector is not None:
+                val = match_dumpvar_vector.groups()[0]
+                var = next(tokens)
+                # print("initial: %s %s" % (val, var))
+
     elif match_update_scalar is not None:
-        #update signal values
-        # print(current_token)
-        pass
+        # update signal values
+        val = match_update_scalar.groups()[0]
+        var = match_update_scalar.groups()[1]
+        # update signal values
+        # print("update: %s %s" % (val, var))
+
     elif match_update_vector is not None:
-        # print(current_token + " ",end="")
-        foo = next(tokens)
-        # print(next(foo))
-        #update signal values
-        pass
+        val = match_update_vector.groups()[0]
+        var = next(tokens)
+        # update signal values
+        # print("update: %s %s" % (val, var))
 
     else:
         raise vcdException("unable to parse variable: %s" % current_token)
