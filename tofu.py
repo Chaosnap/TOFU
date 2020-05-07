@@ -64,7 +64,7 @@ while(True):
         scope = buildfromtokens(tokens)
         currScope.append(scope)
         # print("->".join(currScope))
-        vcdHeader["scope"]["->".join(currScope)] = []
+        vcdHeader["scope"]["->".join(currScope)] = {}
 
     elif(keyword == "$upscope"):
         upscope = buildfromtokens(tokens)
@@ -85,7 +85,7 @@ while(True):
         else:
             raise vcdException("unable to parse variable: %s" % var)
 
-        vcdHeader["scope"]["->".join(currScope)].append(var)
+        vcdHeader["scope"]["->".join(currScope)][name] = {"width": int(width), "identifier": identifier}
 
     elif(keyword == "$enddefinitions"):
         enddefinition = buildfromtokens(tokens)
@@ -95,8 +95,40 @@ while(True):
     else:
         raise vcdException("undefined keyword: %s" % keyword)
 
-# extract simulation values
-while(True):
-    break
 
-print(vcdHeader)
+# extract simulation values
+for current_token in tokens:
+    # print(current_token)
+
+    match_time = re.match("^#([0-9]+)$", current_token)
+    match_update_scalar = re.match("^([01xXzZ])(.+)$", current_token)
+    match_update_vector = re.match("^([bB][01]+)$", current_token)
+    match_dumpvars = re.match("^(\\$dumpvars)$", current_token)
+
+    if match_time is not None:
+        time = int(match_time.groups()[0])
+        # print("time: %s" % time)
+    
+    elif match_dumpvars is not None:
+        #extract initial value
+        #das fehlt noch
+        while(True):
+            current_token = next(tokens)
+            if(current_token == "$end"):
+                break
+    elif match_update_scalar is not None:
+        #update signal values
+        # print(current_token)
+        pass
+    elif match_update_vector is not None:
+        # print(current_token + " ",end="")
+        foo = next(tokens)
+        # print(next(foo))
+        #update signal values
+        pass
+
+    else:
+        raise vcdException("unable to parse variable: %s" % current_token)
+
+
+# print(vcdHeader)
