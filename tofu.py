@@ -19,8 +19,8 @@ def buildfromtokens(token):
 
 def identifierToName(vcdHeader, scope):
     blah = {}
-    for var in vcdHeader["scope"][scope].keys():
-        blah[vcdHeader["scope"][scope][var]["identifier"]] = var
+    for var in vcdHeader["scope"][scope]:
+        blah[var["identifier"]] = var["name"]
     return blah
 
 
@@ -36,7 +36,6 @@ def token_generator(fid):
 
 
 tokens = token_generator(fid)
-
 
 
 vcdHeader = {}
@@ -72,7 +71,7 @@ while(True):
         scope = buildfromtokens(tokens)
         currScope.append(scope)
         # print("->".join(currScope))
-        vcdHeader["scope"]["->".join(currScope)] = {}
+        vcdHeader["scope"]["->".join(currScope)] = []
 
     elif(keyword == "$upscope"):
         upscope = buildfromtokens(tokens)
@@ -92,7 +91,7 @@ while(True):
         else:
             raise vcdException("unable to parse variable: %s" % var)
 
-        vcdHeader["scope"]["->".join(currScope)][name] = {"width": int(width), "identifier": identifier}
+        vcdHeader["scope"]["->".join(currScope)].append({"name": name, "width": int(width), "identifier": identifier})
 
     elif(keyword == "$enddefinitions"):
         enddefinition = buildfromtokens(tokens)
@@ -104,8 +103,21 @@ while(True):
 
 
 # scope = "module lwc_tb->module uut->module Inst_Cipher"
+# fuck the verilog identifiers
 scope = "module LWC_TB->module uut->module Inst_Cipher"
 blah = identifierToName(vcdHeader, scope)
+
+
+def iton(x):
+    return blah[x]
+
+
+def bintohex(x):
+    print(x)
+    if re.match("^([bB][xXzZ]+)$", x):
+        return x[1:]
+    else:
+        return hex(int(x[1:], 2))
 
 
 # extract simulation values
@@ -119,7 +131,8 @@ for current_token in tokens:
 
     if match_time is not None:
         time = int(match_time.groups()[0])
-        # print("time: %s" % time)
+        print("-" * 100)
+        print("time: %s" % time)
 
     elif match_dumpvars is not None:
         # extract initial value
@@ -132,25 +145,28 @@ for current_token in tokens:
                 # update signal values
                 val = match_dumpvar_scalar.groups()[0]
                 var = match_dumpvar_scalar.groups()[1]
-                # print("intial: %s %s" % (val, var))
+                print("update: %s ---> %s" % (iton(var), val))
 
             elif match_dumpvar_vector is not None:
                 val = match_dumpvar_vector.groups()[0]
                 var = next(tokens)
-                # print("initial: %s %s" % (val, var))
+                print("update: %s ---> %s" % (iton(var), val))
+
+            else:
+                raise vcdException("unable to parse variable: %s" % dumpvar_token)
 
     elif match_update_scalar is not None:
         # update signal values
         val = match_update_scalar.groups()[0]
         var = match_update_scalar.groups()[1]
         # update signal values
-        # print("update: %s %s" % (val, var))
+        print("update: %s ---> %s" % (iton(var), val))
 
     elif match_update_vector is not None:
         val = match_update_vector.groups()[0]
         var = next(tokens)
         # update signal values
-        # print("update: %s %s" % (val, var))
+        print("update: %s ---> %s" % (iton(var), val))
 
     else:
         raise vcdException("unable to parse variable: %s" % current_token)
