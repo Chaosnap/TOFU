@@ -158,6 +158,9 @@ UPDATE_TABLE_TRACES_SIGNAL_QUERY = 'UPDATE traces SET \'%s\'=? WHERE simulation_
 # cursor.execute('UPDATE_TABLE_TRACES_SIGNAL_QUERY' % (iton(var)), (val,simulation_time,simulation_trace))
 # conn.commit
 
+
+state = {}
+
 # extract simulation values
 for current_token in tokens:
     # print(current_token)
@@ -176,7 +179,10 @@ for current_token in tokens:
 
         # copy the previous row to the next row
         if simulation_time != 0:
-            pass
+            UPDATE_TABLE_TRACES_STATE_QUERY = 'UPDATE traces SET %s WHERE simulation_time=? AND simulation_trace=?' % (", ".join(['\'' + i + '\'' + '=?' for i in list(state.keys())]))
+            cursor.execute(UPDATE_TABLE_TRACES_STATE_QUERY, (list(state.values()) + [simulation_time] + [simulation_trace]))
+            # for signal in state.keys():
+            #     cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (signal), (state[signal], simulation_time, simulation_trace))
 
     elif match_dumpvars is not None:
         # extract initial value
@@ -189,12 +195,15 @@ for current_token in tokens:
                 # update signal values
                 val = match_dumpvar_scalar.groups()[0]
                 var = match_dumpvar_scalar.groups()[1]
+                state[iton(var)] = val
                 print("update: %s ---> %s" % (iton(var), val))
                 cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton(var)), (val, simulation_time, simulation_trace))
 
             elif match_dumpvar_vector is not None:
+                # update signal values
                 val = match_dumpvar_vector.groups()[0]
                 var = next(tokens)
+                state[iton(var)] = val
                 print("update: %s ---> %s" % (iton(var), val))
                 cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton(var)), (val, simulation_time, simulation_trace))
 
@@ -205,14 +214,15 @@ for current_token in tokens:
         # update signal values
         val = match_update_scalar.groups()[0]
         var = match_update_scalar.groups()[1]
-        # update signal values
         print("update: %s ---> %s" % (iton(var), val))
+        state[iton(var)] = val
         cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton(var)), (val, simulation_time, simulation_trace))
 
     elif match_update_vector is not None:
+        # update signal values
         val = match_update_vector.groups()[0]
         var = next(tokens)
-        # update signal values
+        state[iton(var)] = val
         print("update: %s ---> %s" % (iton(var), val))
         cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton(var)), (val, simulation_time, simulation_trace))
 
