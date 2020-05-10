@@ -44,6 +44,13 @@ fid = open(fileName)
 
 conn = sqlite3.connect(re.sub("vcd", "db", fileName))
 cursor = conn.cursor()
+# create table in database
+# Create table
+DROP_TABLE_TRACES_QUERY = 'DROP TABLE IF EXISTS traces'
+cursor.execute(DROP_TABLE_TRACES_QUERY)
+DROP_TABLE_SIGNALS_QUERY = 'DROP TABLE IF EXISTS signals'
+cursor.execute(DROP_TABLE_SIGNALS_QUERY)
+conn.commit()
 
 
 def token_generator(fid):
@@ -122,13 +129,6 @@ while(True):
 # fuck the verilog identifiers
 iton = identifierToName(vcdHeader)
 
-# create table in database
-# Create table
-DROP_TABLE_TRACES_QUERY = 'DROP TABLE IF EXISTS traces'
-cursor.execute(DROP_TABLE_TRACES_QUERY)
-DROP_TABLE_SIGNALS_QUERY = 'DROP TABLE IF EXISTS signals'
-cursor.execute(DROP_TABLE_SIGNALS_QUERY)
-conn.commit()
 
 escaped_signal_names = ", ".join(['\'' + i + '\'' + ' TEXT' for i in list(iton.values())])
 CREATE_TABLE_TRACES_QUERY = 'CREATE TABLE traces (simulation_time INTEGER, simulation_trace INTEGER, %s)' % escaped_signal_names
