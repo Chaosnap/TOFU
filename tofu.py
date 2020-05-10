@@ -18,10 +18,12 @@ def buildfromtokens(token):
     return collected
 
 
-def identifierToName(vcdHeader, scope):
+def identifierToName(vcdHeader):
     blah = {}
-    for var in vcdHeader["scope"][scope]:
-        blah[var["identifier"]] = var["name"]
+    for scope in vcdHeader["scope"].keys():
+        for var in vcdHeader["scope"][scope]:
+            # Ähhhh vielleicht sollte man identifier mit dem scope hashen???
+            blah[var["identifier"]] = var["name"]
     return blah
 
 
@@ -107,22 +109,7 @@ while(True):
 
 
 # fuck the verilog identifiers
-# scope = "module lwc_tb->module uut->module Inst_Cipher"
-scope = "module LWC_TB->module uut->module Inst_Cipher"
-blah = identifierToName(vcdHeader, scope)
-
-
-def iton(x):
-    return blah[x]
-
-
-def bintohex(x):
-    print(x)
-    if re.match("^([bB][xXzZ]+)$", x):
-        return x[1:]
-    else:
-        return hex(int(x[1:], 2))
-
+iton = identifierToName(vcdHeader)
 
 # create table in database
 # Create table
@@ -132,7 +119,7 @@ DROP_TABLE_SIGNALS_QUERY = 'DROP TABLE IF EXISTS signals'
 cursor.execute(DROP_TABLE_SIGNALS_QUERY)
 conn.commit()
 
-escaped_signal_names = ", ".join(['\'' + i + '\'' + ' TEXT' for i in list(blah.values())])
+escaped_signal_names = ", ".join(['\'' + i + '\'' + ' TEXT' for i in list(iton.values())])
 CREATE_TABLE_TRACES_QUERY = 'CREATE TABLE traces (simulation_time INTEGER, simulation_trace INTEGER, %s)' % escaped_signal_names
 cursor.execute(CREATE_TABLE_TRACES_QUERY)
 
@@ -155,7 +142,7 @@ INSERT_TABLE_TRACES_SIMULATION_TIME_QUERY = 'INSERT INTO traces (simulation_time
 # conn.commit()
 
 UPDATE_TABLE_TRACES_SIGNAL_QUERY = 'UPDATE traces SET \'%s\'=? WHERE simulation_time=? AND simulation_trace=?'
-# cursor.execute('UPDATE_TABLE_TRACES_SIGNAL_QUERY' % (iton(var)), (val,simulation_time,simulation_trace))
+# cursor.execute('UPDATE_TABLE_TRACES_SIGNAL_QUERY' % (iton[var]), (val,simulation_time,simulation_trace))
 # conn.commit
 
 
@@ -195,17 +182,17 @@ for current_token in tokens:
                 # update signal values
                 val = match_dumpvar_scalar.groups()[0]
                 var = match_dumpvar_scalar.groups()[1]
-                state[iton(var)] = val
-                print("update: %s ---> %s" % (iton(var), val))
-                cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton(var)), (val, simulation_time, simulation_trace))
+                state[iton[var]] = val
+                print("update: %s ---> %s" % (iton[var], val))
+                cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
 
             elif match_dumpvar_vector is not None:
                 # update signal values
                 val = match_dumpvar_vector.groups()[0]
                 var = next(tokens)
-                state[iton(var)] = val
-                print("update: %s ---> %s" % (iton(var), val))
-                cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton(var)), (val, simulation_time, simulation_trace))
+                state[iton[var]] = val
+                print("update: %s ---> %s" % (iton[var], val))
+                cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
 
             else:
                 raise vcdException("unable to parse variable: %s" % dumpvar_token)
@@ -214,17 +201,17 @@ for current_token in tokens:
         # update signal values
         val = match_update_scalar.groups()[0]
         var = match_update_scalar.groups()[1]
-        print("update: %s ---> %s" % (iton(var), val))
-        state[iton(var)] = val
-        cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton(var)), (val, simulation_time, simulation_trace))
+        print("update: %s ---> %s" % (iton[var], val))
+        state[iton[var]] = val
+        cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
 
     elif match_update_vector is not None:
         # update signal values
         val = match_update_vector.groups()[0]
         var = next(tokens)
-        state[iton(var)] = val
-        print("update: %s ---> %s" % (iton(var), val))
-        cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton(var)), (val, simulation_time, simulation_trace))
+        state[iton[var]] = val
+        print("update: %s ---> %s" % (iton[var], val))
+        cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
 
     else:
         raise vcdException("unable to parse variable: %s" % current_token)
