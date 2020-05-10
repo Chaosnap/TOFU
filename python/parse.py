@@ -7,6 +7,8 @@ import re
 # create a logger
 logger = logging.getLogger('vcd')
 logger.setLevel(logging.DEBUG)
+if (logger.hasHandlers()):
+    logger.handlers.clear()
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
@@ -42,7 +44,7 @@ fileName = "./dummy-vivado.vcd"
 # fileName = "./dummy-modelsim.vcd"
 fid = open(fileName)
 
-conn = sqlite3.connect(re.sub("vcd", "db", fileName))
+conn = sqlite3.connect("./traces.db")
 cursor = conn.cursor()
 # create table in database
 # Create table
@@ -137,11 +139,10 @@ cursor.execute(CREATE_TABLE_TRACES_QUERY)
 CREATE_TABLE_SIGNAL_QUERY = 'CREATE TABLE signals (name TEXT, width INTEGER, scope TEXT)'
 cursor.execute(CREATE_TABLE_SIGNAL_QUERY)
 
-INSERT_TABLE_SIGNAL_QUERY = 'INSERT INTO signals VALUES (%s)'
+INSERT_TABLE_SIGNAL_QUERY = 'INSERT INTO signals (name,width,scope) VALUES (?,?,?)'
 for scope in list(vcdHeader["scope"].keys()):
     for signal in vcdHeader["scope"][scope]:
-        escaped_signal_properties = '\'' + signal["name"] + '\',\'' + str(signal["width"]) + '\' ,\'' + scope + '\''
-        cursor.execute(INSERT_TABLE_SIGNAL_QUERY % (escaped_signal_properties))
+        cursor.execute(INSERT_TABLE_SIGNAL_QUERY, (signal["name"], signal["width"], scope))
 conn.commit()
 
 # fill signal data to traces
@@ -177,7 +178,8 @@ for current_token in tokens:
 
         # copy the previous row to the next row
         if simulation_time != 0:
-            UPDATE_TABLE_TRACES_STATE_QUERY = 'UPDATE traces SET %s WHERE simulation_time=? AND simulation_trace=?' % (", ".join(['\'' + i + '\'' + '=?' for i in list(state.keys())]))
+            UPDATE_TABLE_TRACES_STATE_QUERY = 'UPDATE traces SET %s WHERE simulation_time=? AND simulation_trace=?' % \
+                (", ".join(['\'' + i + '\'' + '=?' for i in list(state.keys())]))
             cursor.execute(UPDATE_TABLE_TRACES_STATE_QUERY, (list(state.values()) + [simulation_time] + [simulation_trace]))
             # for signal in state.keys():
             #     cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (signal), (state[signal], simulation_time, simulation_trace))
