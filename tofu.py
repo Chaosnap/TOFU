@@ -1,6 +1,17 @@
 #!/bin/python3
+import glob
+import logging
 import sqlite3
 import re
+
+# create a logger
+logger = logging.getLogger('vcd')
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 
 class vcdException(Exception):
@@ -55,45 +66,45 @@ while(True):
     # process extracted data
     if(keyword == "$comment"):
         comment = buildfromtokens(tokens)
-        # print("comment: %s" % comment)
+        # logger.debug("comment: %s" % comment)
         vcdHeader[keyword[1:]] = comment
 
     if(keyword == "$date"):
         date = buildfromtokens(tokens)
-        # print("date: %s" % date)
+        # logger.debug("date: %s" % date)
         vcdHeader[keyword[1:]] = date
 
     elif(keyword == "$version"):
         version = buildfromtokens(tokens)
-        # print("version: %s" % version)
+        # logger.debug("version: %s" % version)
         vcdHeader[keyword[1:]] = version
 
     elif(keyword == "$timescale"):
         timescale = buildfromtokens(tokens)
-        # print("timescale: %s" % timescale)
+        # logger.debug("timescale: %s" % timescale)
         vcdHeader[keyword[1:]] = timescale
 
     elif(keyword == "$scope"):
         scope = buildfromtokens(tokens)
         currScope.append(scope)
-        # print("->".join(currScope))
+        # logger.debug("->".join(currScope))
         vcdHeader["scope"]["->".join(currScope)] = []
 
     elif(keyword == "$upscope"):
         upscope = buildfromtokens(tokens)
-        # print("upscope: %s" % upscope)
+        # logger.debug("upscope: %s" % upscope)
         currScope.pop()
 
     elif(keyword == "$var"):
         var = buildfromtokens(tokens)
-        # print("var: %s" % var)
+        # logger.debug("var: %s" % var)
         match = re.match("^wire\\s+([0-9]+)\\s+(\\S*)\\s+(.*)$", var)
         if match is not None:
             width = match.groups()[0]
             identifier = match.groups()[1]
             name = match.groups()[2]
-            # print("width: %s\tidentifier: %s\tname: %s" % (width, identifier, name))
-            # print(width)
+            # logger.debug("width: %s\tidentifier: %s\tname: %s" % (width, identifier, name))
+            # logger.debug(width)
         else:
             raise vcdException("unable to parse variable: %s" % var)
 
@@ -101,7 +112,7 @@ while(True):
 
     elif(keyword == "$enddefinitions"):
         enddefinition = buildfromtokens(tokens)
-        # print("enddefinition: %s" % enddefinition)
+        # logger.debug("enddefinition: %s" % enddefinition)
         break
 
     else:
@@ -150,7 +161,7 @@ state = {}
 
 # extract simulation values
 for current_token in tokens:
-    # print(current_token)
+    # logger.debug(current_token)
 
     match_time = re.match("^#([0-9]+)$", current_token)
     match_update_scalar = re.match("^([01xXzZ])(.+)$", current_token)
@@ -160,8 +171,8 @@ for current_token in tokens:
     if match_time is not None:
         simulation_time_old = simulation_time
         simulation_time = int(match_time.groups()[0])
-        print("-" * 100)
-        print("time: %s" % simulation_time)
+        logger.debug("-" * 100)
+        logger.debug("time: %s" % simulation_time)
         cursor.execute(INSERT_TABLE_TRACES_SIMULATION_TIME_QUERY, (simulation_time, simulation_trace))
 
         # copy the previous row to the next row
@@ -183,7 +194,7 @@ for current_token in tokens:
                 val = match_dumpvar_scalar.groups()[0]
                 var = match_dumpvar_scalar.groups()[1]
                 state[iton[var]] = val
-                print("update: %s ---> %s" % (iton[var], val))
+                logger.debug("update: %s ---> %s" % (iton[var], val))
                 cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
 
             elif match_dumpvar_vector is not None:
@@ -191,7 +202,7 @@ for current_token in tokens:
                 val = match_dumpvar_vector.groups()[0]
                 var = next(tokens)
                 state[iton[var]] = val
-                print("update: %s ---> %s" % (iton[var], val))
+                logger.debug("update: %s ---> %s" % (iton[var], val))
                 cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
 
             else:
@@ -201,7 +212,7 @@ for current_token in tokens:
         # update signal values
         val = match_update_scalar.groups()[0]
         var = match_update_scalar.groups()[1]
-        print("update: %s ---> %s" % (iton[var], val))
+        logger.debug("update: %s ---> %s" % (iton[var], val))
         state[iton[var]] = val
         cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
 
@@ -210,7 +221,7 @@ for current_token in tokens:
         val = match_update_vector.groups()[0]
         var = next(tokens)
         state[iton[var]] = val
-        print("update: %s ---> %s" % (iton[var], val))
+        logger.debug("update: %s ---> %s" % (iton[var], val))
         cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
 
     else:
