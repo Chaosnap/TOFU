@@ -140,14 +140,19 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # extract the key
         # ANPASSEN !!!
-        key_signal = 'key [15:0]'
-        key_signal_time = 80000
-        KEY_VALUE_QUERY = 'SELECT \"%s\" from traces WHERE simulation_time=? AND simulation_trace=?' % key_signal
-        self.cursor.execute(KEY_VALUE_QUERY, (key_signal_time, index))
-        value = self.cursor.fetchone()
+        value_signal = 'key [15:0]'
+        value_signal_time = 80000
+        KEY_VALUE_QUERY = 'SELECT \"%s\" from traces WHERE simulation_time=? AND simulation_trace=?' % value_signal
+        self.cursor.execute(KEY_VALUE_QUERY, (value_signal_time, index))
+        value = self.cursor.fetchone()[0]
+        value_width = self.signal_properties['clk']['width']
 
-        # das noch in ein byte array übersetzen
-        value = np.array([value], dtype=object)
+        if not value_width % 8:
+            raise synthesizeException("value width must be multiple of byte: %d" % value_width)
+
+        value = value.zfill(value_width)
+        value = bytearray(int(value, 2).to_bytes((len(value) + 7) // 8, 'big'))
+        value = np.array([value], dtype=np.uint8)
 
         # extract the leakage
         leakage = np.zeros((len(self.simulation_time_steps),), dtype=int)
