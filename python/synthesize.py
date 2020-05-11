@@ -111,6 +111,8 @@ class AcquisitionSetupToggle(AbstractContainer):
             pass
         elif self.leakage == "HammingDistance":
             pass
+        elif self.leakage == "HammingHybrid":
+            pass
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
 
@@ -213,6 +215,37 @@ class AcquisitionSetupToggle(AbstractContainer):
                 shift_leakage = leakage  # .copy()
                 shift_leakage = np.roll(shift_leakage, 1)
                 leakage = np.abs(leakage - shift_leakage)
+                leakage = leakage[1:-1]
+
+        elif self.leakage == "HammingHybrid":
+
+            # scaling
+            scaleHammingWeight = 0.1
+            scaleHammingDistance = 1.0
+
+            if not self.fastMode:
+                lastHammingWeightState = 0
+                for (timeindex, simulation_time) in enumerate(self.simulation_time_steps):
+                    SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_time=? AND simulation_trace=?' % \
+                        (", ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
+                    self.cursor.execute(SIGNAL_VALUE_QUERY, (simulation_time, index))
+                    blah = self.cursor.fetchone()
+                    hammingWeightState = sum([hammingWeightFromBitString(i) for i in list(blah)])
+                    leakage[timeindex] = abs(hammingWeightState - lastHammingWeightState) * scaleHammingDistance + hammingWeightState * scaleHammingWeight
+                    lastHammingWeightState = hammingWeightState
+            else:
+                # fast fetch mode
+                SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_trace=? ORDER BY simulation_time ASC' % \
+                    (" || ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
+                self.cursor.execute(SIGNAL_VALUE_QUERY, (index,))
+                leakage = self.cursor.fetchall()
+                leakage = [hammingWeightFromBitString(i[0]) for i in leakage]
+                leakage = np.array(leakage, dtype=np.int32)
+                # calculate the hamming distance
+                leakage = np.hstack((leakage, [0]))
+                shift_leakage = leakage  # .copy()
+                shift_leakage = np.roll(shift_leakage, 1)
+                leakage = np.abs(leakage - shift_leakage) * scaleHammingDistance + leakage * scaleHammingWeight
                 leakage = leakage[1:-1]
 
         else:
