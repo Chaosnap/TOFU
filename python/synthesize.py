@@ -180,7 +180,7 @@ class AcquisitionSetupToggle(AbstractContainer):
                     leakage[timeindex] = sum([hammingWeightFromBitString(i) for i in list(blah)])
             else:
                 # fast fetch mode
-                SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_trace=?' % \
+                SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_trace=? ORDER BY simulation_time ASC' % \
                     (" || ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
                 self.cursor.execute(SIGNAL_VALUE_QUERY, (index,))
                 leakage = self.cursor.fetchall()
@@ -202,7 +202,7 @@ class AcquisitionSetupToggle(AbstractContainer):
                     lastHammingWeightState = hammingWeightState
             else:
                 # fast fetch mode
-                SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_trace=?' % \
+                SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_trace=? ORDER BY simulation_time ASC' % \
                     (" || ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
                 self.cursor.execute(SIGNAL_VALUE_QUERY, (index,))
                 leakage = self.cursor.fetchall()
