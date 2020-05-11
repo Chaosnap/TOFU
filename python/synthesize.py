@@ -3,7 +3,8 @@ import logging
 import sqlite3
 import json
 import os.path
-import lascar
+import numpy as np
+from lascar import AbstractContainer, Trace, Hdf5Container
 
 # create a logger
 logger = logging.getLogger('synthesize')
@@ -73,17 +74,45 @@ SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_time=? AND simulati
     (", ".join(["\"" + i + "\"" for i in list(signals.keys())]))
 cursor.execute(SIGNAL_VALUE_QUERY, (0, 0))
 blah = cursor.fetchone()
-
-
 hammingWeightState = None
 hammingWeightState_old = hammingWeightState
 hammingWeightState = sum([hammingWeightFromBitString(i) for i in list(blah)])
 
 
-# extrac partition value i.e. key
-
 # iterate over all traces
 # iterate over all time steps
+
+# Then the AbstractContainer:
+class AcquisitionSetup(AbstractContainer):
+    def __init__(self, number_of_traces):
+        """
+        :param number_of_traces: only required argument for the constructor of an AbstractContainer
+        """
+
+        AbstractContainer.__init__(self, number_of_traces)
+
+    def generate_trace(self, index):
+        """
+        generate_trace is the only method needed by AcquisitionSetup to work properly
+        :param index: index of trace, not used here.
+        :return:  Trace with leakage from oscilloscope, and value from the dut plaintext/ciphertext
+        """
+
+        self.logger.debug(
+            "Generate trace %d", index
+        )  # The container logger can be used!
+
+        # value = self.dut.go()
+        # leakage = self.oscilloscope.get_trace()
+        leakage = np.array([1, 2, 3])
+        value = np.array([1, 2, 3])
+
+        return Trace(leakage, value)
+
+
+acquisition_container = AcquisitionSetup(simulation_trace_max + 1)
+
+hdf5_container = Hdf5Container.export(acquisition_container, "traces.h5")
 
 
 conn.commit()

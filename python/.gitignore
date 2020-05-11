@@ -2,3 +2,4 @@ tofu_python/
 *.vcd
 *.db
 signals.json
+*.h5
