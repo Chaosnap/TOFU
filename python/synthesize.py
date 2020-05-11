@@ -145,6 +145,8 @@ class AcquisitionSetupToggle(AbstractContainer):
         KEY_VALUE_QUERY = 'SELECT \"%s\" from traces WHERE simulation_time=? AND simulation_trace=?' % key_signal
         self.cursor.execute(KEY_VALUE_QUERY, (key_signal_time, index))
         value = self.cursor.fetchone()
+
+        # das noch in ein byte array übersetzen
         value = np.array([value], dtype=object)
 
         # extract the leakage
@@ -161,8 +163,8 @@ class AcquisitionSetupToggle(AbstractContainer):
                 blah = self.cursor.fetchone()
                 leakage[timeindex] = sum([hammingWeightFromBitString(i) for i in list(blah)])
 
+        # this extracts the hamming distance
         elif self.leakage == "HammingDistance":
-            # this extracts the hamming distance
             lastHammingWeightState = 0
             for (timeindex, simulation_time) in enumerate(self.simulation_time_steps):
                 SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_time=? AND simulation_trace=?' % \
