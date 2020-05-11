@@ -1,11 +1,11 @@
-#!/bin/python3
+#!/usr/bin/python3
 import glob
 import logging
 import sqlite3
 import re
 
 # create a logger
-logger = logging.getLogger('vcd')
+logger = logging.getLogger('parse')
 if (logger.hasHandlers()):
     logger.handlers.clear()
 ch = logging.StreamHandler()
