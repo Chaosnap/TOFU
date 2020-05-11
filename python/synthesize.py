@@ -94,7 +94,7 @@ conn.close()
 
 # Then the AbstractContainer:
 class AcquisitionSetupToggle(AbstractContainer):
-    def __init__(self, number_of_traces, database, signals_under_inspection, leakage="HammingDistance"):
+    def __init__(self, number_of_traces, database, signals_under_inspection, leakage="HammingDistance", fastMode=False):
         """
         :param number_of_traces: only required argument for the constructor of an AbstractContainer
         """
@@ -102,6 +102,8 @@ class AcquisitionSetupToggle(AbstractContainer):
         self.database = database
         self.conn = sqlite3.connect(database)
         self.cursor = self.conn.cursor()
+
+        self.fastMode = fastMode
 
         # store the assumed leakage model
         self.leakage = leakage
@@ -158,30 +160,56 @@ class AcquisitionSetupToggle(AbstractContainer):
         value = np.array([value], dtype=np.uint8)
 
         # extract the leakage
-        leakage = np.zeros((len(self.simulation_time_steps),), dtype=int)
+        leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
         # das sollte auch schneller gehen wenn man alles fetcht und dann zusammen baut
 
         # this extracts the hamming weight
         if self.leakage == "HammingWeight":
-            for (timeindex, simulation_time) in enumerate(self.simulation_time_steps):
-                SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_time=? AND simulation_trace=?' % \
-                    (", ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
-                self.cursor.execute(SIGNAL_VALUE_QUERY, (simulation_time, index))
-                blah = self.cursor.fetchone()
-                leakage[timeindex] = sum([hammingWeightFromBitString(i) for i in list(blah)])
+
+            if not self.fastMode:
+                for (timeindex, simulation_time) in enumerate(self.simulation_time_steps):
+                    SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_time=? AND simulation_trace=?' % \
+                        (", ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
+                    self.cursor.execute(SIGNAL_VALUE_QUERY, (simulation_time, index))
+                    blah = self.cursor.fetchone()
+                    leakage[timeindex] = sum([hammingWeightFromBitString(i) for i in list(blah)])
+            else:
+                # fast fetch mode
+                SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_trace=?' % \
+                    (" || ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
+                self.cursor.execute(SIGNAL_VALUE_QUERY, (index,))
+                leakage = self.cursor.fetchall()
+                leakage = [hammingWeightFromBitString(i[0]) for i in leakage]
+                leakage = np.array(leakage, dtype=np.int)
 
         # this extracts the hamming distance
         elif self.leakage == "HammingDistance":
-            lastHammingWeightState = 0
-            for (timeindex, simulation_time) in enumerate(self.simulation_time_steps):
-                SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_time=? AND simulation_trace=?' % \
-                    (", ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
-                self.cursor.execute(SIGNAL_VALUE_QUERY, (simulation_time, index))
-                blah = self.cursor.fetchone()
-                hammingWeightState = sum([hammingWeightFromBitString(i) for i in list(blah)])
-                leakage[timeindex] = abs(hammingWeightState - lastHammingWeightState)
-                lastHammingWeightState = hammingWeightState
+
+            if not self.fastMode:
+                lastHammingWeightState = 0
+                for (timeindex, simulation_time) in enumerate(self.simulation_time_steps):
+                    SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_time=? AND simulation_trace=?' % \
+                        (", ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
+                    self.cursor.execute(SIGNAL_VALUE_QUERY, (simulation_time, index))
+                    blah = self.cursor.fetchone()
+                    hammingWeightState = sum([hammingWeightFromBitString(i) for i in list(blah)])
+                    leakage[timeindex] = abs(hammingWeightState - lastHammingWeightState)
+                    lastHammingWeightState = hammingWeightState
+            else:
+                # fast fetch mode
+                SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_trace=?' % \
+                    (" || ".join(["\"" + i + "\"" for i in self.signals_under_inspection]))
+                self.cursor.execute(SIGNAL_VALUE_QUERY, (index,))
+                leakage = self.cursor.fetchall()
+                leakage = [hammingWeightFromBitString(i[0]) for i in leakage]
+                leakage = np.array(leakage, dtype=np.int32)
+                # calculate the hamming distance
+                leakage = np.hstack((leakage, [0]))
+                shift_leakage = leakage  # .copy()
+                shift_leakage = np.roll(shift_leakage, 1)
+                leakage = np.abs(leakage - shift_leakage)
+                leakage = leakage[1:-1]
 
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
@@ -191,8 +219,8 @@ class AcquisitionSetupToggle(AbstractContainer):
         return Trace(leakage, value)
 
 
-# aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage="HammingWeight")
-aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage="HammingDistance")
+# aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage="HammingWeight", fastMode=True)
+aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage="HammingDistance", fastMode=True)
 
 # hdf5_container = Hdf5Container.export(aqc, "traces.h5")
 
