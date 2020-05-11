@@ -1,8 +1,8 @@
 #!/usr/bin/python3
-import glob
 import logging
 import sqlite3
-import re
+import json
+import os.path
 
 # create a logger
 logger = logging.getLogger('synthesize')
@@ -35,10 +35,22 @@ for signal in cursor.execute(EXTRACT_SIGNAL_PROPERTY_QUERY):
     signals[signal[0]] = {"width": int(signal[1]), "scope": signal[2]}
 
 
+# extract signals which shoul be used for synthesis
+configFile = "./signals.json"
+if not os.path.isfile(configFile):
+    logger.info("no signals configured generating standard signals.json")
+    with open(configFile, "w", encoding="utf-8") as fid:
+        json.dump(list(signals.keys()), fid, ensure_ascii=False, indent=4)
+else:
+    logger.info("signals.json found using signals as specified")
+
+
 SIGNAL_VALUE_QUERY = 'SELECT %s from traces WHERE simulation_time=? AND simulation_trace=?' % \
     (", ".join(["\"" + i + "\"" for i in list(signals.keys())]))
-cursor.execute(SIGNAL_VALUE_QUERY,(0,0))
-blah = cursor.fetchall()
+cursor.execute(SIGNAL_VALUE_QUERY, (0, 0))
+blah = cursor.fetchone()
+
+#extrac partition value i.e. key
 
 conn.commit()
 conn.close()

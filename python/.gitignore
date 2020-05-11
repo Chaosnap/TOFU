@@ -1,3 +1,4 @@
 tofu_python/
 *.vcd
 *.db
+signals.json
