@@ -147,6 +147,10 @@ class AcquisitionSetupToggle(AbstractContainer):
         # ANPASSEN !!!
         value_signal = 'key [15:0]'
         value_signal_time = 80000
+
+        if value_signal not in self.signals_under_inspection:
+            raise synthesizeException("signal %s is not in the database" % value_signal)
+
         KEY_VALUE_QUERY = 'SELECT \"%s\" from traces WHERE simulation_time=? AND simulation_trace=?' % value_signal
         self.cursor.execute(KEY_VALUE_QUERY, (value_signal_time, index))
         value = self.cursor.fetchone()[0]
