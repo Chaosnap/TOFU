@@ -1,4 +1,5 @@
 tofu_python/
+__pycache__/
 *.vcd
 *.db
 signals.json

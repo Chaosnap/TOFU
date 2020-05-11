@@ -47,7 +47,7 @@ def identifierToName(vcdHeader):
     return blah
 
 
-vcdFiles = ["./dummy-vivado.vcd"]
+vcdFiles = ["./dummy-vivado.vcd","./dummy-vivado.vcd","./dummy-vivado.vcd"]
 # fileName = ["./dummy-modelsim.vcd"]
 
 
