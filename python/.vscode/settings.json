@@ -1,0 +1,16 @@
+{
+    "python.pythonPath": "${workspaceFolder}/tofu_python/bin/python",
+    "python.pipenvPath": "${workspaceFolder}/tofu_python",
+    "python.linting.pylintEnabled": false,
+    "python.linting.pycodestyleEnabled": true,
+    "python.linting.pycodestyleArgs": [
+        "--ignore=E501",
+        "--max-line-length=300"
+    ],
+    "python.formatting.autopep8Args": [
+        "--max-line-length",
+        "300"
+    ],
+    "python.linting.enabled": true,
+    "python.globalModuleInstallation": true
+}
