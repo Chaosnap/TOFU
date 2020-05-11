@@ -219,8 +219,12 @@ class AcquisitionSetupToggle(AbstractContainer):
         return Trace(leakage, value)
 
 
-# aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage="HammingWeight", fastMode=True)
-aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage="HammingDistance", fastMode=True)
+# if everything fits into ram use fastmode
+fastMode = True
+leakageModel = "HammingDistance"
+
+
+aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage=leakageModel, fastMode=fastMode)
 
 # hdf5_container = Hdf5Container.export(aqc, "traces.h5")
 

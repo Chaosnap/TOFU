@@ -3,6 +3,9 @@ import glob
 import logging
 import sqlite3
 import re
+import time
+
+time_start = time.time()
 
 # create a logger
 logger = logging.getLogger('parse')
@@ -13,8 +16,8 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-logger.setLevel(logging.DEBUG)
-# logger.setLevel(logging.INFO)
+# logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 class vcdException(Exception):
@@ -47,6 +50,8 @@ def identifierToName(vcdHeader):
     return blah
 
 
+# if everything fits into ram
+fastMode = True
 vcdFiles = ["./dummy-vivado.vcd", "./dummy-vivado.vcd", "./dummy-vivado.vcd"]
 # fileName = ["./dummy-modelsim.vcd"]
 
@@ -170,6 +175,11 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
 
     state = {}
 
+    trace = []
+    colNameToIndex = ["simulation_time", "simulation_trace"] + list(iton.values())
+    colNameToIndex = {i[1]: i[0] for i in enumerate(colNameToIndex)}
+    traceSample = ["OIDA"] * len(colNameToIndex)
+
     logger.info("extracting signal values")
     # extract simulation values
     for current_token in tokens:
@@ -183,17 +193,26 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
         if match_time is not None:
             simulation_time_old = simulation_time
             simulation_time = int(match_time.groups()[0])
+
             logger.debug("-" * 100)
             logger.debug("time: %s" % simulation_time)
-            cursor.execute(INSERT_TABLE_TRACES_SIMULATION_TIME_QUERY, (simulation_time, simulation_trace))
 
-            # copy the previous row to the next row
-            if simulation_time != 0:
-                UPDATE_TABLE_TRACES_STATE_QUERY = 'UPDATE traces SET %s WHERE simulation_time=? AND simulation_trace=?' % \
-                    (", ".join(['\'' + i + '\'' + '=?' for i in list(state.keys())]))
-                cursor.execute(UPDATE_TABLE_TRACES_STATE_QUERY, (list(state.values()) + [simulation_time] + [simulation_trace]))
-                # for signal in state.keys():
-                #     cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (signal), (state[signal], simulation_time, simulation_trace))
+            if not fastMode:
+                cursor.execute(INSERT_TABLE_TRACES_SIMULATION_TIME_QUERY, (simulation_time, simulation_trace))
+                # copy the previous row to the next row
+                if simulation_time != 0:
+                    UPDATE_TABLE_TRACES_STATE_QUERY = 'UPDATE traces SET %s WHERE simulation_time=? AND simulation_trace=?' % \
+                        (", ".join(['\'' + i + '\'' + '=?' for i in list(state.keys())]))
+                    cursor.execute(UPDATE_TABLE_TRACES_STATE_QUERY, (list(state.values()) + [simulation_time] + [simulation_trace]))
+                    # for signal in state.keys():
+                    #     cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (signal), (state[signal], simulation_time, simulation_trace))
+            else:
+                if len(trace) == 0:
+                    trace.append(traceSample.copy())
+                else:
+                    trace.append(trace[-1].copy())
+                trace[-1][colNameToIndex["simulation_time"]] = simulation_time
+                trace[-1][colNameToIndex["simulation_trace"]] = simulation_trace
 
         elif match_dumpvars is not None:
             # extract initial value
@@ -206,9 +225,13 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
                     # update scalar signal values
                     val = match_dumpvar_scalar.groups()[0]
                     var = match_dumpvar_scalar.groups()[1]
-                    state[iton[var]] = val
                     logger.debug("update: %s ---> %s" % (iton[var], val))
-                    cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+
+                    if not fastMode:
+                        state[iton[var]] = val
+                        cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+                    else:
+                        trace[-1][colNameToIndex[iton[var]]] = val
 
                 elif match_dumpvar_vector is not None:
                     # update vector signal values
@@ -216,9 +239,13 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
                     # remove b prefix
                     val = val[1:]
                     var = next(tokens)
-                    state[iton[var]] = val
                     logger.debug("update: %s ---> %s" % (iton[var], val))
-                    cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+
+                    if not fastMode:
+                        state[iton[var]] = val
+                        cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+                    else:
+                        trace[-1][colNameToIndex[iton[var]]] = val
 
                 else:
                     raise vcdException("unable to parse variable: %s" % dumpvar_token)
@@ -228,8 +255,12 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
             val = match_update_scalar.groups()[0]
             var = match_update_scalar.groups()[1]
             logger.debug("update: %s ---> %s" % (iton[var], val))
-            state[iton[var]] = val
-            cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+
+            if not fastMode:
+                state[iton[var]] = val
+                cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+            else:
+                trace[-1][colNameToIndex[iton[var]]] = val
 
         elif match_update_vector is not None:
             # update vector signal values
@@ -237,12 +268,23 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
             # remove b prefix
             val = val[1:]
             var = next(tokens)
-            state[iton[var]] = val
             logger.debug("update: %s ---> %s" % (iton[var], val))
-            cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+
+            if not fastMode:
+                state[iton[var]] = val
+                cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+            else:
+                trace[-1][colNameToIndex[iton[var]]] = val
 
         else:
             raise vcdException("unable to parse variable: %s" % current_token)
+
+    # batch insert to database
+    if fastMode:
+        INSERT_TRACE_QUERY = 'INSERT INTO traces VALUES (%s)' % \
+            (", ".join(["?" for i in list(colNameToIndex.keys())]))
+        cursor.executemany(INSERT_TRACE_QUERY, trace)
+        trace = []
 
     conn.commit()
     fid.close()
@@ -252,4 +294,6 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
 # print(vcdHeader)
 conn.commit()
 conn.close()
-logger.info("conversion from vcd to database finished")
+
+time_finish = time.time()
+logger.info("conversion from vcd to database finished in %d seconds" % (time_finish - time_start))
