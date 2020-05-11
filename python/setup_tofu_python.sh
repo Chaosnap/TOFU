@@ -1,5 +1,5 @@
 #!/bin/bash
-# setup sica_tool python virtualenv
+# setup tofu python virtualenv
 
 set -eu -o pipefail
 shopt -s nullglob
