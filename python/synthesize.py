@@ -4,9 +4,12 @@ import sqlite3
 import json
 import os.path
 import numpy as np
+import h5py
+import matplotlib.pyplot as plt
 from lascar import AbstractContainer, Trace, Hdf5Container
 
-import matplotlib.pyplot as plt
+# supress a lascar warning
+h5py.get_config().default_file_mode = "r+"
 
 # create a logger
 logger = logging.getLogger('synthesize')
