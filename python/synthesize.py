@@ -185,6 +185,9 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
+
+        # dynamic scaling of trace eigentlich sollte man hier nach dem max suchen wenn das kleiner als max wer uint8 alles zu einem uint8
+
         return Trace(leakage, value)
 
 
