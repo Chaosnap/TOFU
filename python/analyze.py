@@ -22,7 +22,7 @@ logger.addHandler(ch)
 logger.setLevel(logging.DEBUG)
 # logger.setLevel(logging.INFO)
 
-#loading settings from file
+# loading settings from file
 settings = None
 settingsFile = "./settings.json"
 logger.info("loading settings from file: %s" % (settingsFile))
