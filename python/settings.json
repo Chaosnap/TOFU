@@ -15,7 +15,7 @@
     },
     "analyze": {
         "traceFileName": "./traces.h5",
-        "fixedVal": [
+        "value_signal_fixed": [
             64,
             0
         ]

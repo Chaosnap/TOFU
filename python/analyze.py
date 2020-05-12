@@ -36,7 +36,7 @@ logger.info("starting analysis")
 traceFileName = settings["synthesize"]["traceFileName"]
 container = Hdf5Container(traceFileName)
 
-fixedVal = settings["analyze"]["fixedVal"]
+fixedVal = settings["analyze"]["value_signal_fixed"]
 
 
 def partition_function(value):
