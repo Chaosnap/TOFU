@@ -41,7 +41,8 @@ fixedVal = settings["analyze"]["value_signal_fixed"]
 
 def partition_function(value):
     # partition_function must take 1 argument: the value returned by the container at each trace
-    return value == np.array(fixedVal, dtype=uint8)
+    compare = ([value][0] == np.array(fixedVal, dtype=np.uint8)).all()
+    return False
 
 
 ttest_engine = TTestEngine("ttest", partition_function)
@@ -52,5 +53,6 @@ plot_output = MatPlotLibOutputMethod(ttest_engine)
 session = Session(container, output_method=plot_output)
 session.add_engine(ttest_engine)
 session.run(batch_size=2500)
+
 
 logger.info("analysis finished")

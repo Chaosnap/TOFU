@@ -163,11 +163,12 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
     CREATE_TABLE_SIGNAL_QUERY = 'CREATE TABLE IF NOT EXISTS signals (name TEXT, width INTEGER, scope TEXT)'
     cursor.execute(CREATE_TABLE_SIGNAL_QUERY)
 
-    INSERT_TABLE_SIGNAL_QUERY = 'INSERT INTO signals (name,width,scope) VALUES (?,?,?)'
-    for scope in list(vcdHeader["scope"].keys()):
-        for signal in vcdHeader["scope"][scope]:
-            cursor.execute(INSERT_TABLE_SIGNAL_QUERY, (signal["name"], signal["width"], scope))
-    conn.commit()
+    if simulation_trace == 0:
+        INSERT_TABLE_SIGNAL_QUERY = 'INSERT INTO signals (name,width,scope) VALUES (?,?,?)'
+        for scope in list(vcdHeader["scope"].keys()):
+            for signal in vcdHeader["scope"][scope]:
+                cursor.execute(INSERT_TABLE_SIGNAL_QUERY, (signal["name"], signal["width"], scope))
+        conn.commit()
 
     # fill signal data to traces
     simulation_time = 0
