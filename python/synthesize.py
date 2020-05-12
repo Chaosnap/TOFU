@@ -23,6 +23,13 @@ logger.addHandler(ch)
 logger.setLevel(logging.DEBUG)
 # logger.setLevel(logging.INFO)
 
+#loading settings from file
+settings = None
+settingsFile = "./settings.json"
+logger.info("loading settings from file: %s" % (settingsFile))
+with open("./settings.json") as fid:
+    settings = json.load(fid)
+
 
 class synthesizeException(Exception):
     pass
@@ -38,7 +45,7 @@ def hammingDifferenceFromBitString(x, y):
 
 # create database connection
 logger.info("connecting to database")
-fileNameDatabase = "./traces.db"
+fileNameDatabase = settings["synthesize"]["database"]
 conn = sqlite3.connect(fileNameDatabase)
 cursor = conn.cursor()
 
@@ -53,14 +60,14 @@ for signal in cursor.execute(EXTRACT_SIGNAL_PROPERTY_QUERY):
 
 # extract signals which shoul be used for synthesis
 signals_under_inspection = []
-configFile = "./signals.json"
+configFile = settings["synthesize"]["signalsFileName"]
 if not os.path.isfile(configFile):
     logger.info("no signals configured generating standard signals.json")
     with open(configFile, "w", encoding="utf-8") as fid:
         json.dump(list(signals.keys()), fid, ensure_ascii=False, indent=4)
         signals_under_inspection = list(signals.keys())
 else:
-    logger.info("signals.json found using signals as specified")
+    logger.info("%s found using signals as specified" % (configFile))
     with open(configFile, "r", encoding="utf-8") as fid:
         signals_under_inspection = json.load(fid)
 
@@ -94,7 +101,7 @@ conn.close()
 
 # Then the AbstractContainer:
 class AcquisitionSetupToggle(AbstractContainer):
-    def __init__(self, number_of_traces, database, signals_under_inspection, leakage="HammingDistance", fastMode=False):
+    def __init__(self, number_of_traces, database, signals_under_inspection, leakage="HammingDistance", fastMode=False, value_signal=None, value_signal_time=None):
         """
         :param number_of_traces: only required argument for the constructor of an AbstractContainer
         """
@@ -104,6 +111,11 @@ class AcquisitionSetupToggle(AbstractContainer):
         self.cursor = self.conn.cursor()
 
         self.fastMode = fastMode
+
+        # extract the key
+        # ANPASSEN !!!
+        self.value_signal = value_signal
+        self.value_signal_time = value_signal_time
 
         # store the assumed leakage model
         self.leakage = leakage
@@ -145,16 +157,11 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         self.logger.info("capturing trace: %d" % (index))
 
-        # extract the key
-        # ANPASSEN !!!
-        value_signal = 'key [15:0]'
-        value_signal_time = 80000
+        if self.value_signal not in self.signals_under_inspection:
+            raise synthesizeException("signal %s is not in the database" % self.value_signal)
 
-        if value_signal not in self.signals_under_inspection:
-            raise synthesizeException("signal %s is not in the database" % value_signal)
-
-        KEY_VALUE_QUERY = 'SELECT \"%s\" from traces WHERE simulation_time=? AND simulation_trace=?' % value_signal
-        self.cursor.execute(KEY_VALUE_QUERY, (value_signal_time, index))
+        KEY_VALUE_QUERY = 'SELECT \"%s\" from traces WHERE simulation_time=? AND simulation_trace=?' % self.value_signal
+        self.cursor.execute(KEY_VALUE_QUERY, (self.value_signal_time, index))
         value = self.cursor.fetchone()[0]
         value_width = self.signal_properties['clk']['width']
 
@@ -257,13 +264,15 @@ class AcquisitionSetupToggle(AbstractContainer):
 
 
 # if everything fits into ram use fastmode
-fastMode = True
-leakageModel = "HammingDistance"
+fastMode = settings["synthesize"]["fastMode"]
+leakageModel = settings["synthesize"]["leakageModel"]
+traceFileName = settings["synthesize"]["traceFileName"]
+value_signal = settings["synthesize"]["value_signal"]
+value_signal_time = settings["synthesize"]["value_signal_time"]
 
+aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage=leakageModel, fastMode=fastMode, value_signal=value_signal, value_signal_time=value_signal_time)
 
-aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage=leakageModel, fastMode=fastMode)
-
-# hdf5_container = Hdf5Container.export(aqc, "traces.h5")
+hdf5_container = Hdf5Container.export(aqc, traceFileName)
 
 # print("trace 0:", aqc[0])
 # print("trace 10:", aqc[10])

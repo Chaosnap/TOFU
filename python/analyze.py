@@ -6,7 +6,6 @@ import h5py
 import matplotlib.pyplot as plt
 from lascar import Hdf5Container, TTestEngine, MatPlotLibOutputMethod, Session
 
-
 # supress a lascar warning
 h5py.get_config().default_file_mode = "r+"
 
@@ -23,15 +22,26 @@ logger.addHandler(ch)
 logger.setLevel(logging.DEBUG)
 # logger.setLevel(logging.INFO)
 
+#loading settings from file
+settings = None
+settingsFile = "./settings.json"
+logger.info("loading settings from file: %s" % (settingsFile))
+with open("./settings.json") as fid:
+    settings = json.load(fid)
+
+
 logger.info("starting analysis")
 
 
-container = Hdf5Container("./traces.h5")
+traceFileName = settings["synthesize"]["traceFileName"]
+container = Hdf5Container(traceFileName)
+
+fixedVal = settings["analyze"]["fixedVal"]
 
 
 def partition_function(value):
     # partition_function must take 1 argument: the value returned by the container at each trace
-    return value == np.array([[64, 0]], dtype=uint8)
+    return value == np.array(fixedVal, dtype=uint8)
 
 
 ttest_engine = TTestEngine("ttest", partition_function)

@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import json
 import glob
 import logging
 import sqlite3
@@ -18,6 +19,13 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 # logger.setLevel(logging.DEBUG)
 logger.setLevel(logging.INFO)
+
+# loading settings from file
+settings = None
+settingsFile = "./settings.json"
+logger.info("loading settings from file: %s" % (settingsFile))
+with open("./settings.json") as fid:
+    settings = json.load(fid)
 
 
 class vcdException(Exception):
@@ -51,13 +59,13 @@ def identifierToName(vcdHeader):
 
 
 # if everything fits into ram
-fastMode = True
-vcdFiles = ["./dummy-vivado.vcd", "./dummy-vivado.vcd", "./dummy-vivado.vcd"]
-# fileName = ["./dummy-modelsim.vcd"]
+fastMode = settings["parse"]["fastMode"]
+# globbing for vcd files
+vcdFiles = glob.glob(settings["parse"]["vcdGlob"])
 
 
 # create database connection
-conn = sqlite3.connect("./traces.db")
+conn = sqlite3.connect(settings["parse"]["database"])
 cursor = conn.cursor()
 
 

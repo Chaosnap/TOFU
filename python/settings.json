@@ -1,0 +1,23 @@
+{
+    "parse": {
+        "fastMode": true,
+        "database": "./traces.db",
+        "vcdGlob": "./dummy-vivado*.vcd"
+    },
+    "synthesize": {
+        "fastMode": true,
+        "database": "./traces.db",
+        "signalsFileName": "./signals.json",
+        "value_signal": "key [15:0]",
+        "value_signal_time": 80000,
+        "leakageModel": "HammingDistance",
+        "traceFileName": "traces.h5"
+    },
+    "analyze": {
+        "traceFileName": "traces.h5",
+        "fixedVal": [
+            64,
+            0
+        ]
+    }
+}
