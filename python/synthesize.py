@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from lascar import AbstractContainer, Trace, Hdf5Container
 
 # supress a lascar warning
-h5py.get_config().default_file_mode = "r+"
+h5py.get_config().default_file_mode = "w"
 
 # create a logger
 logger = logging.getLogger('synthesize')
@@ -270,8 +270,10 @@ traceFileName = settings["synthesize"]["traceFileName"]
 value_signal = settings["synthesize"]["value_signal"]
 value_signal_time = settings["synthesize"]["value_signal_time"]
 
+# create our acquisition setup
 aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, signals_under_inspection, leakage=leakageModel, fastMode=fastMode, value_signal=value_signal, value_signal_time=value_signal_time)
 
+# export traces to container
 hdf5_container = Hdf5Container.export(aqc, traceFileName)
 
 # print("trace 0:", aqc[0])
