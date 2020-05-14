@@ -182,12 +182,14 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
     # cursor.execute('UPDATE_TABLE_TRACES_SIGNAL_QUERY' % (iton[var]), (val,simulation_time,simulation_trace))
     # conn.commit
 
+    # state of signals at one timestep
     state = {}
 
-    trace = []
-    colNameToIndex = ["simulation_time", "simulation_trace"] + list(iton.values())
-    colNameToIndex = {i[1]: i[0] for i in enumerate(colNameToIndex)}
-    traceSample = ["OIDA"] * len(colNameToIndex)
+    if fastMode:
+        trace = []
+        colNameToIndex = ["simulation_time", "simulation_trace"] + list(iton.values())
+        colNameToIndex = {i[1]: i[0] for i in enumerate(colNameToIndex)}
+        traceSample = ["OIDA"] * len(colNameToIndex)
 
     logger.info("extracting signal values")
     # extract simulation values
