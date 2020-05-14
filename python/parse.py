@@ -49,12 +49,27 @@ def buildfromtokens(token):
     return collected
 
 
-def identifierToName(vcdHeader):
+# def identifierToName(vcdHeader):
+#     blah = {}
+#     for scope in vcdHeader["scope"].keys():
+#         for var in vcdHeader["scope"][scope]:
+#             # Ähhhh vielleicht sollte man identifier mit dem scope hashen???
+#             blah[var["identifier"]] = var["name"]
+#     return blah
+
+def identifierToNames(vcdHeader):
     blah = {}
+    signal_num = 0
     for scope in vcdHeader["scope"].keys():
         for var in vcdHeader["scope"][scope]:
-            # Ähhhh vielleicht sollte man identifier mit dem scope hashen???
-            blah[var["identifier"]] = var["name"]
+            if var["identifier"] in blah:
+                blah[var["identifier"]].append({"name": var["name"], "width": var["width"], "scope": scope})
+            else:
+                blah[var["identifier"]] = [{"name": var["name"], "width": var["width"], "scope": scope}]
+
+    # assign every identifier a numeric id
+    for numeric_id, identifier in enumerate(blah):
+        blah[identifier] = [{"name": i["name"], "width": i["width"], "scope": i["scope"], "numeric_id": numeric_id} for i in blah[identifier]]
     return blah
 
 
@@ -62,7 +77,6 @@ def identifierToName(vcdHeader):
 fastMode = settings["parse"]["fastMode"]
 # globbing for vcd files
 vcdFiles = glob.glob(settings["parse"]["vcdGlob"])
-
 
 # create database connection
 conn = sqlite3.connect(settings["parse"]["database"])
@@ -77,6 +91,7 @@ DROP_TABLE_SIGNALS_QUERY = 'DROP TABLE IF EXISTS signals'
 cursor.execute(DROP_TABLE_SIGNALS_QUERY)
 conn.commit()
 
+iddict = {}
 
 ###################################################################################################
 # iterate over all vcd files
@@ -85,6 +100,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
     logger.info("processing vcd file (%d/%d): %s" % (simulation_trace + 1, len(vcdFiles), vcdFile))
 
     fid = open(vcdFile)
+
     tokens = token_generator(fid)
 
     # reset all header informations
@@ -137,7 +153,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
                 width = match.groups()[0]
                 identifier = match.groups()[1]
                 name = match.groups()[2]
-                # logger.debug("width: %s\tidentifier: %s\tname: %s" % (width, identifier, name))
+                # logger.debug("scope: %s\twidth: %s\tidentifier: %s\tname: %s" % ("->".join(currScope), width, identifier, name))
                 # logger.debug(width)
             else:
                 raise vcdException("unable to parse variable: %s" % var)
@@ -153,43 +169,37 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
             raise vcdException("undefined keyword: %s" % keyword)
 
     # fuck the verilog identifiers
-    iton = identifierToName(vcdHeader)
+    # iton = identifierToName(vcdHeader)
+    itons = identifierToNames(vcdHeader)
 
     # the signal names must be the same for all simulations
-    escaped_signal_names = ", ".join(['\'' + i + '\'' + ' TEXT' for i in list(iton.values())])
-    CREATE_TABLE_TRACES_QUERY = 'CREATE TABLE IF NOT EXISTS traces (simulation_time INTEGER, simulation_trace INTEGER, %s)' % escaped_signal_names
+    CREATE_TABLE_TRACES_QUERY = 'CREATE TABLE IF NOT EXISTS traces (simulation_time INTEGER, simulation_trace INTEGER, numeric_id INTEGER, nextval TEXT)'
     cursor.execute(CREATE_TABLE_TRACES_QUERY)
 
-    CREATE_TABLE_SIGNAL_QUERY = 'CREATE TABLE IF NOT EXISTS signals (name TEXT, width INTEGER, scope TEXT)'
+    CREATE_TABLE_SIGNAL_QUERY = 'CREATE TABLE IF NOT EXISTS signals (numeric_id INTEGER, name TEXT, width INTEGER, scope TEXT)'
     cursor.execute(CREATE_TABLE_SIGNAL_QUERY)
 
     if simulation_trace == 0:
-        INSERT_TABLE_SIGNAL_QUERY = 'INSERT INTO signals (name,width,scope) VALUES (?,?,?)'
-        for scope in list(vcdHeader["scope"].keys()):
-            for signal in vcdHeader["scope"][scope]:
-                cursor.execute(INSERT_TABLE_SIGNAL_QUERY, (signal["name"], signal["width"], scope))
+        INSERT_TABLE_SIGNAL_QUERY = 'INSERT INTO signals (numeric_id, name ,width, scope) VALUES (?,?,?,?)'
+        for identifier in itons:
+            for signal in itons[identifier]:
+                cursor.execute(INSERT_TABLE_SIGNAL_QUERY, (signal["numeric_id"], signal["name"], signal["width"], signal["scope"]))
+                iddict[signal["scope"] + "->" + signal["name"]] = signal["numeric_id"]
         conn.commit()
+
+    # get num id in all but the first trace
+    # fix this
 
     # fill signal data to traces
     simulation_time = 0
     simulation_time_old = 0
 
-    INSERT_TABLE_TRACES_SIMULATION_TIME_QUERY = 'INSERT INTO traces (simulation_time,simulation_trace) VALUES (?,?)'
+    INSERT_TABLE_TRACES_UPDATE_QUERY = 'INSERT INTO traces (simulation_time , simulation_trace , numeric_id , nextval) VALUES (?,?,?,?)'
     # cursor.execute(INSERT_TABLE_TRACES_SIMULATION_TIME_QUERY, (simulation_time, simulation_trace))
     # conn.commit()
 
-    UPDATE_TABLE_TRACES_SIGNAL_QUERY = 'UPDATE traces SET \'%s\'=? WHERE simulation_time=? AND simulation_trace=?'
-    # cursor.execute('UPDATE_TABLE_TRACES_SIGNAL_QUERY' % (iton[var]), (val,simulation_time,simulation_trace))
-    # conn.commit
-
-    # state of signals at one timestep
-    state = {}
-
-    if fastMode:
-        trace = []
-        colNameToIndex = ["simulation_time", "simulation_trace"] + list(iton.values())
-        colNameToIndex = {i[1]: i[0] for i in enumerate(colNameToIndex)}
-        traceSample = ["OIDA"] * len(colNameToIndex)
+    if fastMode is True:
+        updates = []
 
     logger.info("extracting signal values")
     # extract simulation values
@@ -208,41 +218,30 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
             logger.debug("-" * 100)
             logger.debug("time: %s" % simulation_time)
 
-            if not fastMode:
-                cursor.execute(INSERT_TABLE_TRACES_SIMULATION_TIME_QUERY, (simulation_time, simulation_trace))
-                # copy the previous row to the next row
-                if simulation_time != 0:
-                    UPDATE_TABLE_TRACES_STATE_QUERY = 'UPDATE traces SET %s WHERE simulation_time=? AND simulation_trace=?' % \
-                        (", ".join(['\'' + i + '\'' + '=?' for i in list(state.keys())]))
-                    cursor.execute(UPDATE_TABLE_TRACES_STATE_QUERY, (list(state.values()) + [simulation_time] + [simulation_trace]))
-                    # for signal in state.keys():
-                    #     cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (signal), (state[signal], simulation_time, simulation_trace))
-            else:
-                if len(trace) == 0:
-                    trace.append(traceSample.copy())
-                else:
-                    trace.append(trace[-1].copy())
-                trace[-1][colNameToIndex["simulation_time"]] = simulation_time
-                trace[-1][colNameToIndex["simulation_trace"]] = simulation_trace
-
         elif match_dumpvars is not None:
             # extract initial value
             for dumpvar_token in tokens:
                 if(dumpvar_token == "$end"):
                     break
+
                 match_dumpvar_scalar = re.match("^([01xXzZ])(.+)$", dumpvar_token)
                 match_dumpvar_vector = re.match("^([bB][01xXzZ]+)$", dumpvar_token)
+
                 if match_dumpvar_scalar is not None:
                     # update scalar signal values
                     val = match_dumpvar_scalar.groups()[0]
                     var = match_dumpvar_scalar.groups()[1]
-                    logger.debug("update: %s ---> %s" % (iton[var], val))
+                    logger.debug("update: %s ---> %s" % (var, val))
+
+                    signal_name = itons[var][0]["name"]
+                    signal_scope = itons[var][0]["scope"]
+                    numeric_id = iddict[signal_scope + "->" + signal_name]
 
                     if not fastMode:
-                        state[iton[var]] = val
-                        cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+                        cursor.execute(INSERT_TABLE_TRACES_UPDATE_QUERY, (simulation_time, simulation_trace, numeric_id, val))
+                        pass
                     else:
-                        trace[-1][colNameToIndex[iton[var]]] = val
+                        updates.append((simulation_time, simulation_trace, numeric_id, val))
 
                 elif match_dumpvar_vector is not None:
                     # update vector signal values
@@ -250,13 +249,17 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
                     # remove b prefix
                     val = val[1:]
                     var = next(tokens)
-                    logger.debug("update: %s ---> %s" % (iton[var], val))
+                    logger.debug("update: %s ---> %s" % (var, val))
+
+                    signal_name = itons[var][0]["name"]
+                    signal_scope = itons[var][0]["scope"]
+                    numeric_id = iddict[signal_scope + "->" + signal_name]
 
                     if not fastMode:
-                        state[iton[var]] = val
-                        cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+                        pass
+                        cursor.execute(INSERT_TABLE_TRACES_UPDATE_QUERY, (simulation_time, simulation_trace, numeric_id, val))
                     else:
-                        trace[-1][colNameToIndex[iton[var]]] = val
+                        updates.append((simulation_time, simulation_trace, numeric_id, val))
 
                 else:
                     raise vcdException("unable to parse variable: %s" % dumpvar_token)
@@ -265,13 +268,16 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
             # update scalar signal values
             val = match_update_scalar.groups()[0]
             var = match_update_scalar.groups()[1]
-            logger.debug("update: %s ---> %s" % (iton[var], val))
+            logger.debug("update: %s ---> %s" % (var, val))
+
+            signal_name = itons[var][0]["name"]
+            signal_scope = itons[var][0]["scope"]
+            numeric_id = iddict[signal_scope + "->" + signal_name]
 
             if not fastMode:
-                state[iton[var]] = val
-                cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+                cursor.execute(INSERT_TABLE_TRACES_UPDATE_QUERY, (simulation_time, simulation_trace, numeric_id, val))
             else:
-                trace[-1][colNameToIndex[iton[var]]] = val
+                updates.append((simulation_time, simulation_trace, numeric_id, val))
 
         elif match_update_vector is not None:
             # update vector signal values
@@ -279,23 +285,25 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
             # remove b prefix
             val = val[1:]
             var = next(tokens)
-            logger.debug("update: %s ---> %s" % (iton[var], val))
+            logger.debug("update: %s ---> %s" % (var, val))
+
+            signal_name = itons[var][0]["name"]
+            signal_scope = itons[var][0]["scope"]
+            numeric_id = iddict[signal_scope + "->" + signal_name]
 
             if not fastMode:
-                state[iton[var]] = val
-                cursor.execute(UPDATE_TABLE_TRACES_SIGNAL_QUERY % (iton[var]), (val, simulation_time, simulation_trace))
+                cursor.execute(INSERT_TABLE_TRACES_UPDATE_QUERY, (simulation_time, simulation_trace, numeric_id, val))
             else:
-                trace[-1][colNameToIndex[iton[var]]] = val
+                updates.append((simulation_time, simulation_trace, numeric_id, val))
 
         else:
             raise vcdException("unable to parse variable: %s" % current_token)
 
     # batch insert to database
     if fastMode:
-        INSERT_TRACE_QUERY = 'INSERT INTO traces VALUES (%s)' % \
-            (", ".join(["?" for i in list(colNameToIndex.keys())]))
-        cursor.executemany(INSERT_TRACE_QUERY, trace)
-        trace = []
+        logger.info("writing to database")
+        cursor.executemany(INSERT_TABLE_TRACES_UPDATE_QUERY, updates)
+        updates = []
 
     conn.commit()
     fid.close()
