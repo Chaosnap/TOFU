@@ -191,54 +191,66 @@ class AcquisitionSetupToggle(AbstractContainer):
         # extract the leakage
         leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
+        if not fastMode:
+            # vertical approach assemble leakage over the signals
+            for numeric_id in self.numeric_ids_under_inspection:
+
+                signal_leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
+
+                # logger.info("processing signal with numeric id: %d" % (numeric_id))
+
+                SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, nextval from traces WHERE simulation_trace=? AND numeric_id=?  ORDER BY simulation_time ASC'
+                nextval_index_old = -1
+                nextval_val_old = 0
+                for update in self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, numeric_id)):
+                    # logger.debug("%s" % (self.simulation_time_to_index[update[0]]))
+                    nextval_index = self.simulation_time_to_index[update[0]]
+                    nextval_val = hammingWeightFromBitString(update[1])
+                    signal_leakage[nextval_index_old:nextval_index + 1] = nextval_val_old
+                    nextval_index_old = nextval_index
+                    nextval_val_old = nextval_val
+
+                signal_leakage[nextval_index_old:] = nextval_val_old
+                leakage += signal_leakage
+
+        else:
+            # horizontal mode assemmble state from changes and derive leakage
+            # fetch all updates
+            SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, numeric_id, nextval from traces WHERE simulation_trace=?  ORDER BY simulation_time ASC'
+            self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, ))
+            self.updates = self.cursor.fetchall()
+
+            # umbauen ummappen auf signale die benutzt werden
+            state = np.zeros((len(self.signal_properties),), dtype=np.int)
+
+            nextval_index_old = -1
+            for update in self.updates:
+                nextval_index = self.simulation_time_to_index[update[0]]
+                nextval = hammingWeightFromBitString(update[2])
+                numeric_id = update[1]
+
+                # das bremst aus wie noch was
+                # check if signal is tracked
+                if numeric_id not in self.numeric_ids_under_inspection:
+                    continue
+
+                # logger.info("index: %d  numeric_id: %d nextval: %d" % (nextval_index, numeric_id, nextval))
+                if nextval_index != nextval_index_old:
+                    leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
+                    nextval_index_old = nextval_index
+
+                state[numeric_id] = nextval
+
+            # last update after loop
+            leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
+
         # this extracts the hamming weight
         if self.leakage == "HammingWeight":
-
-            if not fastMode:
-                # vertical approach assemble leakage over the signals
-                for numeric_id in self.numeric_ids_under_inspection:
-
-                    signal_leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
-
-                    # logger.info("processing signal with numeric id: %d" % (numeric_id))
-
-                    SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, nextval from traces WHERE simulation_trace=? AND numeric_id=?  ORDER BY simulation_time ASC'
-                    for update in self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, numeric_id)):
-                        pass
-                        # logger.debug("%s" % (self.simulation_time_to_index[update[0]]))
-                        nextval_index = self.simulation_time_to_index[update[0]]
-                        nextval_val = hammingWeightFromBitString(update[1])
-                        signal_leakage[nextval_index:] = nextval_val
-
-                    leakage += signal_leakage
-            else:
-                # horizontal mode assemmble state from changes and derive leakage
-                # fetch all updates
-                SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, numeric_id, nextval from traces WHERE simulation_trace=?  ORDER BY simulation_time ASC'
-                self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, ))
-                self.updates = self.cursor.fetchall()
-
-                # umbauen ummappen auf signale die benutzt werden
-                state = np.zeros((len(self.signal_properties),), dtype=np.int)
-
-                nextval_index_old = 0
-                for update in self.updates:
-                    nextval_index = self.simulation_time_to_index[update[0]]
-                    nextval = hammingWeightFromBitString(update[2])
-                    numeric_id = update[1]
-
-                    # print(nextval_index)
-
-                    # logger.info("index: %d  numeric_id: %d nextval: %d" % (nextval_index, numeric_id, nextval))
-                    if nextval_index != nextval_index_old:
-                        leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
-                        nextval_index_old = nextval_index
-
-                    state[numeric_id] = nextval
-
-                # last update after loop
-                leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
-
+            pass
+        elif self.leakage == "HammingDistance":
+            # calculate the hamming distance
+            shift_leakage = np.roll(leakage, 1)
+            leakage = np.abs(leakage[1:] - shift_leakage[1:])
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
 

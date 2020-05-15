@@ -2,7 +2,7 @@
     "parse": {
         "fastMode": true,
         "database": "./traces.db",
-        "vcdGlob": "./dummy-vivado.vcd"
+        "vcdGlob": "./dump*.vcd"
     },
     "synthesize": {
         "fastMode": true,
@@ -10,7 +10,7 @@
         "signalsFileName": "./signals.json",
         "value_signal_numeric_id": 146,
         "value_signal_time": 80000,
-        "leakageModel": "HammingWeight",
+        "leakageModel": "HammingDistance",
         "traceFileName": "./traces.h5"
     },
     "analyze": {
