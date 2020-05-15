@@ -2,7 +2,7 @@
     "parse": {
         "fastMode": true,
         "database": "./traces.db",
-        "vcdGlob": "./dump_0.vcd"
+        "vcdGlob": "./dummy-vivado.vcd"
     },
     "synthesize": {
         "fastMode": true,
