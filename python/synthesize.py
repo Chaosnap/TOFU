@@ -216,11 +216,27 @@ class AcquisitionSetupToggle(AbstractContainer):
                 SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, numeric_id, nextval from traces WHERE simulation_trace=?  ORDER BY simulation_time ASC'
                 self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, ))
                 self.updates = self.cursor.fetchall()
-                state = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
+                # umbauen ummappen auf signale die benutzt werden
+                state = np.zeros((len(self.signal_properties),), dtype=np.int)
+
+                nextval_index_old = -1
                 for update in self.updates:
                     nextval_index = self.simulation_time_to_index[update[0]]
-                    print("%d" % nextval_index)
+                    nextval = hammingWeightFromBitString(update[2])
+                    numeric_id = update[1]
+
+                    logger.info("index: %d  numeric_id: %d nextval: %d" % (nextval_index, numeric_id, nextval))
+
+                    # check if we progressed in time if so copy last state and update values
+                    if nextval_index != nextval_index_old:
+                        print("progress in time")
+                        leakage[nextval_index_old:nextval_index] = np.sum(state)
+                        nextval_index_old = nextval_index
+
+                    state[numeric_id] = nextval
+                    # calculate hamming weight from state calc sum
+                    # copy hamming weight to leakage
 
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
