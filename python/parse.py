@@ -311,6 +311,12 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
 
 ###################################################################################################
 # print(vcdHeader)
+
+
+# create index for faster access
+logger.info("creating index on database")
+cursor.execute('CREATE INDEX "foobar" ON "traces" ("simulation_time","numeric_id","nextval","simulation_trace");')
+
 conn.commit()
 conn.close()
 
