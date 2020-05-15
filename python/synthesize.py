@@ -190,7 +190,6 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # extract the leakage
         leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
-        signal_leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
         # this extracts the hamming weight
         if self.leakage == "HammingWeight":
@@ -198,6 +197,8 @@ class AcquisitionSetupToggle(AbstractContainer):
             if not fastMode:
                 # vertical approach assemble leakage over the signals
                 for numeric_id in self.numeric_ids_under_inspection:
+
+                    signal_leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
                     # logger.info("processing signal with numeric id: %d" % (numeric_id))
 
@@ -220,22 +221,23 @@ class AcquisitionSetupToggle(AbstractContainer):
                 # umbauen ummappen auf signale die benutzt werden
                 state = np.zeros((len(self.signal_properties),), dtype=np.int)
 
-                nextval_index_old = -1
+                nextval_index_old = 0
                 for update in self.updates:
                     nextval_index = self.simulation_time_to_index[update[0]]
                     nextval = hammingWeightFromBitString(update[2])
                     numeric_id = update[1]
+
+                    # print(nextval_index)
+
                     # logger.info("index: %d  numeric_id: %d nextval: %d" % (nextval_index, numeric_id, nextval))
-                    # check if we progressed in time if so copy last state and update values
                     if nextval_index != nextval_index_old:
-                        leakage[nextval_index_old:nextval_index] = np.sum(state)
+                        leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
                         nextval_index_old = nextval_index
 
                     state[numeric_id] = nextval
-                    # calculate hamming weight from state calc sum
-                    # copy hamming weight to leakage
 
-                # irgendwas spinnt mit dem letzten wert
+                # last update after loop
+                leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
 
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
