@@ -55,8 +55,11 @@ logger.info("extracting signals from database")
 EXTRACT_SIGNAL_PROPERTY_QUERY = "SELECT numeric_id, name, width, scope FROM signals"
 signals = []
 for signal in cursor.execute(EXTRACT_SIGNAL_PROPERTY_QUERY):
-    signals.append({"numeric_id": int(signal[0]), "name": signal[1], "width": int(signal[2]), "scope": signal[3]})
+    # signals.append({"numeric_id": int(signal[0]), "name": signal[1], "width": int(signal[2]), "scope": signal[3]})
+    signals.append(int(signal[0]))
 
+# reduce signals to distinct ones
+signals = list(set(signals))
 
 # extract signals which shoul be used for synthesis
 signals_under_inspection = []
@@ -73,7 +76,8 @@ else:
 
 
 # extract the numeric ids under inspection
-numeric_ids_under_inspection = [i["numeric_id"] for i in signals_under_inspection]
+# numeric_ids_under_inspection = [i["numeric_id"] for i in signals_under_inspection]
+numeric_ids_under_inspection = signals_under_inspection
 # ids can appear in several scopes so reduce them
 numeric_ids_under_inspection = list(set(numeric_ids_under_inspection))
 
@@ -188,37 +192,38 @@ class AcquisitionSetupToggle(AbstractContainer):
         leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
         signal_leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
-        # state = np.zeros((len(self.signal_properties), dtype=np.int))
-
-        # fetch all updates
-        # SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, numeric_id, nextval from traces WHERE simulation_trace=?  ORDER BY simulation_time ASC'
-        # self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, ))
-        # updates = self.cursor.fetchall()
-
-        # logger.setLevel(logging.DEBUG)
-
         # this extracts the hamming weight
         if self.leakage == "HammingWeight":
 
-            for numeric_id in self.numeric_ids_under_inspection:
+            if not fastMode:
+                # vertical approach assemble leakage over the signals
+                for numeric_id in self.numeric_ids_under_inspection:
 
-                logger.debug("processing signal with numeric id: %d" % (numeric_id))
-                SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, nextval from traces WHERE simulation_trace=? AND numeric_id=?  ORDER BY simulation_time ASC'
-                self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, numeric_id))
+                    # logger.info("processing signal with numeric id: %d" % (numeric_id))
 
-                for update in self.cursor.fetchall():
+                    SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, nextval from traces WHERE simulation_trace=? AND numeric_id=?  ORDER BY simulation_time ASC'
+                    for update in self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, numeric_id)):
+                        pass
+                        # logger.debug("%s" % (self.simulation_time_to_index[update[0]]))
+                        nextval_index = self.simulation_time_to_index[update[0]]
+                        nextval_val = hammingWeightFromBitString(update[1])
+                        signal_leakage[nextval_index:] = nextval_val
 
-                    logger.debug("%s" % (self.simulation_time_to_index[update[0]]))
+                    leakage += signal_leakage
+            else:
+                # horizontal mode assemmble state from changes and derive leakage
+                # fetch all updates
+                SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, numeric_id, nextval from traces WHERE simulation_trace=?  ORDER BY simulation_time ASC'
+                self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, ))
+                self.updates = self.cursor.fetchall()
+                state = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
+
+                for update in self.updates:
                     nextval_index = self.simulation_time_to_index[update[0]]
-                    nextval_val = hammingWeightFromBitString(update[1])
-                    signal_leakage[nextval_index:] = nextval_val
-
-                leakage += signal_leakage
+                    print("%d" % nextval_index)
 
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
-
-        logger.setLevel(logging.INFO)
 
         # dynamic scaling of trace eigentlich sollte man hier nach dem max suchen wenn das kleiner als max wer uint8 alles zu einem uint8
 

@@ -8,9 +8,9 @@
         "fastMode": true,
         "database": "./traces.db",
         "signalsFileName": "./signals.json",
-        "value_signal": "key [15:0]",
+        "value_signal_numeric_id": 146,
         "value_signal_time": 80000,
-        "leakageModel": "HammingDistance",
+        "leakageModel": "HammingWeight",
         "traceFileName": "./traces.h5"
     },
     "analyze": {
