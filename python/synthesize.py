@@ -141,6 +141,7 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # signals which should be inspected
         self.numeric_ids_under_inspection = numeric_ids_under_inspection
+        self.numeric_ids_under_inspection_set = set(self.numeric_ids_under_inspection)
 
         # extract signal properties
         EXTRACT_SIGNAL_PROPERTY_QUERY = "SELECT DISTINCT numeric_id, width FROM signals ORDER BY numeric_id ASC"
@@ -217,12 +218,14 @@ class AcquisitionSetupToggle(AbstractContainer):
             # horizontal mode assemmble state from changes and derive leakage
             # fetch all updates
             SIGNAL_UPDATE_QUERY = 'SELECT simulation_time, numeric_id, nextval from traces WHERE simulation_trace=?  ORDER BY simulation_time ASC'
+            logger.info("extracting state updates from database")
             self.cursor.execute(SIGNAL_UPDATE_QUERY, (index, ))
             self.updates = self.cursor.fetchall()
 
             # umbauen ummappen auf signale die benutzt werden
             state = np.zeros((len(self.signal_properties),), dtype=np.int)
 
+            logger.info("iterating through all state updates")
             nextval_index_old = -1
             for update in self.updates:
                 nextval_index = self.simulation_time_to_index[update[0]]
@@ -231,7 +234,7 @@ class AcquisitionSetupToggle(AbstractContainer):
 
                 # das bremst aus wie noch was
                 # check if signal is tracked
-                if numeric_id not in self.numeric_ids_under_inspection:
+                if numeric_id not in self.numeric_ids_under_inspection_set:
                     continue
 
                 # logger.info("index: %d  numeric_id: %d nextval: %d" % (nextval_index, numeric_id, nextval))
