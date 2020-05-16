@@ -171,23 +171,25 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         self.logger.info("capturing trace: %d" % (index))
 
-        # if self.value_signal_numeric_id not in self.numeric_ids_under_inspection:
-        #     raise synthesizeException("signal %s is not in the database" % self.value_signal)
+        if self.value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
+            raise synthesizeException("signal %s is not in the database" % self.value_signal)
 
-        # todo das muss man umbauen
-        # KEY_VALUE_QUERY = 'SELECT nextval from traces WHERE simulation_time=? AND simulation_trace=? AND numeric_id=?'
-        # self.cursor.execute(KEY_VALUE_QUERY, (self.value_signal_time, index, self.value_signal_numeric_id))
-        # value = self.cursor.fetchone()[0]
-        # value_width = self.signal_properties[self.value_signal_numeric_id]['width']
+        # extract key from trace
+        KEY_VALUE_QUERY = 'SELECT nextval from traces WHERE simulation_time=? AND simulation_trace=? AND numeric_id=?'
+        self.cursor.execute(KEY_VALUE_QUERY, (self.value_signal_time, index, self.value_signal_numeric_id))
 
-        # if not value_width % 8:
-        #     raise synthesizeException("value width must be multiple of byte: %d" % value_width)
+        value = self.cursor.fetchone()
+        if value is None:
+            raise synthesizeException("key not found in vcd file as specified time: %d trace: %d numeric_id: %d" % (self.value_signal_time, index, self.value_signal_numeric_id))
 
-        # value = value.zfill(value_width)
-        # value = bytearray(int(value, 2).to_bytes((len(value) + 7) // 8, 'big'))
-        # value = np.array([value], dtype=np.uint8)
+        value = value[0]
+        value_width = self.signal_properties[self.value_signal_numeric_id]['width']
+        if value_width % 8:
+            raise synthesizeException("value width must be multiple of byte: %d" % value_width)
 
-        value = np.array([0], dtype=np.uint8)
+        value = value.zfill(value_width)
+        value = bytearray(int(value, 2).to_bytes((len(value) + 7) // 8, 'big'))
+        value = np.array([value], dtype=np.uint8)
 
         # extract the leakage
         leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
