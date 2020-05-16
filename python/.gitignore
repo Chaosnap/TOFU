@@ -4,3 +4,4 @@ __pycache__/
 *.db
 signals.json
 *.h5
+*.pdf
