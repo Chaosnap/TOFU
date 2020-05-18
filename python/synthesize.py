@@ -325,5 +325,8 @@ if writeTraces:
 # plt.plot(aqc[0][0])
 # plt.show()
 
+# verwendung mit externem tool
+# aqc.generate_trace(1)
+
 
 logger.info("synthesize traces from database finished")
