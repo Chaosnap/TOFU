@@ -10,6 +10,7 @@
 # Date:   18.05.2020
 # -------------------------------------------------------------------------------------------------
 
+import argparse
 import logging
 import sqlite3
 import json
@@ -32,10 +33,15 @@ logger.setLevel(logging.DEBUG)
 logger.setLevel(logging.INFO)
 
 # loading settings from file
-settings = None
 settingsFile = "./settings.json"
+parser = argparse.ArgumentParser(description='TOFU')
+parser.add_argument('-s', '--settings', type=str, help='path to settings.json', required=False)
+namespace = parser.parse_args()
+if namespace.settings is not None:
+    settingsFile = namespace.settings
+settings = None
 logger.info("loading settings from file: %s" % (settingsFile))
-with open("./settings.json") as fid:
+with open(settingsFile) as fid:
     settings = json.load(fid)
 
 
