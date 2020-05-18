@@ -6,6 +6,8 @@
 
 ### Toggle Analysis in more than 20 lines of code.
 
+TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power traces which can be used for Test Vector Leakage Assessment (TVLA).
+
 # List of files
 	python/parse.py # vcd parser
 	python/synthesize.py #generate synthetic power traces
@@ -20,3 +22,5 @@
   4. run `synthesize.py`
   5. run `analyze.py`
  
+ # Contact
+ [Michael Gruber](https://www.ei.tum.de/sec/mitarbeiter/michael-gruber/) [m.gruber@tum.de](mailto:m.gruber@tum.de)
