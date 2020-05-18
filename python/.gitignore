@@ -2,6 +2,7 @@ tofu_python/
 __pycache__/
 *.vcd
 *.db
+*.db-journal
 signals.json
 *.h5
 *.pdf

@@ -1,4 +1,15 @@
 #!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# TOFU: analyze.py
+# -------------------------------------------------------------------------------------------------
+# Copyright (c) Technical University of Munich, Chair for Security in Information Technology.
+# All Rights Reserved.
+# For internal use only.
+# -------------------------------------------------------------------------------------------------
+# Author: Michael Gruber m.gruber@tum.de
+# Date:   18.05.2020
+# -------------------------------------------------------------------------------------------------
+
 import logging
 import json
 import numpy as np
