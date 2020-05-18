@@ -23,4 +23,4 @@ TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power trace
   5. run `analyze.py`
  
  # Contact
- [Michael Gruber](https://www.ei.tum.de/sec/mitarbeiter/michael-gruber/) [m.gruber@tum.de](mailto:m.gruber@tum.de)
+ [Michael Gruber](https://www.ei.tum.de/sec/mitarbeiter/michael-gruber/), [m.gruber@tum.de](mailto:m.gruber@tum.de)
