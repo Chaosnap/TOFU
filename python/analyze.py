@@ -5,6 +5,7 @@ import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 from lascar import Hdf5Container, TTestEngine, MatPlotLibOutputMethod, Session
+import random
 
 # supress a lascar warning
 h5py.get_config().default_file_mode = "r+"
@@ -42,6 +43,8 @@ fixedVal = settings["analyze"]["value_signal_fixed"]
 def partition_function(value):
     # partition_function must take 1 argument: the value returned by the container at each trace
     compare = ([value][0] == np.array(fixedVal, dtype=np.uint8)).all()
+    logger.debug("compare with fixed value: %r" % (compare))
+    # return random.randint(0, 1)
     return compare
 
 
