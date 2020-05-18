@@ -2,15 +2,18 @@
     "parse": {
         "fastMode": true,
         "database": "./traces.db",
-        "vcdGlob": "./dummy-vivado.vcd"
+        "vcdGlob": "./dump_*.vcd"
     },
     "synthesize": {
         "fastMode": true,
         "database": "./traces.db",
         "signalsFileName": "./signals.json",
-        "value_signal_numeric_id": 2,
-        "value_signal_time": 90000,
-        "leakageModel": "HammingWeight",
+        "value_signal_numeric_id": 146,
+        "value_signal_time": 655830500000,
+        "leakageModel": "HammingDistance",
+        "windowFrom": 1358530,
+        "windowTo": 1360770,
+        "writeTraces": false,
         "traceFileName": "./traces.h5"
     },
     "analyze": {

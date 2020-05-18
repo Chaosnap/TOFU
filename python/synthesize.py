@@ -112,7 +112,17 @@ conn.close()
 
 # Then the AbstractContainer:
 class AcquisitionSetupToggle(AbstractContainer):
-    def __init__(self, number_of_traces, database, numeric_ids_under_inspection, leakage="HammingDistance", fastMode=False, value_signal_numeric_id=None, value_signal_time=None):
+    def __init__(self,
+                 number_of_traces,
+                 database,
+                 numeric_ids_under_inspection=None,
+                 reload_numeric_ids=False,
+                 leakage="HammingDistance",
+                 windowFrom=None,
+                 windowTo=None,
+                 fastMode=False,
+                 value_signal_numeric_id=None,
+                 value_signal_time=None):
         """
         :param number_of_traces: only required argument for the constructor of an AbstractContainer
         """
@@ -139,9 +149,14 @@ class AcquisitionSetupToggle(AbstractContainer):
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
 
+        self.windowFrom = windowFrom
+        self.windowTo = windowTo
+
         # signals which should be inspected
         self.numeric_ids_under_inspection = numeric_ids_under_inspection
         self.numeric_ids_under_inspection_set = set(self.numeric_ids_under_inspection)
+
+        self.reload_numeric_ids = reload_numeric_ids
 
         # extract signal properties
         EXTRACT_SIGNAL_PROPERTY_QUERY = "SELECT DISTINCT numeric_id, width FROM signals ORDER BY numeric_id ASC"
@@ -170,6 +185,12 @@ class AcquisitionSetupToggle(AbstractContainer):
         """
 
         self.logger.info("capturing trace: %d" % (index))
+
+        if self.reload_numeric_ids:
+            self.logger.info("reloading numeric ids")
+            with open(configFile, "r", encoding="utf-8") as fid:
+                self.numeric_ids_under_inspection = json.load(fid)
+                self.numeric_ids_under_inspection_set = set(self.numeric_ids_under_inspection)
 
         if self.value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
             raise synthesizeException("signal %s is not in the database" % self.value_signal)
@@ -259,6 +280,10 @@ class AcquisitionSetupToggle(AbstractContainer):
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
 
+        if self.windowFrom is not None or self.windowTo is not None:
+            logger.info("extracting window from leakage %d:%d" % (self.windowFrom, self.windowTo))
+            leakage = leakage[self.windowFrom:self.windowTo]
+
         # dynamic scaling of trace eigentlich sollte man hier nach dem max suchen wenn das kleiner als max wer uint8 alles zu einem uint8
 
         return Trace(leakage, value)
@@ -271,11 +296,27 @@ traceFileName = settings["synthesize"]["traceFileName"]
 value_signal = settings["synthesize"]["value_signal_numeric_id"]
 value_signal_time = settings["synthesize"]["value_signal_time"]
 
+# put null in json to load everything
+windowFrom = settings["synthesize"]["windowFrom"]
+windowTo = settings["synthesize"]["windowTo"]
+
+writeTraces = settings["synthesize"]["writeTraces"]
+
 # create our acquisition setup
-aqc = AcquisitionSetupToggle(simulation_trace_max + 1, fileNameDatabase, numeric_ids_under_inspection, leakage=leakageModel, fastMode=fastMode, value_signal_numeric_id=value_signal, value_signal_time=value_signal_time)
+aqc = AcquisitionSetupToggle(simulation_trace_max + 1,
+                             fileNameDatabase,
+                             numeric_ids_under_inspection,
+                             leakage=leakageModel,
+                             windowFrom=windowFrom,
+                             windowTo=windowTo,
+                             fastMode=fastMode,
+                             value_signal_numeric_id=value_signal,
+                             reload_numeric_ids=True,
+                             value_signal_time=value_signal_time)
 
 # export traces to container
-# hdf5_container = Hdf5Container.export(aqc, traceFileName)
+if writeTraces:
+    hdf5_container = Hdf5Container.export(aqc, traceFileName)
 
 # print("trace 0:", aqc[0])
 # print("trace 10:", aqc[10])
