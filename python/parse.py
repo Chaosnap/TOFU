@@ -90,10 +90,18 @@ def identifierToNames(vcdHeader):
     return blah
 
 
+# sort naturaly not in aphabetic order
+def natural_sort_key(s):
+    natural_sort_regex = re.compile('([0-9]+)')
+    return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
+
+
 # if everything fits into ram
 fastMode = settings["parse"]["fastMode"]
 # globbing for vcd files
 vcdFiles = glob.glob(settings["parse"]["vcdGlob"])
+vcdFiles = sorted(vcdFiles, key=natural_sort_key)
+
 
 # create database connection
 conn = sqlite3.connect(settings["parse"]["database"])
