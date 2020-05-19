@@ -1,15 +1,6 @@
-
-TRACES_SOURCES:=$(wildcard ./traces/*.vcd)
-TRACES_BASENAME:=$(basename $(TRACES_SOURCES))
-
-CLEAN_SUFFIXES_TRACES:= .pickle
-
-TRACES_CLEANLIST:= $(foreach suffix,$(CLEAN_SUFFIXES_TRACES),$(addsuffix $(suffix),$(TRACES_BASENAME)))
-
-GIT_REV_LIST:=$(shell git rev-list --count HEAD)
-GIT_REV_PARSE:=$(shell git rev-parse HEAD)
-GIT_STATUS_SHORT:=$(shell git status --short | tr "\n" " ")
-TIMESTAMP:=$(shell date)
+PICKLE_CLEANLIST:=$(wildcard ./traces/*.pickle)
+DATABASE_CLEANLIST:=$(wildcard ./traces/*.db)
+JSON_CLEANLIST:=$(wildcard ./traces/*.json)
 
 all:
 	@echo "ich bin eine katze und weiß von nichts"
@@ -21,6 +12,6 @@ envclean:
 	rm -rf tofu_python
 
 clean:
-	rm -f $(TRACES_CLEANLIST)
+	rm -f $(PICKLE_CLEANLIST) $(DATABASE_CLEANLIST) $(JSON_CLEANLIST)
 
 

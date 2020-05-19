@@ -96,8 +96,6 @@ def natural_sort_key(s):
     return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
 
 
-# if everything fits into ram
-fastMode = settings["parse"]["fastMode"]
 # globbing for vcd files
 vcdFiles = glob.glob(settings["parse"]["vcdGlob"])
 vcdFiles = sorted(vcdFiles, key=natural_sort_key)
