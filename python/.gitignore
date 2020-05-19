@@ -1,5 +1,6 @@
 tofu_python/
 __pycache__/
+traces/
 *.vcd
 *.db
 *.db-journal

@@ -1,34 +1,36 @@
 {
     "parse": {
         "fastMode": true,
-        "database": "./traces.db",
-        "vcdGlob": "./dump_*.vcd"
+        "database": "./traces/traces.db",
+        "vcdGlob": "./traces/dump_0.vcd",
+        "signalPropertiesFile": "./traces/signal_properties.pickle"
     },
     "synthesize": {
         "fastMode": true,
-        "database": "./traces.db",
-        "signalsFileName": "./signals.json",
-        "value_signal_numeric_id": 146,
+        "pickleGlob": "./traces/dump_0.pickle",
+        "signalsFileName": "./traces/signals.json",
+        "signalPropertiesFile": "./traces/signal_properties.pickle",
+        "value_signal_numeric_id": 145,
         "value_signal_time": 655830500000,
         "leakageModel": "HammingDistance",
         "windowFrom": 1358530,
         "windowTo": 1360770,
         "writeTraces": false,
-        "traceFileName": "./traces.h5"
+        "traceFileName": "./traces/traces.h5"
     },
     "analyze": {
-        "traceFileName": "./traces.h5",
+        "traceFileName": "./traces/traces.h5",
         "value_signal_fixed": [
-            0,
+            64,
             0,
             0,
             0
         ]
     },
     "visualize": {
-        "database": "./traces.db",
-        "signalsFileName": "./signals.json",
-        "plotsFileName": "./signals.pdf",
+        "database": "./traces/traces.db",
+        "signalsFileName": "./traces/signals.json",
+        "plotsFileName": "./traces/signals.pdf",
         "simulationTrace": 0
     }
 }

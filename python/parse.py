@@ -14,9 +14,9 @@ import argparse
 import json
 import glob
 import logging
-import sqlite3
 import re
 import time
+import pickle
 
 time_start = time.time()
 
@@ -102,21 +102,12 @@ fastMode = settings["parse"]["fastMode"]
 vcdFiles = glob.glob(settings["parse"]["vcdGlob"])
 vcdFiles = sorted(vcdFiles, key=natural_sort_key)
 
+signalPropertiesFile = settings["parse"]["signalPropertiesFile"]
 
-# create database connection
-conn = sqlite3.connect(settings["parse"]["database"])
-cursor = conn.cursor()
-
-
-# create table in database
-# Create table
-DROP_TABLE_TRACES_QUERY = 'DROP TABLE IF EXISTS traces'
-cursor.execute(DROP_TABLE_TRACES_QUERY)
-DROP_TABLE_SIGNALS_QUERY = 'DROP TABLE IF EXISTS signals'
-cursor.execute(DROP_TABLE_SIGNALS_QUERY)
-conn.commit()
 
 iddict = {}
+
+signal_properties = []
 
 ###################################################################################################
 # iterate over all vcd files
@@ -197,20 +188,15 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
     # iton = identifierToName(vcdHeader)
     itons = identifierToNames(vcdHeader)
 
-    # the signal names must be the same for all simulations
-    CREATE_TABLE_TRACES_QUERY = 'CREATE TABLE IF NOT EXISTS traces (simulation_time INTEGER, simulation_trace INTEGER, numeric_id INTEGER, nextval TEXT)'
-    cursor.execute(CREATE_TABLE_TRACES_QUERY)
-
-    CREATE_TABLE_SIGNAL_QUERY = 'CREATE TABLE IF NOT EXISTS signals (numeric_id INTEGER, name TEXT, width INTEGER, scope TEXT)'
-    cursor.execute(CREATE_TABLE_SIGNAL_QUERY)
-
     if simulation_trace == 0:
-        INSERT_TABLE_SIGNAL_QUERY = 'INSERT INTO signals (numeric_id, name ,width, scope) VALUES (?,?,?,?)'
         for identifier in itons:
             for signal in itons[identifier]:
-                cursor.execute(INSERT_TABLE_SIGNAL_QUERY, (signal["numeric_id"], signal["name"], signal["width"], signal["scope"]))
+                signal_properties.append((signal["numeric_id"], signal["name"], signal["width"], signal["scope"]))
                 iddict[signal["scope"] + "->" + signal["name"]] = signal["numeric_id"]
-        conn.commit()
+
+        # pickle that shit
+        with open(signalPropertiesFile, 'wb') as f:
+            pickle.dump(signal_properties, f, pickle.HIGHEST_PROTOCOL)
 
     # get num id in all but the first trace
     # fix this
@@ -219,12 +205,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
     simulation_time = 0
     simulation_time_old = 0
 
-    INSERT_TABLE_TRACES_UPDATE_QUERY = 'INSERT INTO traces (simulation_time , simulation_trace , numeric_id , nextval) VALUES (?,?,?,?)'
-    # cursor.execute(INSERT_TABLE_TRACES_SIMULATION_TIME_QUERY, (simulation_time, simulation_trace))
-    # conn.commit()
-
-    if fastMode is True:
-        updates = []
+    updates = []
 
     logger.info("extracting signal values")
     # extract simulation values
@@ -261,12 +242,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
                     signal_name = itons[var][0]["name"]
                     signal_scope = itons[var][0]["scope"]
                     numeric_id = iddict[signal_scope + "->" + signal_name]
-
-                    if not fastMode:
-                        cursor.execute(INSERT_TABLE_TRACES_UPDATE_QUERY, (simulation_time, simulation_trace, numeric_id, val))
-                        pass
-                    else:
-                        updates.append((simulation_time, simulation_trace, numeric_id, val))
+                    updates.append((simulation_time, numeric_id, val))
 
                 elif match_dumpvar_vector is not None:
                     # update vector signal values
@@ -279,12 +255,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
                     signal_name = itons[var][0]["name"]
                     signal_scope = itons[var][0]["scope"]
                     numeric_id = iddict[signal_scope + "->" + signal_name]
-
-                    if not fastMode:
-                        pass
-                        cursor.execute(INSERT_TABLE_TRACES_UPDATE_QUERY, (simulation_time, simulation_trace, numeric_id, val))
-                    else:
-                        updates.append((simulation_time, simulation_trace, numeric_id, val))
+                    updates.append((simulation_time, numeric_id, val))
 
                 else:
                     raise vcdException("unable to parse variable: %s" % dumpvar_token)
@@ -298,11 +269,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
             signal_name = itons[var][0]["name"]
             signal_scope = itons[var][0]["scope"]
             numeric_id = iddict[signal_scope + "->" + signal_name]
-
-            if not fastMode:
-                cursor.execute(INSERT_TABLE_TRACES_UPDATE_QUERY, (simulation_time, simulation_trace, numeric_id, val))
-            else:
-                updates.append((simulation_time, simulation_trace, numeric_id, val))
+            updates.append((simulation_time, numeric_id, val))
 
         elif match_update_vector is not None:
             # update vector signal values
@@ -315,35 +282,24 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
             signal_name = itons[var][0]["name"]
             signal_scope = itons[var][0]["scope"]
             numeric_id = iddict[signal_scope + "->" + signal_name]
-
-            if not fastMode:
-                cursor.execute(INSERT_TABLE_TRACES_UPDATE_QUERY, (simulation_time, simulation_trace, numeric_id, val))
-            else:
-                updates.append((simulation_time, simulation_trace, numeric_id, val))
+            updates.append((simulation_time, numeric_id, val))
 
         else:
             raise vcdException("unable to parse variable: %s" % current_token)
 
     # batch insert to database
-    if fastMode:
-        logger.info("writing to database")
-        cursor.executemany(INSERT_TABLE_TRACES_UPDATE_QUERY, updates)
-        updates = []
+    pickleFile = re.sub(r".vcd$", r".pickle", vcdFile)
+    logger.info("pickling updates to file: %s" % (pickleFile))
+    # pickle that shit
+    with open(pickleFile, "wb") as f:
+        pickle.dump(updates, f, pickle.HIGHEST_PROTOCOL)
 
-    conn.commit()
+    updates = []
     fid.close()
 
 
 ###################################################################################################
 # print(vcdHeader)
-
-
-# create index for faster access
-logger.info("creating index on database")
-cursor.execute('CREATE INDEX "foobar" ON "traces" ("simulation_time","numeric_id","nextval","simulation_trace");')
-
-conn.commit()
-conn.close()
 
 time_finish = time.time()
 logger.info("conversion from vcd to database finished in %d seconds" % (time_finish - time_start))
