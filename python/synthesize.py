@@ -207,33 +207,37 @@ class AcquisitionSetupToggle(AbstractContainer):
         if self.value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
             raise synthesizeException("signal %s is not in the database" % self.value_signal)
 
-        # # extract key from trace
-        # KEY_VALUE_QUERY = 'SELECT nextval from traces WHERE simulation_time=? AND simulation_trace=? AND numeric_id=?'
-        # self.cursor.execute(KEY_VALUE_QUERY, (self.value_signal_time, index, self.value_signal_numeric_id))
-
-        # value = self.cursor.fetchone()
-        # if value is None:
-        #     raise synthesizeException("key not found in vcd file as specified time: %d trace: %d numeric_id: %d" % (self.value_signal_time, index, self.value_signal_numeric_id))
-
-        # value = value[0]
-        # value_width = self.signal_properties[self.value_signal_numeric_id]['width']
-        # if value_width % 8:
-        #     raise synthesizeException("value width must be multiple of byte: %d" % value_width)
-
-        # value = value.zfill(value_width)
-        # value = bytearray(int(value, 2).to_bytes((len(value) + 7) // 8, 'big'))
-        # value = np.array([value], dtype=np.uint8)
-        value = np.array([0, 1, 2, 3], dtype=np.uint8)
-
-        # extract the leakage
-        leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
-
         # horizontal mode assemmble state from changes and derive leakage
         # fetch all updates
         logger.info("extracting state updates from picklefile")
-        updates = None
+        self.updates = None
         with open(self.pickleFiles[index], 'rb') as f:
             self.updates = pickle.load(f)
+
+        # extract key from pickle
+        value = None
+        for foo in self.updates:
+            if foo[0] == self.value_signal_time and foo[1] == self.value_signal_numeric_id:
+                value = foo[2]
+                break
+
+        if value is None:
+            raise synthesizeException("key not found in vcd file as specified time: %d trace: %d numeric_id: %d" % (self.value_signal_time, index, self.value_signal_numeric_id))
+
+        for bar in self.signal_properties:
+            if bar["numeric_id"] == self.value_signal_numeric_id:
+                value_width = bar["width"]
+                break
+
+        if value_width % 8:
+            raise synthesizeException("value width must be multiple of byte: %d" % value_width)
+
+        value = value.zfill(value_width)
+        value = bytearray(int(value, 2).to_bytes((len(value) + 7) // 8, 'big'))
+        value = np.array([value], dtype=np.uint8)
+
+        # extract the leakage
+        leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
         # umbauen ummappen auf signale die benutzt werden
         state = np.zeros((len(self.signal_properties),), dtype=np.int)
