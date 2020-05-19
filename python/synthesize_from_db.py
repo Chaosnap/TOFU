@@ -277,7 +277,7 @@ class AcquisitionSetupToggle(AbstractContainer):
                 if numeric_id not in self.numeric_ids_under_inspection_set:
                     continue
 
-                # logger.info("index: %d  numeric_id: %d nextval: %d" % (nextval_index, numeric_id, nextval))
+                logger.debug("index: %d  numeric_id: %d nextval: %d" % (nextval_index, numeric_id, nextval))
                 if nextval_index != nextval_index_old:
                     leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
                     nextval_index_old = nextval_index

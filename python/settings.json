@@ -7,6 +7,7 @@
     },
     "synthesize": {
         "fastMode": true,
+        "database": "./traces/traces.db",
         "pickleGlob": "./traces/dump_0.pickle",
         "signalsFileName": "./traces/signals.json",
         "signalPropertiesFile": "./traces/signal_properties.pickle",

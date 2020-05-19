@@ -243,16 +243,25 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         nextval_index_old = -1
         for update in self.updates:
+
             nextval_index = self.simulation_time_to_index[update[0]]
+
+            # avoid the sum computation at all that thing slows down everything
+            if self.windowFrom is not None or self.windowTo is not None:
+                if nextval_index < self.windowFrom or nextval_index > self.windowTo:
+                    nextval_index_old = nextval_index
+                    continue
+
             numeric_id = update[1]
-            nextval = hammingWeightFromBitString(update[2])
 
             # das bremst aus wie noch was
             # check if signal is tracked
             if numeric_id not in self.numeric_ids_under_inspection_set:
                 continue
 
-            # logger.info("simulation_time: %d index: %d  numeric_id: %d nextval: %d" % (update[0], nextval_index, numeric_id, nextval))
+            nextval = hammingWeightFromBitString(update[2])
+
+            logger.debug("simulation_time: %d index: %d  numeric_id: %d nextval: %d" % (update[0], nextval_index, numeric_id, nextval))
             if nextval_index != nextval_index_old:
                 leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
                 nextval_index_old = nextval_index
