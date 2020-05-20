@@ -33,8 +33,8 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-logger.setLevel(logging.DEBUG)
-# logger.setLevel(logging.INFO)
+# logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 # loading settings from file
 settingsFile = "./settings.json"
