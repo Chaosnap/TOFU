@@ -13,6 +13,7 @@
 import argparse
 import logging
 import json
+import time
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
@@ -89,6 +90,8 @@ def _foo_finalize(self):
     return result
 
 
+time_start = time.time()
+
 TTestEngine._finalize = _foo_finalize
 ttest_engine = TTestEngine("ttest", partition_function)
 
@@ -100,5 +103,5 @@ session.add_engine(ttest_engine)
 # session.run(batch_size=2500)
 session.run()
 
-
-logger.info("analysis finished")
+time_finish = time.time()
+logger.info("analysis finished took %f seconds" % (time_finish - time_start))

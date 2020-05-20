@@ -304,28 +304,26 @@ def valueExtract(self):
     if value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
         raise synthesizeException("signal %s is not in the loaded pickle" % value_signal_numeric_id)
 
-    value = None
-
     # extract key updates
     for update in self.updates:
         if update[0] >= value_signal_time_from and update[0] <= value_signal_time___to and update[1] == value_signal_numeric_id:
             foo = update[2]
-            # print(hex(int("0b" + foo, 2)))
-            value_signal_list.append(bytearray(int(foo, 2).to_bytes((len(foo) + 7) // 8, 'big')))
+            value_signal_list.append(bytearray(int("0b" + foo, 2).to_bytes(4, 'big')))
+    assert(len(value_signal_list) == 16)
 
     # unshare
-    assert(len(value_signal_list) == 16)
     for i in range(0, 8):
         x = value_signal_list[i * 2]
         y = value_signal_list[i * 2 + 1]
-        value_signal_list_unshared.append(bytes(x ^ y for (x, y) in zip(x, y)))
+        assert(len(x) == len(y))
+        unshared = bytes(x ^ y for (x, y) in zip(x, y))
+        value_signal_list_unshared.append(unshared)
 
     # flatten
-    value_signal_list_unshared = [item for sub in value_signal_list_unshared for item in sub]
+    value = [item for sub in value_signal_list_unshared for item in sub]
 
-    logger.debug(value_signal_list_unshared)
-
-    value = np.array([value_signal_list_unshared], dtype=np.uint8)
+    assert(len(value) == 32)
+    value = np.array([value], dtype=np.uint8)
 
     return value
 
