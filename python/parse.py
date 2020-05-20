@@ -194,6 +194,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
 
         # pickle that shit
         with open(signalPropertiesFile, 'wb') as f:
+            logger.info("pickling signal properties to file: %s" % (signalPropertiesFile))
             pickle.dump(signal_properties, f, pickle.HIGHEST_PROTOCOL)
 
     # get num id in all but the first trace
@@ -300,4 +301,4 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
 # print(vcdHeader)
 
 time_finish = time.time()
-logger.info("conversion from vcd to database finished in %d seconds" % (time_finish - time_start))
+logger.info("conversion from vcd to pickle finished in %f seconds" % (time_finish - time_start))

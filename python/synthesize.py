@@ -19,6 +19,8 @@ import numpy as np
 import h5py
 import re
 import pickle
+import importlib
+import time
 import matplotlib.pyplot as plt
 from lascar import AbstractContainer, Trace, Hdf5Container
 
@@ -118,21 +120,19 @@ class AcquisitionSetupToggle(AbstractContainer):
     def __init__(self,
                  pickleGlob,
                  signalPropertiesFile,
+                 valueExtract,
                  numeric_ids_under_inspection=None,
                  reload_numeric_ids=False,
                  leakage="HammingDistance",
                  windowFrom=None,
-                 windowTo=None,
-                 value_signal_numeric_id=None,
-                 value_signal_time=None):
+                 windowTo=None):
         """
         :param number_of_traces: only required argument for the constructor of an AbstractContainer
         """
 
         # extract the key
-        # ANPASSEN !!!
-        self.value_signal_numeric_id = value_signal_numeric_id
-        self.value_signal_time = value_signal_time
+        # value extract function
+        self.valueExtract = valueExtract
 
         # store the assumed leakage model
         self.leakage = leakage
@@ -158,7 +158,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         self.signalPropertiesFile = signalPropertiesFile
         with open(self.signalPropertiesFile, 'rb') as f:
             self.signal_properties = pickle.load(f)
-        self.signal_properties = [{"numeric_id": int(signal[0]), "width": int(signal[2])} for signal in self.signal_properties]
+        self.signal_properties = [{"numeric_id": int(signal[0]), "name": signal[1], "width": int(signal[2]), "scope": signal[3]} for signal in self.signal_properties]
 
         signals = [i["numeric_id"] for i in self.signal_properties]
         signals = set(signals)
@@ -196,6 +196,9 @@ class AcquisitionSetupToggle(AbstractContainer):
         :return:  Trace with leakage from oscilloscope, and value from the dut plaintext/ciphertext
         """
 
+        self.index = index
+
+        time_start = time.time()
         self.logger.info("capturing trace: %d" % (index))
 
         if self.reload_numeric_ids:
@@ -203,9 +206,6 @@ class AcquisitionSetupToggle(AbstractContainer):
             with open(configFile, "r", encoding="utf-8") as fid:
                 self.numeric_ids_under_inspection = json.load(fid)
                 self.numeric_ids_under_inspection_set = set(self.numeric_ids_under_inspection)
-
-        if self.value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
-            raise synthesizeException("signal %s is not in the database" % self.value_signal)
 
         # horizontal mode assemmble state from changes and derive leakage
         # fetch all updates
@@ -215,26 +215,7 @@ class AcquisitionSetupToggle(AbstractContainer):
             self.updates = pickle.load(f)
 
         # extract key from pickle
-        value = None
-        for foo in self.updates:
-            if foo[0] == self.value_signal_time and foo[1] == self.value_signal_numeric_id:
-                value = foo[2]
-                break
-
-        if value is None:
-            raise synthesizeException("key not found in vcd file as specified time: %d trace: %d numeric_id: %d" % (self.value_signal_time, index, self.value_signal_numeric_id))
-
-        for bar in self.signal_properties:
-            if bar["numeric_id"] == self.value_signal_numeric_id:
-                value_width = bar["width"]
-                break
-
-        if value_width % 8:
-            raise synthesizeException("value width must be multiple of byte: %d" % value_width)
-
-        value = value.zfill(value_width)
-        value = bytearray(int(value, 2).to_bytes((len(value) + 7) // 8, 'big'))
-        value = np.array([value], dtype=np.uint8)
+        value = self.valueExtract(self)
 
         # extract the leakage
         leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
@@ -291,6 +272,9 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # dynamic scaling of trace eigentlich sollte man hier nach dem max suchen wenn das kleiner als max wer uint8 alles zu einem uint8
 
+        time_finish = time.time()
+        logger.info("capturing trace took %f seconds" % (time_finish - time_start))
+
         return Trace(leakage, value)
 
 
@@ -299,8 +283,6 @@ pickleGlob = settings["synthesize"]["pickleGlob"]
 signalPropertiesFile = settings["synthesize"]["signalPropertiesFile"]
 leakageModel = settings["synthesize"]["leakageModel"]
 traceFileName = settings["synthesize"]["traceFileName"]
-value_signal = settings["synthesize"]["value_signal_numeric_id"]
-value_signal_time = settings["synthesize"]["value_signal_time"]
 
 # put null in json to load everything
 windowFrom = settings["synthesize"]["windowFrom"]
@@ -308,16 +290,57 @@ windowTo = settings["synthesize"]["windowTo"]
 
 writeTraces = settings["synthesize"]["writeTraces"]
 
+
+def valueExtract(self):
+    logger.info("extracting value (key)")
+
+    value_signal_numeric_id = 6776
+    value_signal_time_from = 679334500000
+    value_signal_time___to = 679350500000
+
+    value_signal_list = []
+    value_signal_list_unshared = []
+
+    if value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
+        raise synthesizeException("signal %s is not in the loaded pickle" % value_signal_numeric_id)
+
+    value = None
+
+    # extract key updates
+    for update in self.updates:
+        if update[0] >= value_signal_time_from and update[0] <= value_signal_time___to and update[1] == value_signal_numeric_id:
+            foo = update[2]
+            # print(hex(int("0b" + foo, 2)))
+            value_signal_list.append(bytearray(int(foo, 2).to_bytes((len(foo) + 7) // 8, 'big')))
+
+    # unshare
+    assert(len(value_signal_list) == 16)
+    for i in range(0, 8):
+        x = value_signal_list[i * 2]
+        y = value_signal_list[i * 2 + 1]
+        value_signal_list_unshared.append(bytes(x ^ y for (x, y) in zip(x, y)))
+
+    # flatten
+    value_signal_list_unshared = [item for sub in value_signal_list_unshared for item in sub]
+
+    logger.debug(value_signal_list_unshared)
+
+    value = np.array([value_signal_list_unshared], dtype=np.uint8)
+
+    return value
+
+
+# valueExtractFunction = importlib.import_module("valueExtract")
+
 # create our acquisition setup
 aqc = AcquisitionSetupToggle(pickleGlob,
                              signalPropertiesFile,
+                             valueExtract,
                              numeric_ids_under_inspection,
                              leakage=leakageModel,
                              windowFrom=windowFrom,
                              windowTo=windowTo,
-                             value_signal_numeric_id=value_signal,
-                             reload_numeric_ids=True,
-                             value_signal_time=value_signal_time)
+                             reload_numeric_ids=True)
 
 # export traces to container
 if writeTraces:
