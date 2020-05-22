@@ -18,7 +18,7 @@
         "traceFileName": "./traces/traces.h5"
     },
     "analyze": {
-        "traceFileName": "./traces/traces_all_hw.h5",
+        "traceFileName": "./traces/traces.h5",
         "value_signal_fixed": [
             186,
             146,
