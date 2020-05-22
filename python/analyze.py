@@ -52,7 +52,7 @@ with open(settingsFile) as fid:
 logger.info("starting analysis")
 
 
-traceFileName = settings["synthesize"]["traceFileName"]
+traceFileName = settings["analyze"]["traceFileName"]
 container = Hdf5Container(traceFileName)
 
 fixedVal = settings["analyze"]["value_signal_fixed"]
