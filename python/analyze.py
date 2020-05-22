@@ -61,7 +61,7 @@ fixedVal = settings["analyze"]["value_signal_fixed"]
 def partition_function(value):
     # partition_function must take 1 argument: the value returned by the container at each trace
     compare = ([value][0] == np.array(fixedVal, dtype=np.uint8)).all()
-    # logger.debug("compare with fixed value: %r" % (compare))
+    logger.debug("compare with fixed value: %r" % (compare))
     # return random.randint(0, 1)
     return compare
 
@@ -88,8 +88,7 @@ def _foo_finalize(self):
     logger.debug("m0-m1: %s" % (m0 - m1))
 
     # how to catch that
-    # with np.errstate(divide='ignore', invalid='ignore'):
-    if True:
+    with np.errstate(divide='ignore', invalid='ignore'):
         result = (m0 - m1) / (np.sqrt((v0 / self._partition_count[0]) + (v1 / self._partition_count[1])))
         logger.debug("result: %s" % result)
         result = np.nan_to_num(result, copy=False, nan=0.0, posinf=100, neginf=100)
