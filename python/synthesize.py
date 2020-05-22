@@ -272,6 +272,9 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # dynamic scaling of trace eigentlich sollte man hier nach dem max suchen wenn das kleiner als max wer uint8 alles zu einem uint8
 
+        # artifical noise
+        # leakage += np.random.choice([0, 1], size=leakage.shape)
+
         time_finish = time.time()
         logger.info("capturing trace took %f seconds" % (time_finish - time_start))
 
