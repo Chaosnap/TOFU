@@ -14,6 +14,7 @@
         "leakageModel": "HammingDistance",
         "windowFrom": 1358530,
         "windowTo": 1360770,
+        "valueExtractFunction": "valueExtractIndex",
         "writeTraces": false,
         "traceFileName": "./traces_func/traces.h5"
     },
