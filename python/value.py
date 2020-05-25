@@ -1,21 +1,27 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# TOFU: analyze.py
+# -------------------------------------------------------------------------------------------------
+# Copyright (c) Technical University of Munich, Chair for Security in Information Technology.
+# All Rights Reserved.
+# For internal use only.
+# -------------------------------------------------------------------------------------------------
+# Author: Michael Gruber m.gruber@tum.de
+# Date:   18.05.2020
+# -------------------------------------------------------------------------------------------------
+
 import numpy as np
 import logging
+
+
+class valueExtractException(Exception):
+    pass
 
 
 def valueExtract(self):
 
     # create a logger
-    logger = logging.getLogger('analyze')
-    if (logger.hasHandlers()):
-        logger.handlers.clear()
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-    # logger.setLevel(logging.DEBUG)
-    logger.setLevel(logging.INFO)
-
+    logger = logging.getLogger('synthesize')
     logger.info("extracting value (key)")
 
     value_signal_numeric_id = 6776
@@ -26,7 +32,7 @@ def valueExtract(self):
     value_signal_list_unshared = []
 
     if value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
-        raise synthesizeException("signal %s is not in the loaded pickle" % value_signal_numeric_id)
+        raise valueExtractException("signal %s is not in the loaded pickle" % value_signal_numeric_id)
 
     # extract key updates
     for update in self.updates:
@@ -54,16 +60,6 @@ def valueExtract(self):
 
 def valueExtractIndex(self):
     # create a logger
-    logger = logging.getLogger('analyze')
-    if (logger.hasHandlers()):
-        logger.handlers.clear()
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-    # logger.setLevel(logging.DEBUG)
-    logger.setLevel(logging.INFO)
-
+    logger = logging.getLogger('synthesize')
     logger.info("extracting value (key) i.e. index: %d" % (self.index))
-    return np.array([self.index], dtype=np.uint8)
+    return np.array([[self.index >= 49]], dtype=np.uint8)

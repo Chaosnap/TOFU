@@ -2,7 +2,7 @@
     "parse": {
         "fastMode": true,
         "database": "./traces_func/traces.db",
-        "vcdGlob": "./traces_func/dump_*.vcd",
+        "vcdGlob": "./traces_func/dump_0.vcd",
         "signalPropertiesFile": "./traces_func/signal_properties.pickle"
     },
     "synthesize": {
@@ -15,44 +15,13 @@
         "windowFrom": 1358530,
         "windowTo": 1360770,
         "valueExtractFunction": "valueExtractIndex",
-        "writeTraces": false,
-        "traceFileName": "./traces_func/traces.h5"
+        "writeTraces": true,
+        "traceFileName": "./traces_func/traces_gimli_hd.h5"
     },
     "analyze": {
         "traceFileName": "./traces_func/traces.h5",
         "value_signal_fixed": [
-            186,
-            146,
-            19,
-            255,
-            252,
-            218,
-            60,
-            141,
-            16,
-            9,
-            183,
-            248,
-            25,
-            222,
-            72,
-            75,
-            237,
-            61,
-            5,
-            236,
-            104,
-            39,
-            67,
-            155,
-            255,
-            72,
-            218,
-            182,
-            24,
-            14,
-            42,
-            67
+            1
         ]
     },
     "visualize": {

@@ -11,11 +11,11 @@
         "pickleGlob": "./traces_behav/dump_*.pickle",
         "signalsFileName": "./traces_behav/signals.json",
         "signalPropertiesFile": "./traces_behav/signal_properties.pickle",
-        "leakageModel": "HammingDistance",
+        "leakageModel": "HammingWeight",
         "windowFrom": 1358530,
         "windowTo": 1360770,
         "valueExtractFunction" : "valueExtract",
-        "writeTraces": true,
+        "writeTraces": false,
         "traceFileName": "./traces_behav/traces.h5"
     },
     "analyze": {
