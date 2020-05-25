@@ -23,11 +23,5 @@
         "value_signal_fixed": [
             1
         ]
-    },
-    "visualize": {
-        "database": "./traces_func/traces.db",
-        "signalsFileName": "./traces_func/signals.json",
-        "plotsFileName": "./traces_func/signals.pdf",
-        "simulationTrace": 0
     }
 }

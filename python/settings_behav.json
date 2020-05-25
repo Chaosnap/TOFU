@@ -14,7 +14,7 @@
         "leakageModel": "HammingWeight",
         "windowFrom": 1358530,
         "windowTo": 1360770,
-        "valueExtractFunction" : "valueExtract",
+        "valueExtractFunction": "valueExtract",
         "writeTraces": false,
         "traceFileName": "./traces_behav/traces.h5"
     },
@@ -54,11 +54,5 @@
             42,
             67
         ]
-    },
-    "visualize": {
-        "database": "./traces_behav/traces.db",
-        "signalsFileName": "./traces_behav/signals.json",
-        "plotsFileName": "./traces_behav/signals.pdf",
-        "simulationTrace": 0
     }
 }
