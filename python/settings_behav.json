@@ -1,0 +1,63 @@
+{
+    "parse": {
+        "fastMode": true,
+        "database": "./traces_behav/traces.db",
+        "vcdGlob": "./traces_behav/dump_0.vcd",
+        "signalPropertiesFile": "./traces_behav/signal_properties.pickle"
+    },
+    "synthesize": {
+        "fastMode": true,
+        "database": "./traces_behav/traces.db",
+        "pickleGlob": "./traces_behav/dump_*.pickle",
+        "signalsFileName": "./traces_behav/signals.json",
+        "signalPropertiesFile": "./traces_behav/signal_properties.pickle",
+        "leakageModel": "HammingDistance",
+        "windowFrom": 1358530,
+        "windowTo": 1360770,
+        "writeTraces": true,
+        "traceFileName": "./traces_behav/traces.h5"
+    },
+    "analyze": {
+        "traceFileName": "./traces_behav/traces.h5",
+        "value_signal_fixed": [
+            186,
+            146,
+            19,
+            255,
+            252,
+            218,
+            60,
+            141,
+            16,
+            9,
+            183,
+            248,
+            25,
+            222,
+            72,
+            75,
+            237,
+            61,
+            5,
+            236,
+            104,
+            39,
+            67,
+            155,
+            255,
+            72,
+            218,
+            182,
+            24,
+            14,
+            42,
+            67
+        ]
+    },
+    "visualize": {
+        "database": "./traces_behav/traces.db",
+        "signalsFileName": "./traces_behav/signals.json",
+        "plotsFileName": "./traces_behav/signals.pdf",
+        "simulationTrace": 0
+    }
+}

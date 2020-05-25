@@ -1,24 +1,24 @@
 {
     "parse": {
         "fastMode": true,
-        "database": "./traces/traces.db",
-        "vcdGlob": "./traces/dump_0.vcd",
-        "signalPropertiesFile": "./traces/signal_properties.pickle"
+        "database": "./traces_func/traces.db",
+        "vcdGlob": "./traces_func/dump_*.vcd",
+        "signalPropertiesFile": "./traces_func/signal_properties.pickle"
     },
     "synthesize": {
         "fastMode": true,
-        "database": "./traces/traces.db",
-        "pickleGlob": "./traces/dump_*.pickle",
-        "signalsFileName": "./traces/signals.json",
-        "signalPropertiesFile": "./traces/signal_properties.pickle",
+        "database": "./traces_func/traces.db",
+        "pickleGlob": "./traces_func/dump_*.pickle",
+        "signalsFileName": "./traces_func/signals.json",
+        "signalPropertiesFile": "./traces_func/signal_properties.pickle",
         "leakageModel": "HammingDistance",
         "windowFrom": 1358530,
         "windowTo": 1360770,
-        "writeTraces": true,
-        "traceFileName": "./traces/traces.h5"
+        "writeTraces": false,
+        "traceFileName": "./traces_func/traces.h5"
     },
     "analyze": {
-        "traceFileName": "./traces/traces.h5",
+        "traceFileName": "./traces_func/traces.h5",
         "value_signal_fixed": [
             186,
             146,
@@ -55,9 +55,9 @@
         ]
     },
     "visualize": {
-        "database": "./traces/traces.db",
-        "signalsFileName": "./traces/signals.json",
-        "plotsFileName": "./traces/signals.pdf",
+        "database": "./traces_func/traces.db",
+        "signalsFileName": "./traces_func/signals.json",
+        "plotsFileName": "./traces_func/signals.pdf",
         "simulationTrace": 0
     }
 }
