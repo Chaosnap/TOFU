@@ -219,8 +219,14 @@ class AcquisitionSetupToggle(AbstractContainer):
         value = self.valueExtract(self)
 
         ###################################################################################################################################
-        # slow slow slow
+        # slow slow slow remap this to something performant
         ###################################################################################################################################
+        # input  : self.updates                               type: list of tuples
+        # input  : self.simulation_time_to_index              type: dictonary int to int mapping
+        # input  : self.windowFrom                            type: integer
+        # input  : self.windowTo                              tpye: integer
+        # input  : self.numeric_ids_under_inspection_set      type: set of integer
+        # output : leakage                                    type: list of integers
 
         # extract the leakage
         leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
