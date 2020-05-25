@@ -293,6 +293,7 @@ windowFrom = settings["synthesize"]["windowFrom"]
 windowTo = settings["synthesize"]["windowTo"]
 
 writeTraces = settings["synthesize"]["writeTraces"]
+writeTracesBatchSize = settings["synthesize"]["writeTracesBatchSize"]
 
 
 valueExtractFunction = getattr(value, settings["synthesize"]["valueExtractFunction"])
@@ -309,7 +310,7 @@ aqc = AcquisitionSetupToggle(pickleGlob,
 
 # export traces to container
 if writeTraces:
-    hdf5_container = Hdf5Container.export(aqc, traceFileName)
+    hdf5_container = Hdf5Container.export(aqc, traceFileName, batch_size=writeTracesBatchSize)
 
 # print("trace 0:", aqc[0])
 # print("trace 10:", aqc[10])

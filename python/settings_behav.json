@@ -16,6 +16,7 @@
         "windowTo": 1360770,
         "valueExtractFunction": "valueExtract",
         "writeTraces": false,
+        "writeTracesBatchSize": 10,
         "traceFileName": "./traces_behav/traces.h5"
     },
     "analyze": {
