@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# TOFU: analyze.py
+# TOFU: value.py
 # -------------------------------------------------------------------------------------------------
 # Copyright (c) Technical University of Munich, Chair for Security in Information Technology.
 # All Rights Reserved.
