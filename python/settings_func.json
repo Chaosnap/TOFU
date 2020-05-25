@@ -11,16 +11,16 @@
         "pickleGlob": "./traces_func/dump_*.pickle",
         "signalsFileName": "./traces_func/signals.json",
         "signalPropertiesFile": "./traces_func/signal_properties.pickle",
-        "leakageModel": "HammingWeight",
+        "leakageModel": "HammingDistance",
         "windowFrom": null,
         "windowTo": null,
         "valueExtractFunction": "valueExtractIndex",
-        "writeTraces": true,
+        "writeTraces": false,
         "writeTracesBatchSize": 10,
-        "traceFileName": "./traces_func/traces_all_hw.h5"
+        "traceFileName": "./traces_func/traces.h5"
     },
     "analyze": {
-        "traceFileName": "./traces_func/traces_all_hw.h5",
+        "traceFileName": "./traces_func/traces_all_hd.h5",
         "value_signal_fixed": [
             1
         ]
