@@ -218,6 +218,10 @@ class AcquisitionSetupToggle(AbstractContainer):
         # extract key from pickle
         value = self.valueExtract(self)
 
+        ###################################################################################################################################
+        # slow slow slow
+        ###################################################################################################################################
+
         # extract the leakage
         leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
@@ -256,6 +260,8 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # last update after loop
         leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
+
+        ###################################################################################################################################
 
         # this extracts the hamming weight
         if self.leakage == "HammingWeight":
