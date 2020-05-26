@@ -1,0 +1,28 @@
+{
+    "parse": {
+        "fastMode": true,
+        "database": "./traces_no_scramble/traces.db",
+        "vcdGlob": "./traces_no_scramble/dump_*.vcd",
+        "signalPropertiesFile": "./traces_no_scramble/signal_properties.pickle"
+    },
+    "synthesize": {
+        "fastMode": true,
+        "database": "./traces_no_scramble/traces.db",
+        "pickleGlob": "./traces_no_scramble/dump_*.pickle",
+        "signalsFileName": "./traces_no_scramble/signals.json",
+        "signalPropertiesFile": "./traces_no_scramble/signal_properties.pickle",
+        "leakageModel": "HammingDistance",
+        "windowFrom": 1358530,
+        "windowTo": 1360770,
+        "valueExtractFunction": "valueExtractIndex",
+        "writeTraces": false,
+        "writeTracesBatchSize": 10,
+        "traceFileName": "./traces_no_scramble/traces.h5"
+    },
+    "analyze": {
+        "traceFileName": "./traces_no_scramble/traces_all_hd.h5",
+        "value_signal_fixed": [
+            1
+        ]
+    }
+}
