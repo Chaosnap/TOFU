@@ -269,6 +269,10 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         ###################################################################################################################################
 
+        # rolling mean using convolution
+        # N = 5
+        # leakage = np.convolve(leakage, np.ones((N,)) / N, mode='valid')
+
         # this extracts the hamming weight
         if self.leakage == "HammingWeight":
             pass
