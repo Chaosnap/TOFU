@@ -69,12 +69,17 @@ class AcquisitionSetupProcess(AbstractContainer):
                  traceFileNameInput,
                  traceFileNameOutput,
                  leakage="HammingDistance",
+                 rollingMean=False,
+                 rollingMeanWindow=0,
                  windowFrom=None,
                  windowTo=None):
 
         self.traceFileNameInput = traceFileNameInput
         self.traceFileNameOutput = traceFileNameOutput
         self.container = Hdf5Container(self.traceFileNameInput)
+
+        self.rollingMean = rollingMean
+        self.rollingMeanWindow = rollingMeanWindow
 
         # store the assumed leakage model
         self.leakage = leakage
@@ -107,8 +112,9 @@ class AcquisitionSetupProcess(AbstractContainer):
         value = self.container[index][1]
 
         # rolling mean using convolution
-        N = 3
-        leakage = np.convolve(leakage, np.ones((N,)) / N, mode='valid')
+        if self.rollingMean:
+            N = self.rollingMeanWindow
+            leakage = np.convolve(leakage, np.ones((N,)) / N, mode='valid')
 
         # this extracts the hamming weight
         if self.leakage == "HammingWeight":
@@ -135,6 +141,8 @@ traceFileNameInput = settings["process"]["traceFileNameInput"]
 traceFileNameOutput = settings["process"]["traceFileNameOutput"]
 writeTraces = settings["process"]["writeTraces"]
 writeTracesBatchSize = settings["process"]["writeTracesBatchSize"]
+rollingMean = settings["process"]["rollingMean"]
+rollingMeanWindow = settings["process"]["rollingMeanWindow"]
 windowFrom = settings["process"]["windowFrom"]
 windowTo = settings["process"]["windowTo"]
 
@@ -142,6 +150,8 @@ windowTo = settings["process"]["windowTo"]
 aqc = AcquisitionSetupProcess(traceFileNameInput,
                               traceFileNameOutput,
                               leakage=leakageModel,
+                              rollingMean=rollingMean,
+                              rollingMeanWindow=rollingMeanWindow,
                               windowFrom=windowFrom,
                               windowTo=windowTo)
 

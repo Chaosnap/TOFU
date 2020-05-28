@@ -20,9 +20,11 @@
         "traceFileName": "./traces_scramble_ecc/traces_all_hw.h5"
     },
     "process": {
-        "leakageModel": "HammingWeight",
+        "leakageModel": "HammingDistance",
         "windowFrom": 1358530,
         "windowTo": 1360770,
+        "rollingMean": false,
+        "rollingMeanWindow": 1,
         "writeTraces": true,
         "writeTracesBatchSize": 10,
         "traceFileNameInput": "./traces_scramble_ecc/traces_all_hw.h5",
