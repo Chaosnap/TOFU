@@ -71,6 +71,7 @@ class AcquisitionSetupProcess(AbstractContainer):
                  leakage="HammingDistance",
                  rollingMean=False,
                  rollingMeanWindow=0,
+                 window=False,
                  windowFrom=None,
                  windowTo=None):
 
@@ -92,6 +93,7 @@ class AcquisitionSetupProcess(AbstractContainer):
         else:
             raise processException("undefined leakage model: %s" % self.leakage)
 
+        self.window = window
         self.windowFrom = windowFrom
         self.windowTo = windowTo
 
@@ -127,8 +129,12 @@ class AcquisitionSetupProcess(AbstractContainer):
             raise processException("undefined leakage model: %s" % self.leakage)
 
         if self.windowFrom is not None or self.windowTo is not None:
-            logger.debug("extracting window from leakage %d:%d" % (self.windowFrom, self.windowTo))
-            leakage = leakage[self.windowFrom:self.windowTo]
+            if self.window is True:
+                logger.debug("extracting window from leakage %d:%d" % (self.windowFrom, self.windowTo))
+                leakage = leakage[self.windowFrom:self.windowTo]
+
+        # artifical noise
+        # leakage += np.random.choice([0, 1], size=leakage.shape)
 
         time_finish = time.time()
         logger.debug("conversion of trace took %f seconds" % (time_finish - time_start))
@@ -143,6 +149,7 @@ writeTraces = settings["process"]["writeTraces"]
 writeTracesBatchSize = settings["process"]["writeTracesBatchSize"]
 rollingMean = settings["process"]["rollingMean"]
 rollingMeanWindow = settings["process"]["rollingMeanWindow"]
+window = settings["process"]["window"]
 windowFrom = settings["process"]["windowFrom"]
 windowTo = settings["process"]["windowTo"]
 
@@ -152,6 +159,7 @@ aqc = AcquisitionSetupProcess(traceFileNameInput,
                               leakage=leakageModel,
                               rollingMean=rollingMean,
                               rollingMeanWindow=rollingMeanWindow,
+                              window=window,
                               windowFrom=windowFrom,
                               windowTo=windowTo)
 

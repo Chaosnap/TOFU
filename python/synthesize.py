@@ -125,6 +125,7 @@ class AcquisitionSetupToggle(AbstractContainer):
                  numeric_ids_under_inspection=None,
                  reload_numeric_ids=False,
                  leakage="HammingDistance",
+                 window=False,
                  windowFrom=None,
                  windowTo=None):
         """
@@ -146,6 +147,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
 
+        self.window = window
         self.windowFrom = windowFrom
         self.windowTo = windowTo
 
@@ -243,10 +245,11 @@ class AcquisitionSetupToggle(AbstractContainer):
             nextval_index = self.simulation_time_to_index[update[0]]
 
             # avoid the sum computation at all that thing slows down everything
-            if self.windowFrom is not None or self.windowTo is not None:
-                if nextval_index < self.windowFrom or nextval_index > self.windowTo:
-                    nextval_index_old = nextval_index
-                    continue
+            if self.window is True:
+                if self.windowFrom is not None or self.windowTo is not None:
+                    if nextval_index < self.windowFrom or nextval_index > self.windowTo:
+                        nextval_index_old = nextval_index
+                        continue
 
             numeric_id = update[1]
 
@@ -305,6 +308,7 @@ leakageModel = settings["synthesize"]["leakageModel"]
 traceFileName = settings["synthesize"]["traceFileName"]
 
 # put null in json to load everything
+window = settings["synthesize"]["window"]
 windowFrom = settings["synthesize"]["windowFrom"]
 windowTo = settings["synthesize"]["windowTo"]
 
@@ -320,6 +324,7 @@ aqc = AcquisitionSetupToggle(pickleGlob,
                              valueExtractFunction,
                              numeric_ids_under_inspection,
                              leakage=leakageModel,
+                             window=window
                              windowFrom=windowFrom,
                              windowTo=windowTo,
                              reload_numeric_ids=True)

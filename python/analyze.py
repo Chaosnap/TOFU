@@ -91,7 +91,7 @@ def _foo_finalize(self):
     with np.errstate(divide='ignore', invalid='ignore'):
         result = (m0 - m1) / (np.sqrt((v0 / self._partition_count[0]) + (v1 / self._partition_count[1])))
         logger.debug("result: %s" % result)
-        result = np.nan_to_num(result, copy=False, nan=0.0, posinf=100, neginf=100)
+        result = np.nan_to_num(result, copy=False, nan=0.0, posinf=10, neginf=-10)
         logger.debug("result: %s" % result)
     return result
 
