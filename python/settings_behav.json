@@ -12,12 +12,21 @@
         "signalsFileName": "./traces_behav/signals.json",
         "signalPropertiesFile": "./traces_behav/signal_properties.pickle",
         "leakageModel": "HammingWeight",
-        "windowFrom": 1358530,
-        "windowTo": 1360770,
+        "windowFrom": null,
+        "windowTo": null,
         "valueExtractFunction": "valueExtract",
         "writeTraces": false,
         "writeTracesBatchSize": 10,
-        "traceFileName": "./traces_behav/traces.h5"
+        "traceFileName": "./traces_behav/traces_all_hw.h5"
+    },
+    "process": {
+        "leakageModel": "HammingWeight",
+        "windowFrom": 1358530,
+        "windowTo": 1360770,
+        "writeTraces": true,
+        "writeTracesBatchSize": 10,
+        "traceFileNameInput": "./traces_behav/traces_all_hw.h5",
+        "traceFileNameOutput": "./traces_behav/traces.h5"
     },
     "analyze": {
         "traceFileName": "./traces_behav/traces.h5",

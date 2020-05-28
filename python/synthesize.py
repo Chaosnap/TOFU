@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 from lascar import AbstractContainer, Trace, Hdf5Container
 
 # supress a lascar warning
-h5py.get_config().default_file_mode = "w"
+# h5py.get_config().default_file_mode = "w"
 
 # create a logger
 logger = logging.getLogger('synthesize')
@@ -141,8 +141,8 @@ class AcquisitionSetupToggle(AbstractContainer):
             pass
         elif self.leakage == "HammingDistance":
             pass
-        elif self.leakage == "HammingHybrid":
-            pass
+        # elif self.leakage == "HammingHybrid":
+        #     pass
         else:
             raise synthesizeException("undefined leakage model: %s" % self.leakage)
 

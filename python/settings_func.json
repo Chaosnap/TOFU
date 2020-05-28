@@ -17,10 +17,19 @@
         "valueExtractFunction": "valueExtractIndex",
         "writeTraces": false,
         "writeTracesBatchSize": 10,
-        "traceFileName": "./traces_func/traces.h5"
+        "traceFileName": "./traces_func/traces_all_hw.h5"
+    },
+    "process": {
+        "leakageModel": "HammingWeight",
+        "windowFrom": 1358530,
+        "windowTo": 1360770,
+        "writeTraces": true,
+        "writeTracesBatchSize": 10,
+        "traceFileNameInput": "./traces_func/traces_all_hw.h5",
+        "traceFileNameOutput": "./traces_func/traces.h5"
     },
     "analyze": {
-        "traceFileName": "./traces_func/traces_all_hd.h5",
+        "traceFileName": "./traces_func/traces.h5",
         "value_signal_fixed": [
             1
         ]

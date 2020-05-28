@@ -1,0 +1,37 @@
+{
+    "parse": {
+        "fastMode": true,
+        "database": "./traces_scramble_ecc/traces.db",
+        "vcdGlob": "./traces_scramble_ecc/dump_*.vcd",
+        "signalPropertiesFile": "./traces_scramble_ecc/signal_properties.pickle"
+    },
+    "synthesize": {
+        "fastMode": true,
+        "database": "./traces_scramble_ecc/traces.db",
+        "pickleGlob": "./traces_scramble_ecc/dump_*.pickle",
+        "signalsFileName": "./traces_scramble_ecc/signals.json",
+        "signalPropertiesFile": "./traces_scramble_ecc/signal_properties.pickle",
+        "leakageModel": "HammingWeight",
+        "windowFrom": null,
+        "windowTo": null,
+        "valueExtractFunction": "valueExtractIndex",
+        "writeTraces": true,
+        "writeTracesBatchSize": 10,
+        "traceFileName": "./traces_scramble_ecc/traces_all_hw.h5"
+    },
+    "process": {
+        "leakageModel": "HammingWeight",
+        "windowFrom": 1358530,
+        "windowTo": 1360770,
+        "writeTraces": true,
+        "writeTracesBatchSize": 10,
+        "traceFileNameInput": "./traces_scramble_ecc/traces_all_hw.h5",
+        "traceFileNameOutput": "./traces_scramble_ecc/traces.h5"
+    },
+    "analyze": {
+        "traceFileName": "./traces_scramble_ecc/traces.h5",
+        "value_signal_fixed": [
+            1
+        ]
+    }
+}
