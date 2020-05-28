@@ -324,7 +324,7 @@ aqc = AcquisitionSetupToggle(pickleGlob,
                              valueExtractFunction,
                              numeric_ids_under_inspection,
                              leakage=leakageModel,
-                             window=window
+                             window=window,
                              windowFrom=windowFrom,
                              windowTo=windowTo,
                              reload_numeric_ids=True)

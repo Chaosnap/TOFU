@@ -130,7 +130,7 @@ class AcquisitionSetupProcess(AbstractContainer):
 
         if self.windowFrom is not None or self.windowTo is not None:
             if self.window is True:
-                logger.debug("extracting window from leakage %d:%d" % (self.windowFrom, self.windowTo))
+                # logger.debug("extracting window from leakage %d:%d" % (self.windowFrom, self.windowTo))
                 leakage = leakage[self.windowFrom:self.windowTo]
 
         # artifical noise
