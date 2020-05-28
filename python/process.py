@@ -159,4 +159,4 @@ aqc = AcquisitionSetupProcess(traceFileNameInput,
 if writeTraces:
     hdf5_container = Hdf5Container.export(aqc, traceFileNameOutput, batch_size=writeTracesBatchSize)
 
-logger.info("process traces from pickles finished")
+logger.info("process traces hamming trace finished")
