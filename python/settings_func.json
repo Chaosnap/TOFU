@@ -2,7 +2,7 @@
     "parse": {
         "fastMode": true,
         "database": "./traces_func/traces.db",
-        "vcdGlob": "./traces_func/dump_0.vcd",
+        "vcdGlob": "./traces_func/dump_*.vcd",
         "signalPropertiesFile": "./traces_func/signal_properties.pickle"
     },
     "synthesize": {
@@ -16,15 +16,15 @@
         "windowFrom": null,
         "windowTo": null,
         "valueExtractFunction": "valueExtractIndex",
-        "writeTraces": false,
+        "writeTraces": true,
         "writeTracesBatchSize": 10,
         "traceFileName": "./traces_func/traces_all_hw.h5"
     },
     "process": {
         "leakageModel": "HammingWeight",
-        "window": true,
-        "windowFrom": 1358670,
-        "windowTo": 1358703,
+        "window": false,
+        "windowFrom": 1358530,
+        "windowTo": 1360770,
         "rollingMean": false,
         "rollingMeanWindow": 1,
         "writeTraces": true,

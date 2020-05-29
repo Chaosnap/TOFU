@@ -331,6 +331,10 @@ aqc = AcquisitionSetupToggle(pickleGlob,
 
 # export traces to container
 if writeTraces:
+    try:
+        hdf5_container._file.close()
+    except NameError:
+        pass
     hdf5_container = Hdf5Container.export(aqc, traceFileName, batch_size=writeTracesBatchSize)
 
 # print("trace 0:", aqc[0])

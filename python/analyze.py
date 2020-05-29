@@ -23,6 +23,8 @@ import random
 # supress a lascar warning
 h5py.get_config().default_file_mode = "r+"
 
+# work with huge plots
+plt.rcParams['agg.path.chunksize'] = 10000
 
 # create a logger
 logger = logging.getLogger('analyze')
@@ -33,8 +35,8 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-# logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.INFO)
 
 # loading settings from file
 settingsFile = "./settings.json"
@@ -102,7 +104,25 @@ TTestEngine._finalize = _foo_finalize
 ttest_engine = TTestEngine("ttest", partition_function)
 
 
+# plot mix max t value
+plt.axhline(y=+4.5, color='r', linestyle='-')
+plt.axhline(y=-4.5, color='r', linestyle='-')
+
+# # gimli
+# plt.axvline(x=1358530, color='g', linestyle='-')
+# plt.axvline(x=1360770, color='g', linestyle='-')
+
+# # key loading
+# plt.axvline(x=1358670, color='g', linestyle='-')
+# plt.axvline(x=1358703, color='g', linestyle='-')
+
+# # tag
+# plt.axvline(x=1360500, color='g', linestyle='-')
+# plt.axvline(x=1360700, color='g', linestyle='-')
+
+
 plot_output = MatPlotLibOutputMethod(ttest_engine)
+
 
 session = Session(container, output_method=plot_output)
 session.add_engine(ttest_engine)

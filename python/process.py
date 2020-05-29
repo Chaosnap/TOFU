@@ -165,6 +165,10 @@ aqc = AcquisitionSetupProcess(traceFileNameInput,
 
 # export traces to container
 if writeTraces:
+    try:
+        hdf5_container._file.close()
+    except NameError:
+        pass
     hdf5_container = Hdf5Container.export(aqc, traceFileNameOutput, batch_size=writeTracesBatchSize)
 
 logger.info("process traces hamming trace finished")
