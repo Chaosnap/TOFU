@@ -1,0 +1,41 @@
+{
+    "parse": {
+        "fastMode": true,
+        "database": "./traces_zero_rdi/traces.db",
+        "vcdGlob": "./traces_zero_rdi/dump_*.vcd",
+        "signalPropertiesFile": "./traces_zero_rdi/signal_properties.pickle"
+    },
+    "synthesize": {
+        "fastMode": true,
+        "database": "./traces_zero_rdi/traces.db",
+        "pickleGlob": "./traces_zero_rdi/dump_*.pickle",
+        "signalsFileName": "./traces_zero_rdi/signals.json",
+        "signalPropertiesFile": "./traces_zero_rdi/signal_properties.pickle",
+        "leakageModel": "HammingWeight",
+        "window": false,
+        "windowFrom": null,
+        "windowTo": null,
+        "valueExtractFunction": "valueExtractIndex",
+        "writeTraces": false,
+        "writeTracesBatchSize": 10,
+        "traceFileName": "./traces_zero_rdi/traces_all_hw.h5"
+    },
+    "process": {
+        "leakageModel": "HammingDistance",
+        "window": false,
+        "windowFrom": 1358530,
+        "windowTo": 1360770,
+        "rollingMean": true,
+        "rollingMeanWindow": 5,
+        "writeTraces": true,
+        "writeTracesBatchSize": 10,
+        "traceFileNameInput": "./traces_zero_rdi/traces_all_hw.h5",
+        "traceFileNameOutput": "./traces_zero_rdi/traces.h5"
+    },
+    "analyze": {
+        "traceFileName": "./traces_zero_rdi/traces.h5",
+        "value_signal_fixed": [
+            1
+        ]
+    }
+}
