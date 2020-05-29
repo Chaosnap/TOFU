@@ -21,12 +21,12 @@
         "traceFileName": "./traces_zero_rdi/traces_all_hw.h5"
     },
     "process": {
-        "leakageModel": "HammingWeight",
+        "leakageModel": "HammingDistance",
         "window": false,
         "windowFrom": 1358530,
         "windowTo": 1360770,
         "rollingMean": false,
-        "rollingMeanWindow": 5,
+        "rollingMeanWindow": 10,
         "writeTraces": true,
         "writeTracesBatchSize": 10,
         "traceFileNameInput": "./traces_zero_rdi/traces_all_hw.h5",
