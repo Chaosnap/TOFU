@@ -15,7 +15,7 @@
         "window": false,
         "windowFrom": null,
         "windowTo": null,
-        "valueExtractFunction": "valueExtract",
+        "valueExtractFunction": "valueExtractIndex",
         "writeTraces": false,
         "writeTracesBatchSize": 10,
         "traceFileName": "./traces_behav/traces_all_hw.h5"
@@ -26,7 +26,7 @@
         "windowFrom": 1358530,
         "windowTo": 1360770,
         "rollingMean": false,
-        "rollingMeanWindow": 3,
+        "rollingMeanWindow": 10,
         "writeTraces": true,
         "writeTracesBatchSize": 10,
         "traceFileNameInput": "./traces_behav/traces_all_hw.h5",
@@ -35,38 +35,7 @@
     "analyze": {
         "traceFileName": "./traces_behav/traces.h5",
         "value_signal_fixed": [
-            186,
-            146,
-            19,
-            255,
-            252,
-            218,
-            60,
-            141,
-            16,
-            9,
-            183,
-            248,
-            25,
-            222,
-            72,
-            75,
-            237,
-            61,
-            5,
-            236,
-            104,
-            39,
-            67,
-            155,
-            255,
-            72,
-            218,
-            182,
-            24,
-            14,
-            42,
-            67
+            1
         ]
     }
 }

@@ -35,8 +35,8 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-# logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.INFO)
 
 # loading settings from file
 settingsFile = "./settings.json"
@@ -63,38 +63,41 @@ fixedVal = settings["analyze"]["value_signal_fixed"]
 def partition_function(value):
     # partition_function must take 1 argument: the value returned by the container at each trace
     compare = ([value][0] == np.array(fixedVal, dtype=np.uint8)).all()
-    logger.debug("compare with fixed value: %r" % (compare))
+    # logger.debug("compare with fixed value: %r" % (compare))
     # return random.randint(0, 1)
     return compare
 
 
 def _foo_finalize(self):
-    # ???
+
+    # size
+    n0 = self._partition_count[0]
+    n1 = self._partition_count[0]
+
+    # mean
     m0 = self._acc_x_by_partition[0, 0] / self._partition_count[0]
     m1 = self._acc_x_by_partition[0, 1] / self._partition_count[1]
 
-    logger.debug("self._acc_x_by_partition[0, 0]: %s" % (np.array2string(self._acc_x_by_partition[0, 0])))
-    logger.debug("self._acc_x_by_partition[0, 1]: %s" % (np.array2string(self._acc_x_by_partition[0, 1])))
+    # variance
+    v0 = (self._acc_x_by_partition[1, 0] / self._partition_count[0]) - m0 ** 2
+    v1 = (self._acc_x_by_partition[1, 1] / self._partition_count[1]) - m1 ** 2
 
-    logger.debug("self._partition_count[0]: %d" % (self._partition_count[0]))
-    logger.debug("self._partition_count[1]: %d" % (self._partition_count[1]))
+    logger.debug("n0: %d" % (n0))
+    logger.debug("n1: %d" % (n1))
 
     logger.debug("m0: %s" % m0)
     logger.debug("m1: %s" % m1)
 
-    v0 = (self._acc_x_by_partition[1, 0] / self._partition_count[0]) - m0 ** 2
-    v1 = (self._acc_x_by_partition[1, 1] / self._partition_count[1]) - m1 ** 2
-
     logger.debug("v0: %s" % v0)
     logger.debug("v1: %s" % v1)
-    logger.debug("m0-m1: %s" % (m0 - m1))
+
+    # return (m0 - m1)
 
     # how to catch that
     with np.errstate(divide='ignore', invalid='ignore'):
-        result = (m0 - m1) / (np.sqrt((v0 / self._partition_count[0]) + (v1 / self._partition_count[1])))
+        result = (m0 - m1) / (np.sqrt((v0 / n0) + (v1 / n1)))
         logger.debug("result: %s" % result)
         result = np.nan_to_num(result, copy=False, nan=10, posinf=10, neginf=10)
-        logger.debug("result: %s" % result)
     return result
 
 
@@ -109,16 +112,16 @@ plt.axhline(y=+4.5, color='r', linestyle='-')
 plt.axhline(y=-4.5, color='r', linestyle='-')
 
 # # gimli
-# plt.axvline(x=1358530, color='g', linestyle='-')
-# plt.axvline(x=1360770, color='g', linestyle='-')
+plt.axvline(x=1358530, color='g', linestyle='-')
+plt.axvline(x=1360770, color='g', linestyle='-')
 
 # # key loading
-# plt.axvline(x=1358670, color='g', linestyle='-')
-# plt.axvline(x=1358703, color='g', linestyle='-')
+plt.axvline(x=1358670, color='g', linestyle='-')
+plt.axvline(x=1358703, color='g', linestyle='-')
 
 # # tag
-# plt.axvline(x=1360500, color='g', linestyle='-')
-# plt.axvline(x=1360700, color='g', linestyle='-')
+plt.axvline(x=1360500, color='g', linestyle='-')
+plt.axvline(x=1360700, color='g', linestyle='-')
 
 
 plot_output = MatPlotLibOutputMethod(ttest_engine)
