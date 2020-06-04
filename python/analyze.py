@@ -17,7 +17,7 @@ import time
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
-from lascar import Hdf5Container, TTestEngine, MatPlotLibOutputMethod, Session
+from lascar import Hdf5Container, TTestEngine, MatPlotLibOutputMethod, Hdf5OutputMethod, Session
 import random
 
 # supress a lascar warning
@@ -36,7 +36,7 @@ formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 logger.setLevel(logging.DEBUG)
-# logger.setLevel(logging.INFO)
+logger.setLevel(logging.INFO)
 
 # loading settings from file
 settingsFile = "./settings.json"
@@ -63,7 +63,7 @@ fixedVal = settings["analyze"]["value_signal_fixed"]
 def partition_function(value):
     # partition_function must take 1 argument: the value returned by the container at each trace
     compare = ([value][0] == np.array(fixedVal, dtype=np.uint8)).all()
-    # logger.debug("compare with fixed value: %r" % (compare))
+    logger.debug("compare with fixed value: %r" % (compare))
     # return random.randint(0, 1)
     return compare
 
@@ -91,13 +91,13 @@ def _foo_finalize(self):
     logger.debug("v0: %s" % v0)
     logger.debug("v1: %s" % v1)
 
-    # return (m0 - m1)
-
     # how to catch that
     with np.errstate(divide='ignore', invalid='ignore'):
         result = (m0 - m1) / (np.sqrt((v0 / n0) + (v1 / n1)))
         logger.debug("result: %s" % result)
-        result = np.nan_to_num(result, copy=False, nan=10, posinf=10, neginf=10)
+        # result = np.nan_to_num(result, copy=False, nan=10, posinf=10, neginf=10)
+        result = np.nan_to_num(result, copy=False, nan=0, posinf=0, neginf=0)
+
     return result
 
 
@@ -112,25 +112,31 @@ plt.axhline(y=+4.5, color='r', linestyle='-')
 plt.axhline(y=-4.5, color='r', linestyle='-')
 
 # # gimli
-plt.axvline(x=1358530, color='g', linestyle='-')
-plt.axvline(x=1360770, color='g', linestyle='-')
+# plt.axvline(x=1358530, color='g', linestyle='-')
+# plt.axvline(x=1360770, color='g', linestyle='-')
 
 # # key loading
-plt.axvline(x=1358670, color='g', linestyle='-')
-plt.axvline(x=1358703, color='g', linestyle='-')
+# plt.axvline(x=1358670, color='g', linestyle='-')
+# plt.axvline(x=1358703, color='g', linestyle='-')
 
 # # tag
-plt.axvline(x=1360500, color='g', linestyle='-')
-plt.axvline(x=1360700, color='g', linestyle='-')
+# plt.axvline(x=1360500, color='g', linestyle='-')
+# plt.axvline(x=1360700, color='g', linestyle='-')
 
 
 plot_output = MatPlotLibOutputMethod(ttest_engine)
-
-
 session = Session(container, output_method=plot_output)
 session.add_engine(ttest_engine)
 # session.run(batch_size=2500)
 session.run()
+
+
+# hdf5_output = Hdf5OutputMethod("foo.h5", ttest_engine)
+# session = Session(container, output_method=hdf5_output)
+# session.add_engine(ttest_engine)
+# # session.run(batch_size=2500)
+# session.run()
+
 
 time_finish = time.time()
 logger.info("analysis finished took %f seconds" % (time_finish - time_start))

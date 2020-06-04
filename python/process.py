@@ -136,6 +136,9 @@ class AcquisitionSetupProcess(AbstractContainer):
         # artifical noise
         # leakage += np.random.choice([0, 1], size=leakage.shape)
 
+        # remove falling edges
+        # leakage = leakage[::2].copy()
+
         time_finish = time.time()
         logger.debug("conversion of trace took %f seconds" % (time_finish - time_start))
 
