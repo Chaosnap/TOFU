@@ -16,12 +16,12 @@
         "windowFrom": null,
         "windowTo": null,
         "valueExtractFunction": "valueExtractIndex",
-        "writeTraces": true,
+        "writeTraces": false,
         "writeTracesBatchSize": 10,
         "traceFileName": "./traces_func/traces_all_hw.h5"
     },
     "process": {
-        "leakageModel": "HammingWeight",
+        "leakageModel": "HammingDistance",
         "window": false,
         "windowFrom": 1358530,
         "windowTo": 1360770,

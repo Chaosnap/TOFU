@@ -96,6 +96,7 @@ def _foo_finalize(self):
         result = (m0 - m1) / (np.sqrt((v0 / n0) + (v1 / n1)))
         logger.debug("result: %s" % result)
         # result = np.nan_to_num(result, copy=False, nan=10, posinf=10, neginf=10)
+        # since we have no noise set the vals to zero
         result = np.nan_to_num(result, copy=False, nan=0, posinf=0, neginf=0)
 
     return result
