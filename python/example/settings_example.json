@@ -1,0 +1,41 @@
+{
+    "parse": {
+        "fastMode": true,
+        "database": "./example/traces.db",
+        "vcdGlob": "./example/dummy-vivado.vcd",
+        "signalPropertiesFile": "./example/signal_properties.pickle"
+    },
+    "synthesize": {
+        "fastMode": true,
+        "database": "./example/traces.db",
+        "pickleGlob": "./example/dummy-vivado.pickle",
+        "signalsFileName": "./example/signals.json",
+        "signalPropertiesFile": "./example/signal_properties.pickle",
+        "leakageModel": "HammingWeight",
+        "window": false,
+        "windowFrom": null,
+        "windowTo": null,
+        "valueExtractFunction": "valueExtractIndex",
+        "writeTraces": false,
+        "writeTracesBatchSize": 10,
+        "traceFileName": "./example/traces_all_hw.h5"
+    },
+    "process": {
+        "leakageModel": "HammingDistance",
+        "window": false,
+        "windowFrom": 1358530,
+        "windowTo": 1360770,
+        "rollingMean": false,
+        "rollingMeanWindow": 10,
+        "writeTraces": true,
+        "writeTracesBatchSize": 10,
+        "traceFileNameInput": "./example/traces_all_hw.h5",
+        "traceFileNameOutput": "./example/traces.h5"
+    },
+    "analyze": {
+        "traceFileName": "./example/traces.h5",
+        "value_signal_fixed": [
+            1
+        ]
+    }
+}
