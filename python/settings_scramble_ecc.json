@@ -20,18 +20,6 @@
         "writeTracesBatchSize": 10,
         "traceFileName": "./traces_scramble_ecc/traces_all_hw.h5"
     },
-    "process": {
-        "leakageModel": "HammingDistance",
-        "window": false,
-        "windowFrom": 1358530,
-        "windowTo": 1360770,
-        "rollingMean": false,
-        "rollingMeanWindow": 3,
-        "writeTraces": true,
-        "writeTracesBatchSize": 10,
-        "traceFileNameInput": "./traces_scramble_ecc/traces_all_hw.h5",
-        "traceFileNameOutput": "./traces_scramble_ecc/traces.h5"
-    },
     "analyze": {
         "traceFileName": "./traces_scramble_ecc/traces.h5",
         "value_signal_fixed": [
