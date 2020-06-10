@@ -244,22 +244,24 @@ class AcquisitionSetupToggle(AbstractContainer):
         logger.info("performing %d updates" % (len(self.updates)))
 
         nextval_index_old = 0
+        toggles = 0
 
         for update in self.updates:
 
             nextval_index = self.simulation_time_to_index[update[0]]
 
-            # avoid the sum computation at all that thing slows down everything
-            if self.window is True:
-                if self.windowFrom is not None or self.windowTo is not None:
-                    if nextval_index < self.windowFrom or nextval_index > self.windowTo:
-                        nextval_index_old = nextval_index
-                        continue
+            # # avoid the sum computation at all that thing slows down everything
+            # if self.window is True:
+            #     if self.windowFrom is not None or self.windowTo is not None:
+            #         if nextval_index < self.windowFrom or nextval_index > self.windowTo:
+            #             nextval_index_old = nextval_index
+            #             continue
 
             numeric_id = update[1]
             nextval = update[2]
 
             # replace x with 0
+            nextval = nextval.replace("x", "0")
 
             # das bremst aus wie noch was
             # check if signal is tracked
@@ -274,12 +276,15 @@ class AcquisitionSetupToggle(AbstractContainer):
                     leakage[nextval_index_old: nextval_index + 1] = hammingWeightFromBitString("".join(state))
                 elif self.leakage == "HammingDistance":
                     # calculate the hamming distance
-                    leakage[nextval_index_old: nextval_index + 1] = hammingDistanceFromBitString("".join(state), "".join(state_old))
+                    leakage[nextval_index_old: nextval_index + 1] = toggles
+                    toggles = 0
                 else:
                     raise synthesizeException("undefined leakage model: %s" % self.leakage)
 
                 nextval_index_old = nextval_index
                 state_old = state.copy()
+
+            toggles += hammingDistanceFromBitString(state[numeric_id], nextval.ljust(self.numeric_id_to_width[numeric_id], "0"))
 
             state[numeric_id] = nextval.ljust(self.numeric_id_to_width[numeric_id], "0")
 
@@ -291,7 +296,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         elif self.leakage == "HammingDistance":
             # calculate the hamming distance
             # last update after loop
-            leakage[nextval_index_old: nextval_index + 1] = hammingDistanceFromBitString("".join(state), "".join(state_old))
+            leakage[nextval_index_old: nextval_index + 1] = toggles
             # ignore first point
             leakage = leakage[1:]
         else:
@@ -303,7 +308,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         # N = 5
         # leakage = np.convolve(leakage, np.ones((N,)) / N, mode='valid')
 
-        if self.windowFrom is not None or self.windowTo is not None:
+        if (self.windowFrom is not None or self.windowTo is not None) and self.window is True:
             logger.info("extracting window from leakage %d:%d" % (self.windowFrom, self.windowTo))
             leakage = leakage[self.windowFrom: self.windowTo]
 

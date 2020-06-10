@@ -11,29 +11,17 @@
         "pickleGlob": "./traces_behav/dump_*.pickle",
         "signalsFileName": "./traces_behav/signals.json",
         "signalPropertiesFile": "./traces_behav/signal_properties.pickle",
-        "leakageModel": "HammingWeight",
+        "leakageModel": "HammingDistance",
         "window": false,
         "windowFrom": null,
         "windowTo": null,
         "valueExtractFunction": "valueExtractIndex",
         "writeTraces": false,
-        "writeTracesBatchSize": 10,
-        "traceFileName": "./traces_behav/traces_all_hw.h5"
-    },
-    "process": {
-        "leakageModel": "HammingDistance",
-        "window": false,
-        "windowFrom": 1358530,
-        "windowTo": 1360770,
-        "rollingMean": false,
-        "rollingMeanWindow": 10,
-        "writeTraces": true,
-        "writeTracesBatchSize": 10,
-        "traceFileNameInput": "./traces_behav/traces_all_hw.h5",
-        "traceFileNameOutput": "./traces_behav/traces.h5"
+        "writeTracesBatchSize": 1,
+        "traceFileName": "./traces_behav/traces_all_hd.h5"
     },
     "analyze": {
-        "traceFileName": "./traces_behav/traces.h5",
+        "traceFileName": "./traces_behav/traces_all_hd.h5",
         "value_signal_fixed": [
             1
         ]
