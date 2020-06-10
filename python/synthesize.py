@@ -191,6 +191,8 @@ class AcquisitionSetupToggle(AbstractContainer):
         self.simulation_time_max = self.simulation_time_steps[-1]
         logger.info("traces consist from %d sample points in time" % (len(self.simulation_time_steps)))
 
+        self.numeric_id_to_width = {i["numeric_id"]: i["width"] for i in self.signal_properties}
+
         AbstractContainer.__init__(self, self.number_of_traces)
 
     def generate_trace(self, index):
@@ -235,12 +237,14 @@ class AcquisitionSetupToggle(AbstractContainer):
         leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
         # umbauen ummappen auf signale die benutzt werden
-        state = np.zeros((len(self.signal_properties),), dtype=np.int)
+        state = ["".ljust(i, "0") for i in self.numeric_id_to_width.values()]
+        state_old = state.copy()
 
         logger.info("iterating through all state updates")
         logger.info("performing %d updates" % (len(self.updates)))
 
-        nextval_index_old = -1
+        nextval_index_old = 0
+
         for update in self.updates:
 
             nextval_index = self.simulation_time_to_index[update[0]]
@@ -253,23 +257,45 @@ class AcquisitionSetupToggle(AbstractContainer):
                         continue
 
             numeric_id = update[1]
+            nextval = update[2]
+
+            # replace x with 0
 
             # das bremst aus wie noch was
             # check if signal is tracked
             if numeric_id not in self.numeric_ids_under_inspection_set:
                 continue
 
-            nextval = hammingWeightFromBitString(update[2])
-
-            logger.debug("simulation_time: %d index: %d  numeric_id: %d nextval: %d" % (update[0], nextval_index, numeric_id, nextval))
+            logger.debug("simulation_time: %d index: %d  numeric_id: %d nextval: %s" % (update[0], nextval_index, numeric_id, nextval))
             if nextval_index != nextval_index_old:
-                leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
+
+                # this extracts the hamming weight
+                if self.leakage == "HammingWeight":
+                    leakage[nextval_index_old: nextval_index + 1] = hammingWeightFromBitString("".join(state))
+                elif self.leakage == "HammingDistance":
+                    # calculate the hamming distance
+                    leakage[nextval_index_old: nextval_index + 1] = hammingDistanceFromBitString("".join(state), "".join(state_old))
+                else:
+                    raise synthesizeException("undefined leakage model: %s" % self.leakage)
+
                 nextval_index_old = nextval_index
+                state_old = state.copy()
 
-            state[numeric_id] = nextval
+            state[numeric_id] = nextval.ljust(self.numeric_id_to_width[numeric_id], "0")
 
-        # last update after loop
-        leakage[nextval_index_old:nextval_index + 1] = np.sum(state)
+        # this extracts the hamming weight
+        if self.leakage == "HammingWeight":
+            leakage[nextval_index_old: nextval_index + 1] = hammingWeightFromBitString("".join(state))
+            # ignore first point
+            leakage = leakage[1:]
+        elif self.leakage == "HammingDistance":
+            # calculate the hamming distance
+            # last update after loop
+            leakage[nextval_index_old: nextval_index + 1] = hammingDistanceFromBitString("".join(state), "".join(state_old))
+            # ignore first point
+            leakage = leakage[1:]
+        else:
+            raise synthesizeException("undefined leakage model: %s" % self.leakage)
 
         ###################################################################################################################################
 
@@ -277,19 +303,9 @@ class AcquisitionSetupToggle(AbstractContainer):
         # N = 5
         # leakage = np.convolve(leakage, np.ones((N,)) / N, mode='valid')
 
-        # this extracts the hamming weight
-        if self.leakage == "HammingWeight":
-            pass
-        elif self.leakage == "HammingDistance":
-            # calculate the hamming distance
-            shift_leakage = np.roll(leakage, 1)
-            leakage = np.abs(leakage[1:] - shift_leakage[1:])
-        else:
-            raise synthesizeException("undefined leakage model: %s" % self.leakage)
-
         if self.windowFrom is not None or self.windowTo is not None:
             logger.info("extracting window from leakage %d:%d" % (self.windowFrom, self.windowTo))
-            leakage = leakage[self.windowFrom:self.windowTo]
+            leakage = leakage[self.windowFrom: self.windowTo]
 
         # dynamic scaling of trace eigentlich sollte man hier nach dem max suchen wenn das kleiner als max wer uint8 alles zu einem uint8
 
