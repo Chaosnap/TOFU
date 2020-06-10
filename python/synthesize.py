@@ -61,8 +61,9 @@ def hammingWeightFromBitString(x):
     return x.count("1")
 
 
-def hammingDifferenceFromBitString(x, y):
-    return abs(hammingWeightFromBitString(x) - hammingWeightFromBitString(y))
+def hammingDistanceFromBitString(x, y):
+    assert len(x) == len(y)
+    return sum(a != b for a, b in zip(x, y))
 
 
 # extracting signals from database
