@@ -16,7 +16,7 @@
         "windowFrom": null,
         "windowTo": null,
         "valueExtractFunction": "valueExtractIndex",
-        "writeTraces": true,
+        "writeTraces": false,
         "writeTracesBatchSize": 1,
         "traceFileName": "./traces_zero_rdi/traces_all_hw.h5"
     },

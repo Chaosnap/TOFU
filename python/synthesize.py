@@ -63,7 +63,10 @@ def hammingWeightFromBitString(x):
 
 def hammingDistanceFromBitString(x, y):
     assert len(x) == len(y)
-    return sum(a != b for a, b in zip(x, y))
+    if len(x) == 1:
+        return x != y
+    else:
+        return sum(a != b for a, b in zip(x, y))
 
 
 # extracting signals from database
@@ -238,25 +241,17 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # umbauen ummappen auf signale die benutzt werden
         state = ["".ljust(i, "0") for i in self.numeric_id_to_width.values()]
-        state_old = state.copy()
 
         logger.info("iterating through all state updates")
         logger.info("performing %d updates" % (len(self.updates)))
 
+        nextval_index = 0
         nextval_index_old = 0
         toggles = 0
 
         for update in self.updates:
 
             nextval_index = self.simulation_time_to_index[update[0]]
-
-            # # avoid the sum computation at all that thing slows down everything
-            # if self.window is True:
-            #     if self.windowFrom is not None or self.windowTo is not None:
-            #         if nextval_index < self.windowFrom or nextval_index > self.windowTo:
-            #             nextval_index_old = nextval_index
-            #             continue
-
             numeric_id = update[1]
             nextval = update[2]
 
@@ -268,7 +263,9 @@ class AcquisitionSetupToggle(AbstractContainer):
             if numeric_id not in self.numeric_ids_under_inspection_set:
                 continue
 
-            logger.debug("simulation_time: %d index: %d  numeric_id: %d nextval: %s" % (update[0], nextval_index, numeric_id, nextval))
+            # bottleneck
+            # logger.debug("simulation_time: %d index: %d  numeric_id: %d nextval: %s" % (update[0], nextval_index, numeric_id, nextval))
+
             if nextval_index != nextval_index_old:
 
                 # this extracts the hamming weight
@@ -282,11 +279,11 @@ class AcquisitionSetupToggle(AbstractContainer):
                     raise synthesizeException("undefined leakage model: %s" % self.leakage)
 
                 nextval_index_old = nextval_index
-                state_old = state.copy()
 
-            toggles += hammingDistanceFromBitString(state[numeric_id], nextval.ljust(self.numeric_id_to_width[numeric_id], "0"))
+            nextval_padded = nextval.ljust(self.numeric_id_to_width[numeric_id], "0")
+            toggles += hammingDistanceFromBitString(state[numeric_id], nextval_padded)
 
-            state[numeric_id] = nextval.ljust(self.numeric_id_to_width[numeric_id], "0")
+            state[numeric_id] = nextval_padded
 
         # this extracts the hamming weight
         if self.leakage == "HammingWeight":
