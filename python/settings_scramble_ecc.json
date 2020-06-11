@@ -11,13 +11,13 @@
         "pickleGlob": "./traces_scramble_ecc/dump_*.pickle",
         "signalsFileName": "./traces_scramble_ecc/signals.json",
         "signalPropertiesFile": "./traces_scramble_ecc/signal_properties.pickle",
-        "leakageModel": "HammingWeight",
+        "leakageModel": "HammingDistance",
         "window": false,
         "windowFrom": null,
         "windowTo": null,
         "valueExtractFunction": "valueExtractIndex",
         "writeTraces": false,
-        "writeTracesBatchSize": 10,
+        "writeTracesBatchSize": 1,
         "traceFileName": "./traces_scramble_ecc/traces_all_hw.h5"
     },
     "analyze": {

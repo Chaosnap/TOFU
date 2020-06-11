@@ -11,13 +11,13 @@
         "pickleGlob": "./traces_post_imp_timing/dump_*.pickle",
         "signalsFileName": "./traces_post_imp_timing/signals.json",
         "signalPropertiesFile": "./traces_post_imp_timing/signal_properties.pickle",
-        "leakageModel": "HammingWeight",
+        "leakageModel": "HammingDistance",
         "window": false,
         "windowFrom": null,
         "windowTo": null,
         "valueExtractFunction": "valueExtractIndex",
-        "writeTraces": true,
-        "writeTracesBatchSize": 10,
+        "writeTraces": false,
+        "writeTracesBatchSize": 1,
         "traceFileName": "./traces_post_imp_timing/traces_all_hw.h5"
     },
     "analyze": {
