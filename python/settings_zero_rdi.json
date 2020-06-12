@@ -14,7 +14,9 @@
         "valueExtractFunction": "valueExtractIndex",
         "writeTraces": false,
         "writeTracesBatchSize": 1,
-        "traceFileName": "./traces_zero_rdi/traces_all_hd.h5"
+        "traceFileName": "./traces_zero_rdi/traces_all_hd.h5",
+        "allign": false,
+        "downsample": 1e5
     },
     "analyze": {
         "traceFileName": "./traces_zero_rdi/traces_all_hd.h5",
