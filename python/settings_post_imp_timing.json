@@ -1,13 +1,9 @@
 {
     "parse": {
-        "fastMode": true,
-        "database": "./traces_post_imp_timing/traces.db",
         "vcdGlob": "./traces_post_imp_timing/dump_*.vcd",
         "signalPropertiesFile": "./traces_post_imp_timing/signal_properties.pickle"
     },
     "synthesize": {
-        "fastMode": true,
-        "database": "./traces_post_imp_timing/traces.db",
         "pickleGlob": "./traces_post_imp_timing/dump_*.pickle",
         "signalsFileName": "./traces_post_imp_timing/signals.json",
         "signalPropertiesFile": "./traces_post_imp_timing/signal_properties.pickle",
@@ -18,10 +14,10 @@
         "valueExtractFunction": "valueExtractIndex",
         "writeTraces": false,
         "writeTracesBatchSize": 1,
-        "traceFileName": "./traces_post_imp_timing/traces_all_hw.h5"
+        "traceFileName": "./traces_post_imp_timing/traces_all_hd.h5"
     },
     "analyze": {
-        "traceFileName": "./traces_post_imp_timing/traces.h5",
+        "traceFileName": "./traces_post_imp_timing/traces_all_hd.h5",
         "value_signal_fixed": [
             1
         ]

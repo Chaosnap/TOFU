@@ -1,13 +1,9 @@
 {
     "parse": {
-        "fastMode": true,
-        "database": "./traces_scramble_ecc/traces.db",
         "vcdGlob": "./traces_scramble_ecc/dump_*.vcd",
         "signalPropertiesFile": "./traces_scramble_ecc/signal_properties.pickle"
     },
     "synthesize": {
-        "fastMode": true,
-        "database": "./traces_scramble_ecc/traces.db",
         "pickleGlob": "./traces_scramble_ecc/dump_*.pickle",
         "signalsFileName": "./traces_scramble_ecc/signals.json",
         "signalPropertiesFile": "./traces_scramble_ecc/signal_properties.pickle",
@@ -18,10 +14,10 @@
         "valueExtractFunction": "valueExtractIndex",
         "writeTraces": false,
         "writeTracesBatchSize": 1,
-        "traceFileName": "./traces_scramble_ecc/traces_all_hw.h5"
+        "traceFileName": "./traces_scramble_ecc/traces_all_hd.h5"
     },
     "analyze": {
-        "traceFileName": "./traces_scramble_ecc/traces.h5",
+        "traceFileName": "./traces_scramble_ecc/traces_all_hd.h5",
         "value_signal_fixed": [
             1
         ]

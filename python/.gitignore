@@ -7,3 +7,4 @@ traces*/
 signals.json
 *.h5
 *.pdf
+*.pickle

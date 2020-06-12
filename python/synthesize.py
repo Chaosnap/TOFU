@@ -320,7 +320,6 @@ class AcquisitionSetupToggle(AbstractContainer):
         return Trace(leakage, value)
 
 
-# if everything fits into ram use fastmode
 pickleGlob = settings["synthesize"]["pickleGlob"]
 signalPropertiesFile = settings["synthesize"]["signalPropertiesFile"]
 leakageModel = settings["synthesize"]["leakageModel"]
