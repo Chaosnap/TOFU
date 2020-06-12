@@ -131,7 +131,10 @@ class AcquisitionSetupToggle(AbstractContainer):
                  leakage="HammingDistance",
                  window=False,
                  windowFrom=None,
-                 windowTo=None):
+                 windowTo=None,
+                 allign=False,
+                 downsample=1
+                 ):
         """
         :param number_of_traces: only required argument for the constructor of an AbstractContainer
         """
@@ -196,6 +199,9 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         self.numeric_id_to_width = {i["numeric_id"]: i["width"] for i in self.signal_properties}
 
+        self.allign = allign
+        self.downsample = downsample
+
         AbstractContainer.__init__(self, self.number_of_traces)
 
     def generate_trace(self, index):
@@ -226,6 +232,13 @@ class AcquisitionSetupToggle(AbstractContainer):
         # extract key from pickle
         value = self.valueExtract(self)
 
+        if self.allign:
+            # extract the simulation time stamps
+            self.simulation_time_steps = list(set([i[0] for i in self.updates]))
+            self.simulation_time_steps.sort()
+            self.simulation_time_max = self.simulation_time_steps[-1]
+            logger.info("trace consists from %d sample points in time" % (len(self.simulation_time_steps)))
+
         ###################################################################################################################################
         # slow slow slow remap this to something performant
         ###################################################################################################################################
@@ -236,8 +249,12 @@ class AcquisitionSetupToggle(AbstractContainer):
         # input  : self.numeric_ids_under_inspection_set      type: set of integer
         # output : leakage                                    type: list of integers
 
-        # extract the leakage
-        leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
+        if self.allign:
+            samples = int(np.floor_divide(self.simulation_time_max, self.downsample))
+            leakage = np.zeros((samples,), dtype=np.int16)
+        else:
+            # extract the leakage
+            leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
 
         # umbauen ummappen auf signale die benutzt werden
         state = ["".ljust(i, "0") for i in self.numeric_id_to_width.values()]
@@ -251,7 +268,12 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         for update in self.updates:
 
-            nextval_index = self.simulation_time_to_index[update[0]]
+            if self.allign:
+                # binning of updates
+                nextval_index = int(np.floor_divide(update[0], self.downsample))
+            else:
+                nextval_index = self.simulation_time_to_index[update[0]]
+
             numeric_id = update[1]
             nextval = update[2]
 
@@ -336,6 +358,9 @@ writeTracesBatchSize = settings["synthesize"]["writeTracesBatchSize"]
 
 valueExtractFunction = getattr(value, settings["synthesize"]["valueExtractFunction"])
 
+allign = settings["synthesize"]["allign"]
+downsample = settings["synthesize"]["downsample"]
+
 # create our acquisition setup
 aqc = AcquisitionSetupToggle(pickleGlob,
                              signalPropertiesFile,
@@ -345,7 +370,9 @@ aqc = AcquisitionSetupToggle(pickleGlob,
                              window=window,
                              windowFrom=windowFrom,
                              windowTo=windowTo,
-                             reload_numeric_ids=True)
+                             reload_numeric_ids=True,
+                             allign=allign,
+                             downsample=downsample)
 
 # export traces to container
 if writeTraces:
