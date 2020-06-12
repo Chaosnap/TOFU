@@ -72,7 +72,7 @@ def _foo_finalize(self):
 
     # size
     n0 = self._partition_count[0]
-    n1 = self._partition_count[0]
+    n1 = self._partition_count[1]
 
     # mean
     m0 = self._acc_x_by_partition[0, 0] / self._partition_count[0]
@@ -112,17 +112,23 @@ ttest_engine = TTestEngine("ttest", partition_function)
 plt.axhline(y=+4.5, color='r', linestyle='-')
 plt.axhline(y=-4.5, color='r', linestyle='-')
 
-# # gimli
-# plt.axvline(x=1358530, color='g', linestyle='-')
-# plt.axvline(x=1360770, color='g', linestyle='-')
+# gimli
+plt.axvline(x=1358530, color='g', linestyle='-')
+plt.axvline(x=1360770, color='g', linestyle='-')
 
-# # key loading
-# plt.axvline(x=1358670, color='g', linestyle='-')
-# plt.axvline(x=1358703, color='g', linestyle='-')
+# key loading
+plt.axvline(x=1358670, color='g', linestyle='-')
+plt.axvline(x=1358703, color='g', linestyle='-')
 
-# # tag
-# plt.axvline(x=1360500, color='g', linestyle='-')
-# plt.axvline(x=1360700, color='g', linestyle='-')
+# tag
+plt.axvline(x=1360500, color='g', linestyle='-')
+plt.axvline(x=1360700, color='g', linestyle='-')
+
+
+# plt.axvline(x=32455, color='g', linestyle='-')
+# plt.axvline(x=32653, color='g', linestyle='-')
+# plt.axvline(x=32645, color='y', linestyle='-')
+# plt.axvline(x=32662, color='y', linestyle='-')
 
 
 plot_output = MatPlotLibOutputMethod(ttest_engine)

@@ -2,7 +2,7 @@
     "parse": {
         "fastMode": true,
         "database": "./traces_func/traces.db",
-        "vcdGlob": "./traces_func/dump_*.vcd",
+        "vcdGlob": "./traces_func/dump_0.vcd",
         "signalPropertiesFile": "./traces_func/signal_properties.pickle"
     },
     "synthesize": {

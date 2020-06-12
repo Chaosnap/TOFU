@@ -16,7 +16,7 @@
         "windowFrom": null,
         "windowTo": null,
         "valueExtractFunction": "valueExtractIndex",
-        "writeTraces": false,
+        "writeTraces": true,
         "writeTracesBatchSize": 1,
         "traceFileName": "./traces_behav/traces_all_hd.h5"
     },
