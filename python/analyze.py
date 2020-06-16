@@ -99,7 +99,8 @@ def _foo_finalize(self):
         result = (m0 - m1) / (np.sqrt((v0 / n0) + (v1 / n1)))
         logger.debug("result: %s" % result)
         # since we have no noise set the vals to zero
-        # result = np.nan_to_num(result, copy=False, nan=0, posinf=0, neginf=0)
+        result = np.nan_to_num(result, copy=False, nan=0, posinf=0, neginf=0)
+        # result = np.nan_to_num(result, copy=False, nan=-4.5, posinf=-4.5, neginf=-4.5)
 
     return result
 
@@ -131,17 +132,20 @@ if not settings["synthesize"]["allign"]:
 
 
 ###################################################################################################################################
-
-dict_output = DictOutputMethod(ttest_engine, filename="ttest.pickle")
-session = Session(container, output_method=dict_output)
+with h5py.File("ttest.h5", "w") as f:
+    pass
+hdf5_output = Hdf5OutputMethod("ttest.h5", ttest_engine)
+session = Session(container, output_method=hdf5_output)
 session.add_engine(ttest_engine)
 # session.run(batch_size=2500)
 session.run()
 
 # reading back the stored ttest numpy array
-with open("ttest.pickle", "rb") as f:
-    ttest = pickle.load(f)
-ttest = ttest["ttest"][list(ttest["ttest"].keys())[0]]
+with h5py.File("ttest.h5", "r") as f:
+    e = list(f.keys())[0]
+    g = list(f[e])[0]
+    ttest = np.array(f[e][g])
+
 
 # modify points
 ttest = np.nan_to_num(ttest, copy=False, nan=0, posinf=0, neginf=0)
@@ -150,23 +154,23 @@ ttest = np.nan_to_num(ttest, copy=False, nan=0, posinf=0, neginf=0)
 plt.axhline(y=+4.5, color='r', linestyle='-')
 plt.axhline(y=-4.5, color='r', linestyle='-')
 
-# gimli
-plt.axvline(x=1358530, color='g', linestyle='-')
-plt.axvline(x=1360770, color='g', linestyle='-')
+if not settings["synthesize"]["allign"]:
+    # gimli
+    plt.axvline(x=1358530, color='g', linestyle='-')
+    plt.axvline(x=1360770, color='g', linestyle='-')
 
-# key loading
-plt.axvline(x=1358670, color='g', linestyle='-')
-plt.axvline(x=1358703, color='g', linestyle='-')
+    # key loading
+    plt.axvline(x=1358670, color='g', linestyle='-')
+    plt.axvline(x=1358703, color='g', linestyle='-')
 
-# tag
-plt.axvline(x=1360500, color='g', linestyle='-')
-plt.axvline(x=1360700, color='g', linestyle='-')
+    # tag
+    plt.axvline(x=1360500, color='g', linestyle='-')
+    plt.axvline(x=1360700, color='g', linestyle='-')
 
-
-# plt.axvline(x=32455, color='g', linestyle='-')
-# plt.axvline(x=32653, color='g', linestyle='-')
-# plt.axvline(x=32645, color='y', linestyle='-')
-# plt.axvline(x=32662, color='y', linestyle='-')
+    # plt.axvline(x=32455, color='g', linestyle='-')
+    # plt.axvline(x=32653, color='g', linestyle='-')
+    # plt.axvline(x=32645, color='y', linestyle='-')
+    # plt.axvline(x=32662, color='y', linestyle='-')
 
 plt.title("ttest as specified in: %s" % (settingsFile))
 plt.plot(ttest)

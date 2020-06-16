@@ -12,11 +12,11 @@
         "windowFrom": null,
         "windowTo": null,
         "valueExtractFunction": "valueExtractIndex",
-        "writeTraces": true,
+        "writeTraces": false,
         "writeTracesBatchSize": 1,
         "traceFileName": "./traces_post_imp_timing/traces_all_hd.h5",
-        "allign": false,
-        "downsample": 1e4
+        "allign": true,
+        "downsample": 1e5
     },
     "analyze": {
         "traceFileName": "./traces_post_imp_timing/traces_all_hd.h5",
