@@ -225,16 +225,16 @@ class AcquisitionSetupToggle(AbstractContainer):
         # horizontal mode assemmble state from changes and derive leakage
         # fetch all updates
         logger.info("extracting state updates from picklefile")
-        self.updates = None
+        updates = None
         with open(self.pickleFiles[index], 'rb') as f:
-            self.updates = pickle.load(f)
+            updates = pickle.load(f)
 
         # extract key from pickle
         value = self.valueExtract(self)
 
         if self.allign:
             # extract the simulation time stamps
-            self.simulation_time_steps = list(set([i[0] for i in self.updates]))
+            self.simulation_time_steps = list(set([i[0] for i in updates]))
             self.simulation_time_steps.sort()
             self.simulation_time_max = self.simulation_time_steps[-1]
             logger.info("trace consists from %d sample points in time" % (len(self.simulation_time_steps)))
@@ -242,7 +242,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         ###################################################################################################################################
         # slow slow slow remap this to something performant
         ###################################################################################################################################
-        # input  : self.updates                               type: list of tuples
+        # input  : updates                               type: list of tuples
         # input  : self.simulation_time_to_index              type: dictonary int to int mapping
         # input  : self.windowFrom                            type: integer
         # input  : self.windowTo                              tpye: integer
@@ -251,7 +251,7 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         if self.allign:
             samples = int(np.floor_divide(self.simulation_time_max, self.downsample))
-            leakage = np.zeros((samples,), dtype=np.int16)
+            leakage = np.zeros((samples,), dtype=np.uint32)
         else:
             # extract the leakage
             leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
@@ -260,13 +260,13 @@ class AcquisitionSetupToggle(AbstractContainer):
         state = ["".ljust(i, "0") for i in self.numeric_id_to_width.values()]
 
         logger.info("iterating through all state updates")
-        logger.info("performing %d updates" % (len(self.updates)))
+        logger.info("performing %d updates" % (len(updates)))
 
         nextval_index = 0
         nextval_index_old = 0
         toggles = 0
 
-        for update in self.updates:
+        for update in updates:
 
             if self.allign:
                 # binning of updates
