@@ -1,6 +1,6 @@
 {
     "parse": {
-        "vcdGlob": "./traces_unprotected/dump_0.vcd",
+        "vcdGlob": "./traces_unprotected/dump_*.vcd",
         "signalPropertiesFile": "./traces_unprotected/signal_properties.pickle"
     },
     "synthesize": {
@@ -21,7 +21,7 @@
     "analyze": {
         "traceFileName": "./traces_unprotected/traces_all_hd.h5",
         "value_signal_fixed": [
-            1
+            50
         ]
     }
 }

@@ -16,12 +16,12 @@
         "writeTracesBatchSize": 1,
         "traceFileName": "./traces_post_imp_timing/traces_all_hd.h5",
         "allign": false,
-        "downsample": 1e5
+        "downsample": 1e4
     },
     "analyze": {
         "traceFileName": "./traces_post_imp_timing/traces_all_hd.h5",
         "value_signal_fixed": [
-            1
+            10
         ]
     }
 }
