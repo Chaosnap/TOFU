@@ -62,4 +62,4 @@ def valueExtractIndex(self):
     # create a logger
     logger = logging.getLogger('synthesize')
     logger.info("extracting value (key) i.e. index: %d" % (self.index))
-    return np.array([[self.index >= 49]], dtype=np.uint8)
+    return np.array([[self.index]], dtype=np.uint8)

@@ -62,10 +62,12 @@ fixedVal = settings["analyze"]["value_signal_fixed"]
 
 
 ###################################################################################################################################
+# our partitioning is based on the index of the trace the first half of the traces is random the last half is fixed key
+# so fixedVal should be the index of the first fixed key trace
 
 def partition_function(value):
     # partition_function must take 1 argument: the value returned by the container at each trace
-    compare = ([value][0] == np.array(fixedVal, dtype=np.uint8)).all()
+    compare = ([value][0] >= np.array(fixedVal, dtype=np.uint8)).all()
     logger.debug("compare with fixed value: %r" % (compare))
     # return random.randint(0, 1)
     return compare
@@ -117,7 +119,18 @@ ttest_engine = TTestEngine("ttest", partition_function)
 # session.run()
 
 ###################################################################################################################################
+# Extract timestamps
+if not settings["synthesize"]["allign"]:
+    import glob
+    with open(glob.glob(settings["synthesize"]["pickleGlob"])[0], 'rb') as f:
+        simulation_time_steps = pickle.load(f)
+    simulation_time_steps = list(set([i[0] for i in simulation_time_steps]))
+    simulation_time_steps.sort()
+    # drop last point due to hamming distance
+    simulation_time_steps = simulation_time_steps[:-1]
 
+
+###################################################################################################################################
 
 dict_output = DictOutputMethod(ttest_engine, filename="ttest.pickle")
 session = Session(container, output_method=dict_output)
