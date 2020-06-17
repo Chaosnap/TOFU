@@ -147,14 +147,18 @@ with h5py.File("ttest.h5", "r") as f:
     ttest = np.array(f[e][g])
 
 
+# absolut value
+ttest = np.abs(ttest)
+
 # modify points
-ttest = np.nan_to_num(ttest, copy=False, nan=0, posinf=0, neginf=0)
+ttest = np.nan_to_num(ttest, copy=False, nan=-1, posinf=-1, neginf=-1)
+
 
 # plot mix max t value
 plt.axhline(y=+4.5, color='r', linestyle='-')
-plt.axhline(y=-4.5, color='r', linestyle='-')
+# plt.axhline(y=-4.5, color='r', linestyle='-')
 
-if not settings["synthesize"]["allign"]:
+if not settings["synthesize"]["allign"] and True:
     # gimli
     plt.axvline(x=1358530, color='g', linestyle='-')
     plt.axvline(x=1360770, color='g', linestyle='-')

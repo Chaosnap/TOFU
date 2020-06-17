@@ -21,7 +21,7 @@
     "analyze": {
         "traceFileName": "./traces_behav/traces_all_hd.h5",
         "value_signal_fixed": [
-            1
+            50
         ]
     }
 }
