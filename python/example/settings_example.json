@@ -1,13 +1,9 @@
 {
     "parse": {
-        "fastMode": true,
-        "database": "./example/traces.db",
         "vcdGlob": "./example/dummy-vivado.vcd",
         "signalPropertiesFile": "./example/signal_properties.pickle"
     },
     "synthesize": {
-        "fastMode": true,
-        "database": "./example/traces.db",
         "pickleGlob": "./example/dummy-vivado.pickle",
         "signalsFileName": "./example/signals.json",
         "signalPropertiesFile": "./example/signal_properties.pickle",
@@ -18,7 +14,9 @@
         "valueExtractFunction": "valueExtractIndex",
         "writeTraces": false,
         "writeTracesBatchSize": 10,
-        "traceFileName": "./example/traces_all_hw.h5"
+        "traceFileName": "./example/traces_all_hw.h5",
+        "allign": false,
+        "downsample": 1e5
     },
     "analyze": {
         "traceFileName": "./example/traces.h5",
