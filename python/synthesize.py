@@ -390,7 +390,7 @@ if writeTraces:
 # plt.show()
 
 # verwendung mit externem tool
-# aqc.generate_trace(1)
+# aqc.generate_trace(0)
 
 
 logger.info("synthesize traces from pickles finished")
