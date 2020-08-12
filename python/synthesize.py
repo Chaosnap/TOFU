@@ -302,7 +302,7 @@ class AcquisitionSetupToggle(AbstractContainer):
 
                 nextval_index_old = nextval_index
 
-            nextval_padded = nextval.ljust(self.numeric_id_to_width[numeric_id], "0")
+            nextval_padded = nextval.rjust(self.numeric_id_to_width[numeric_id], "0")
             toggles += hammingDistanceFromBitString(state[numeric_id], nextval_padded)
 
             state[numeric_id] = nextval_padded
