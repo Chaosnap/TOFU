@@ -158,7 +158,7 @@ ttest = np.nan_to_num(ttest, copy=False, nan=-1, posinf=-1, neginf=-1)
 plt.axhline(y=+4.5, color='r', linestyle='-')
 # plt.axhline(y=-4.5, color='r', linestyle='-')
 
-if not settings["synthesize"]["allign"] and True:
+if not settings["synthesize"]["allign"] and False:
     # gimli
     plt.axvline(x=1358530, color='g', linestyle='-')
     plt.axvline(x=1360770, color='g', linestyle='-')
