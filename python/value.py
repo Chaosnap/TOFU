@@ -19,7 +19,6 @@ class valueExtractException(Exception):
 
 
 def valueExtract(self):
-
     # create a logger
     logger = logging.getLogger('synthesize')
     logger.info("extracting value (key)")
