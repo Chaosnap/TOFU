@@ -157,24 +157,7 @@ ttest = np.nan_to_num(ttest, copy=False, nan=-1, posinf=-1, neginf=-1)
 # plot mix max t value
 plt.axhline(y=+4.5, color='r', linestyle='-')
 # plt.axhline(y=-4.5, color='r', linestyle='-')
-
-if not settings["synthesize"]["allign"] and False:
-    # gimli
-    plt.axvline(x=1358530, color='g', linestyle='-')
-    plt.axvline(x=1360770, color='g', linestyle='-')
-
-    # key loading
-    plt.axvline(x=1358670, color='g', linestyle='-')
-    plt.axvline(x=1358703, color='g', linestyle='-')
-
-    # tag
-    plt.axvline(x=1360500, color='g', linestyle='-')
-    plt.axvline(x=1360700, color='g', linestyle='-')
-
-    # plt.axvline(x=32455, color='g', linestyle='-')
-    # plt.axvline(x=32653, color='g', linestyle='-')
-    # plt.axvline(x=32645, color='y', linestyle='-')
-    # plt.axvline(x=32662, color='y', linestyle='-')
+# plt.axvline(x=1358530, color='g', linestyle='-')
 
 plt.title("ttest as specified in: %s" % (settingsFile))
 plt.plot(ttest)
