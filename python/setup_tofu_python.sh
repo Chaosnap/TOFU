@@ -24,6 +24,15 @@ git clone https://github.com/Ledger-Donjon/lascar lascar.git
 cd lascar.git
 python3 setup.py install
 
+# Clone Attack-Framework
+git clone https://gitlab.lrz.de/TUEISEC-Intern/Attack-Framework.git attackframework.git
+cd attackframework.git
+# Pick version 1.3.10
+git checkout 1.3.10
+# Install
+python3 setup.py install
+
 cd $BASEDIR
 
 rm -rf lascar.git
+rm -rf attackframework.git

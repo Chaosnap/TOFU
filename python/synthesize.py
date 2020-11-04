@@ -24,8 +24,6 @@ import importlib
 import time
 import matplotlib.pyplot as plt
 from lascar import AbstractContainer, Trace, Hdf5Container
-from attack.helper.utils import HDF5utils as h5utils
-from attack.helper.utils import JSONutils as jsonutils
 
 # supress a lascar warning
 # h5py.get_config().default_file_mode = "w"
@@ -54,6 +52,8 @@ if namespace.settings is not None:
     settingsFile = namespace.settings
 if namespace.tueisec:
     tueisec_format = True
+    from attack.helper.utils import HDF5utils as h5utils
+    from attack.helper.utils import JSONutils as jsonutils
 settings = None
 logger.info("loading settings from file: %s" % (settingsFile))
 with open(settingsFile) as fid:
