@@ -25,9 +25,6 @@ from lascar import Hdf5Container
 # supress a lascar warning
 h5py.get_config().default_file_mode = "r+"
 
-# work with huge plots
-plt.rcParams['agg.path.chunksize'] = 10000
-
 # create a logger
 logger = logging.getLogger('convert')
 if (logger.hasHandlers()):
