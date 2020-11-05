@@ -29,7 +29,7 @@ h5py.get_config().default_file_mode = "r+"
 plt.rcParams['agg.path.chunksize'] = 10000
 
 # create a logger
-logger = logging.getLogger('analyze')
+logger = logging.getLogger('convert')
 if (logger.hasHandlers()):
     logger.handlers.clear()
 ch = logging.StreamHandler()
@@ -56,8 +56,8 @@ with open(settingsFile) as fid:
 logger.info("starting conversion")
 
 
-traceFileName = settings["synthesize"]["traceFileName"]
-container = Hdf5Container(traceFileName)
+container = Hdf5Container(settings["synthesize"]["traceFileName"])
+traceFileName = "tueisec_" + settings["synthesize"]["traceFileName"]
 
 
 # Use the file name specified by the settings file

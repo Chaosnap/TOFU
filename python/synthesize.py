@@ -42,18 +42,11 @@ logger.setLevel(logging.INFO)
 
 # loading settings from file
 settingsFile = "./settings.json"
-tueisec_format = False
 parser = argparse.ArgumentParser(description='TOFU')
 parser.add_argument('-s', '--settings', type=str, help='path to settings.json', required=False)
-parser.add_argument('--tueisec-format', action="store_true", help='output .hdf5 compatible with TUEISEC Attackframework format',
-                    default=False, required=False, dest='tueisec')
 namespace = parser.parse_args()
 if namespace.settings is not None:
     settingsFile = namespace.settings
-if namespace.tueisec:
-    tueisec_format = True
-    from attack.helper.utils import HDF5utils as h5utils
-    from attack.helper.utils import JSONutils as jsonutils
 settings = None
 logger.info("loading settings from file: %s" % (settingsFile))
 with open(settingsFile) as fid:
@@ -383,31 +376,11 @@ aqc = AcquisitionSetupToggle(pickleGlob,
 
 # export traces to container
 if writeTraces:
-    if tueisec_format:
-
-        # Use the file name specified by the settings file
-        config = {"HDF5": {"output_file": traceFileName}}
-        # create a dataset according the size and datatype of leakages
-        config["HDF5"]['datasets'] = {"samples": {
-            "datatype": aqc.leakages.dtype,
-            "dim": aqc.leakages.shape[1],
-            "create": True
-        }}
-        # Initialize the HDF5 file
-        h5filehandle = h5utils.hdf5_file_init(config, target_info="VCD dump simulation by TOFU tool.")
-        # TODO: educated guess that aqc.leakages.shape[0] is the number of traces if more than one exists
-
-        h5utils.hdf5_add_group(h5filehandle, config, N_traces=aqc.leakages.shape[0], noSamples=aqc.leakages.shape[1])
-
-        h5utils.hdf5_add_data(h5filehandle=h5filehandle, dataset_name="samples", data=aqc[0][0], trace_number=0, group=0)
-        # close HDF5 file
-        h5filehandle = h5utils.hdf5_file_close(h5filehandle)
-    else:
-        try:
-            hdf5_container._file.close()
-        except NameError:
-            pass
-        hdf5_container = Hdf5Container.export(aqc, traceFileName, batch_size=writeTracesBatchSize)
+    try:
+        hdf5_container._file.close()
+    except NameError:
+        pass
+    hdf5_container = Hdf5Container.export(aqc, traceFileName, batch_size=writeTracesBatchSize)
 
 # print("trace 0:", aqc[0])
 # print("trace 10:", aqc[10])
