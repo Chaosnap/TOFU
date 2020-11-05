@@ -10,15 +10,6 @@
 # Date:   18.05.2020
 # -------------------------------------------------------------------------------------------------
 
-import argparse
-import logging
-import time
-import numpy as np
-import h5py
-import matplotlib.pyplot as plt
-from lascar import Hdf5Container, Container
-
-
 class tueisecException(Exception):
     pass
 
@@ -47,4 +38,4 @@ def export(container, settings):
 
     h5utils.hdf5_add_data(h5filehandle=h5filehandle, dataset_name="samples", data=container[0][0], trace_number=0, group=0)
     # close HDF5 file
-    h5filehandle = h5utils.hdf5_file_close(h5filehandle)
+    h5utils.hdf5_file_close(h5filehandle)
