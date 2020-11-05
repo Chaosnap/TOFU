@@ -23,5 +23,9 @@
         "value_signal_fixed": [
             1
         ]
+    },
+    "convert": {
+        "lascarFileName": "./example/traces.h5",
+        "tueisecFileName": "./example/tueisec_traces.h5"
     }
 }

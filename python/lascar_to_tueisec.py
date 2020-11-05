@@ -56,12 +56,10 @@ with open(settingsFile) as fid:
 logger.info("starting conversion")
 
 
-container = Hdf5Container(settings["synthesize"]["traceFileName"])
-traceFileName = "tueisec_" + settings["synthesize"]["traceFileName"]
-
+container = Hdf5Container(settings["convert"]["lascarFileName"])
 
 # Use the file name specified by the settings file
-config = {"HDF5": {"output_file": "foo.h5"}}
+config = {"HDF5": {"output_file": settings["convert"]["tueisecFileName"]}}
 # create a dataset according the size and datatype of leakages
 config["HDF5"]['datasets'] = {"samples": {
     "datatype": container.leakages.dtype,
