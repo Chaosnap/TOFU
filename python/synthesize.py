@@ -46,7 +46,7 @@ tueisec_format = False
 parser = argparse.ArgumentParser(description='TOFU')
 parser.add_argument('-s', '--settings', type=str, help='path to settings.json', required=False)
 parser.add_argument('--tueisec-format', action="store_true", help='output .hdf5 compatible with TUEISEC Attackframework format',
-                     default=False, required=False, dest='tueisec')
+                    default=False, required=False, dest='tueisec')
 namespace = parser.parse_args()
 if namespace.settings is not None:
     settingsFile = namespace.settings
@@ -386,13 +386,13 @@ if writeTraces:
     if tueisec_format:
 
         # Use the file name specified by the settings file
-        config = {"HDF5": {"output_file" : traceFileName}}
+        config = {"HDF5": {"output_file": traceFileName}}
         # create a dataset according the size and datatype of leakages
-        config["HDF5"]['datasets'] = {"samples":{
-				"datatype": aqc.leakages.dtype,
-				"dim": aqc.leakages.shape[1],
-				"create": True
-			}}
+        config["HDF5"]['datasets'] = {"samples": {
+            "datatype": aqc.leakages.dtype,
+            "dim": aqc.leakages.shape[1],
+            "create": True
+        }}
         # Initialize the HDF5 file
         h5filehandle = h5utils.hdf5_file_init(config, target_info="VCD dump simulation by TOFU tool.")
         # TODO: educated guess that aqc.leakages.shape[0] is the number of traces if more than one exists
