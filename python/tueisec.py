@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# TOFU: lascar_to_tueisec.py
+# TOFU: tueisec.py
 # -------------------------------------------------------------------------------------------------
 # Copyright (c) Technical University of Munich, Chair for Security in Information Technology.
 # All Rights Reserved.
