@@ -10,8 +10,6 @@
 # Date:   18.05.2020
 # -------------------------------------------------------------------------------------------------
 
-from attack.helper.utils import JSONutils as jsonutils
-from attack.helper.utils import HDF5utils as h5utils
 import argparse
 import logging
 import time
@@ -21,7 +19,17 @@ import matplotlib.pyplot as plt
 from lascar import Hdf5Container, Container
 
 
+class tueisecException(Exception):
+    pass
+
+
 def export(container, settings):
+
+    try:
+        from attack.helper.utils import JSONutils as jsonutils
+        from attack.helper.utils import HDF5utils as h5utils
+    except ImportError:
+        raise tueisecException("Attack Framework not installed")
 
     # Use the file name specified by the settings file
     config = {"HDF5": {"output_file": settings["synthesize"]["traceFileName"]}}
