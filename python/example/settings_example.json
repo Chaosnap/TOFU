@@ -16,16 +16,13 @@
         "writeTracesBatchSize": 10,
         "traceFileName": "./example/traces.h5",
         "allign": false,
-        "downsample": 1e5
+        "downsample": 1e5,
+        "format": "tueisec"
     },
     "analyze": {
         "traceFileName": "./example/traces.h5",
         "value_signal_fixed": [
             1
         ]
-    },
-    "convert": {
-        "lascarFileName": "./example/traces.h5",
-        "tueisecFileName": "./example/tueisec_traces.h5"
     }
 }
