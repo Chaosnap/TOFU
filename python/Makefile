@@ -1,8 +1,12 @@
 all:
 	@echo "ich bin eine katze und weiß von nichts"
 
-env:
+venv:
 	bash setup_tofu_python.sh
 
-envclean:
+venv_attack_framework: venv
+	bash setup_attack_framework.sh
+
+
+venvclean:
 	rm -rf tofu_python
