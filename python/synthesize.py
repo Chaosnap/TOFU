@@ -24,7 +24,7 @@ import importlib
 import time
 import matplotlib.pyplot as plt
 from lascar import AbstractContainer, Trace, Hdf5Container
-import lascar_to_tueisec
+import tueisec
 
 # supress a lascar warning
 # h5py.get_config().default_file_mode = "w"
@@ -384,7 +384,7 @@ if writeTraces:
             pass
         hdf5_container = Hdf5Container.export(aqc, traceFileName, batch_size=writeTracesBatchSize)
     elif writeTracesFormat == "tueisec":
-        lascar_to_tueisec.export(aqc, settings)
+        tueisec.export(aqc, settings)
     else:
         synthesizeException("format not supported")
 

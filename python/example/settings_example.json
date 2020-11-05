@@ -17,7 +17,7 @@
         "traceFileName": "./example/traces.h5",
         "allign": false,
         "downsample": 1e5,
-        "format": "tueisec"
+        "format": "lascar"
     },
     "analyze": {
         "traceFileName": "./example/traces.h5",
