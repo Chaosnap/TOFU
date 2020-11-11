@@ -32,10 +32,13 @@ def export(container, settings):
     }}
     # Initialize the HDF5 file
     h5filehandle = h5utils.hdf5_file_init(config, target_info="VCD dump simulation by TOFU tool.")
-    # TODO: educated guess that container.leakages.shape[0] is the number of traces if more than one exists
+    N_traces = container.leakages.shape[0]
+    # create group
+    h5utils.hdf5_add_group(h5filehandle, config, N_traces=N_traces, noSamples=container.leakages.shape[1])
 
-    h5utils.hdf5_add_group(h5filehandle, config, N_traces=container.leakages.shape[0], noSamples=container.leakages.shape[1])
+    # add traces (could also be done by h5utils.hdf5_add_data_multitrace?!)
+    for trace_idx in range(0, N_traces):
+        h5utils.hdf5_add_data(h5filehandle=h5filehandle, dataset_name="samples", data=container[trace_idx][0], trace_number=trace_idx, group=0)
 
-    h5utils.hdf5_add_data(h5filehandle=h5filehandle, dataset_name="samples", data=container[0][0], trace_number=0, group=0)
     # close HDF5 file
     h5utils.hdf5_file_close(h5filehandle)
