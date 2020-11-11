@@ -5,6 +5,7 @@
     },
     "synthesize": {
         "pickleGlob": "./example/dummy-vivado.pickle",
+        "signalsFileNameLiterals": "./example/signals_name.json",
         "signalsFileName": "./example/signals.json",
         "signalPropertiesFile": "./example/signal_properties.pickle",
         "leakageModel": "HammingDistance",
@@ -16,7 +17,8 @@
         "writeTracesBatchSize": 10,
         "traceFileName": "./example/traces.h5",
         "allign": false,
-        "downsample": 1e5
+        "downsample": 1e5,
+        "format": "lascar"
     },
     "analyze": {
         "traceFileName": "./example/traces.h5",

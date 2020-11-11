@@ -24,6 +24,7 @@ import importlib
 import time
 import matplotlib.pyplot as plt
 from lascar import AbstractContainer, Trace, Hdf5Container
+import tueisec
 
 # supress a lascar warning
 # h5py.get_config().default_file_mode = "w"
@@ -354,7 +355,7 @@ windowTo = settings["synthesize"]["windowTo"]
 
 writeTraces = settings["synthesize"]["writeTraces"]
 writeTracesBatchSize = settings["synthesize"]["writeTracesBatchSize"]
-
+writeTracesFormat = settings["synthesize"]["format"]
 
 valueExtractFunction = getattr(value, settings["synthesize"]["valueExtractFunction"])
 
@@ -376,11 +377,17 @@ aqc = AcquisitionSetupToggle(pickleGlob,
 
 # export traces to container
 if writeTraces:
-    try:
-        hdf5_container._file.close()
-    except NameError:
-        pass
-    hdf5_container = Hdf5Container.export(aqc, traceFileName, batch_size=writeTracesBatchSize)
+    if writeTracesFormat == "lascar":
+        try:
+            hdf5_container._file.close()
+        except NameError:
+            pass
+        hdf5_container = Hdf5Container.export(aqc, traceFileName, batch_size=writeTracesBatchSize)
+    elif writeTracesFormat == "tueisec":
+        tueisec.export(aqc, settings)
+    else:
+        synthesizeException("format not supported")
+
 
 # print("trace 0:", aqc[0])
 # print("trace 10:", aqc[10])
