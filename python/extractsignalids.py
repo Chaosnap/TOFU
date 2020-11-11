@@ -1,3 +1,15 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# TOFU: synthesize.py
+# -------------------------------------------------------------------------------------------------
+# Copyright (c) Technical University of Munich, Chair for Security in Information Technology.
+# All Rights Reserved.
+# For internal use only.
+# -------------------------------------------------------------------------------------------------
+# Author: Lars Tebelmann lars.tebelmann@tum.de
+# Date:   11.11.2020
+# -------------------------------------------------------------------------------------------------
+
 import logging
 import json
 import pickle
