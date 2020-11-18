@@ -12,6 +12,8 @@
 
 import pickle
 import re
+import os
+import numpy as np
 
 
 class tueisecException(Exception):
@@ -78,6 +80,15 @@ def export(container, settings):
     n_traces = container.leakages.shape[0]
     # create group
     h5utils.hdf5_add_group(h5filehandle, config, N_traces=n_traces, noSamples=num_samples)
+
+    # find all .npy files in the same folder as the .vcd files and add the data contained as datasets to the HDF5
+    vcddir = os.path.dirname(settings["synthesize"]["pickleGlob"]) + "/"  # same folder as VCD files
+    npyfiles = [f for f in os.listdir(vcddir) if f.endswith('.npy')]  # get list of .npy files
+    for file in npyfiles:
+        # use filename as dataset name
+        datasetname = os.path.splitext(file)[0]
+        # directly copy data. Requiers the user to take care that the correct data is present
+        h5filehandle["0000"][datasetname] = np.load(vcddir + file, 'r')
 
     # add traces (could also be done by h5utils.hdf5_add_data_multitrace?!)
     for trace_idx in range(0, n_traces):
