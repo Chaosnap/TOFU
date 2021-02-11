@@ -255,7 +255,7 @@ class AcquisitionSetupToggle(AbstractContainer):
             leakage = np.zeros((samples,), dtype=np.uint32)
         else:
             # extract the leakage
-            leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.int)
+            leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.uint32)
 
         # umbauen ummappen auf signale die benutzt werden
         state = ["".ljust(i, "0") for i in self.numeric_id_to_width.values()]
