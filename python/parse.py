@@ -201,7 +201,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
         exclude_keys = {"scope"}
         vcd_meta = {x: vcdHeader[x] for x in vcdHeader if x not in exclude_keys}
         with open(signalPropertiesFile.rsplit('.', 1)[0] + '_meta.pickle', 'wb') as f:
-            logger.info("pickling signal properties to file: %s" % (signalPropertiesFile.rsplit('.',1)[0] + '_meta.pickle'))
+            logger.info("pickling signal properties to file: %s" % (signalPropertiesFile.rsplit('.', 1)[0] + '_meta.pickle'))
             pickle.dump(vcd_meta, f, pickle.HIGHEST_PROTOCOL)
 
     # get num id in all but the first trace
