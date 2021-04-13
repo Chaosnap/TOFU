@@ -38,14 +38,21 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.INFO)
 
 # loading settings from file
 settingsFile = "./settings.json"
 parser = argparse.ArgumentParser(description='TOFU')
 parser.add_argument('-s', '--settings', type=str, help='path to settings.json', required=False)
+parser.add_argument('-l', '--loglevel', type=str, help ='specify loglevel', required=False, default="info")
 namespace = parser.parse_args()
+
+# parse loglevel
+loglevel = namespace.loglevel
+numeric_log_id = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_log_id, int):
+	raise ValueError("Invalid log level: %s" % loglevel)
+logger.setLevel(numeric_log_id)
+
 if namespace.settings is not None:
     settingsFile = namespace.settings
 settings = None
@@ -211,6 +218,8 @@ class AcquisitionSetupToggle(AbstractContainer):
         :param index: index of trace, not used here.
         :return:  Trace with leakage from oscilloscope, and value from the dut plaintext/ciphertext
         """
+        # set lascar log level
+        self.logger.setLevel(numeric_log_id)
 
         self.index = index
 
@@ -374,6 +383,8 @@ aqc = AcquisitionSetupToggle(pickleGlob,
                              reload_numeric_ids=True,
                              allign=allign,
                              downsample=downsample)
+# set lascar log level
+aqc.logger.setLevel(numeric_log_id)
 
 # export traces to container
 if writeTraces:
