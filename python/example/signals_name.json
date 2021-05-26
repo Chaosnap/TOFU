@@ -1,8 +1,9 @@
 {
 "include" : [
-    "module TOP"
+    "module LWC_TB"
 ],
 "exclude" : [
-    "module TOP->instr_rdata [31:0]"
+    "module LWC_TB->module uut->module Inst_Cipher->clk",
+    "module LWC_TB->module uut->module Inst_Cipher->rst"
 ]
 }
