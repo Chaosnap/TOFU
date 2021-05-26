@@ -60,8 +60,12 @@ else:
     with open(configFile, "r", encoding="utf-8") as fid:
         signals_under_inspection_names = json.load(fid)
 
-signals_to_include = signals_under_inspection_names["include"]
-signals_to_exclude = signals_under_inspection_names["exclude"]
+try:
+	signals_to_include = signals_under_inspection_names["include"]
+	signals_to_exclude = signals_under_inspection_names["exclude"]
+except KeyError:
+	logging.error("Incompatable format. Use 'exlude'/'include'")
+	exit(1)
 
 # case include and exclude
 if signals_to_include != [] and signals_to_exclude != []:
