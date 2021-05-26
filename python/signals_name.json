@@ -1,8 +1,0 @@
-{
-"include" : [
-    "module TOP"
-],
-"exclude" : [
-    "module TOP->instr_rdata [31:0]"
-]
-}

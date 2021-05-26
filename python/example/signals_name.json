@@ -1,5 +1,8 @@
-[
-    "module LWC_TB->module uut->module Inst_Cipher->clk",
-    "module LWC_TB->module uut->module Inst_Cipher->rst",
-    "module LWC_TB->module uut->module Inst_Cipher->bdi_size [2:0]"
+{
+"include" : [
+    "module TOP"
+],
+"exclude" : [
+    "module TOP->instr_rdata [31:0]"
 ]
+}
