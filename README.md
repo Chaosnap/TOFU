@@ -9,10 +9,21 @@
 TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power traces which can be used for Test Vector Leakage Assessment (TVLA).
 
 # List of files
-	python/parse.py # vcd parser
-	python/synthesize.py #generate synthetic power traces
-	python/analyze.py #welch t test
-	python/settings.json #settings
+
+	.
+	├── analyze.py                   # extract infos from vcd files
+	├── example                      # folder with the examples
+	├── extractsignalids.py          # extract signal ids based on signal names
+	├── Makefile                     # Makefile to build venv and run example
+	├── parse.py                     # parse vcd files
+	├── plotme.py                    # sample plotting file for a ttes
+	├── README.md                    # the file you are looking at
+	├── setup_attack_framework.sh    # setup the attack framework TUEISEC intern only
+	├── setup_tofu_python.sh         # setup tofu venv
+	├── signals.py                   # dump signals to dictionary (debugging)
+	├── synthesize.py                # synthesize power traces
+	├── tueisec.py                   # tueisec export helper
+	└── value.py                     # extract values from vcd trace
 
 # HOWTO
 
