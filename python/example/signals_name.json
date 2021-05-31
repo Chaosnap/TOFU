@@ -1,6 +1,6 @@
 {
 "include" : [
-    "module LWC_TB"
+    "module LWC_TB->module uut->module Inst_Cipher"
 ],
 "exclude" : [
     "module LWC_TB->module uut->module Inst_Cipher->clk",
