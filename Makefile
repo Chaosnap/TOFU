@@ -21,7 +21,7 @@ example: clean
 	@#$(VENV); python3 analyze.py --settings example/settings_example.json
 
 pep:
-	black ./
+	$(VENV); black ./
 
 
 venvclean:
