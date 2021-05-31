@@ -20,5 +20,9 @@ example: clean
 	$(VENV); python3 synthesize.py --settings example/settings_example.json
 	@#$(VENV); python3 analyze.py --settings example/settings_example.json
 
+pep:
+	black ./
+
+
 venvclean:
 	rm -rf tofu_python

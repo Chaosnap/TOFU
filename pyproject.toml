@@ -1,0 +1,10 @@
+[tool.black]
+line-length = 300
+# word of caution: this is a regex and
+# specific to black. it does NOT work
+# for flake8 in setup.cfg
+extend-exclude = '''
+(
+  ^/tofu_python/
+)
+'''
