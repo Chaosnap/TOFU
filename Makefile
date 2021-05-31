@@ -23,6 +23,8 @@ example: clean
 pep:
 	$(VENV); black ./
 
+pep_check:
+	$(VENV); black --check  --diff .
 
 venvclean:
 	rm -rf tofu_python
