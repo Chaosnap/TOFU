@@ -18,9 +18,10 @@ TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power trace
 
   1. Gather VCD traces
   2. Adjust settings file `settings.json` accordingly
-  3. run `python3 parse.py --settings example/settings_example.json`
-  4. run `python3 synthesize.py --settings example/settings_example.json`
-  5. run `python3 analyze.py --settings example/settings_example.json`
+  3. `python3 parse.py --settings example/settings_example.json`
+  4. `python3 extractsignalids.py --settings example/settings_example.json`
+  5. `python3 synthesize.py --settings example/settings_example.json`
+  6. `python3 analyze.py --settings example/settings_example.json`
  
  # Contact
  [Michael Gruber](https://www.ei.tum.de/sec/mitarbeiter/michael-gruber/), [m.gruber@tum.de](mailto:m.gruber@tum.de)

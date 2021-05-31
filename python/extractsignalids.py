@@ -60,6 +60,26 @@ else:
     with open(configFile, "r", encoding="utf-8") as fid:
         signals_under_inspection_names = json.load(fid)
 
+try:
+    signals_to_include = signals_under_inspection_names["include"]
+    signals_to_exclude = signals_under_inspection_names["exclude"]
+except KeyError:
+    logging.error("Incompatable format. Use 'exlude'/'include'")
+    exit(1)
+
+# case include and exclude
+if signals_to_include != [] and signals_to_exclude != []:
+    signals_under_inspection_names = signals_to_include
+# case only include
+elif signals_to_include != []:
+    signals_under_inspection_names = signals_to_include
+# case only exclude
+elif signals_to_exclude != []:
+    signals_under_inspection_names = signals_to_exclude
+# case whether exclude nor include: ERROR
+else:
+    logging.error("No signals to include nor to exclude")
+    exit(1)
 
 # extracting signals from database
 logger.info("extracting signals from signal properties")
@@ -103,6 +123,47 @@ for signal in signal_properties:
 
 # reduce signals to distinct ones
 signals_under_inspection = list(set(signals_under_inspection))
+
+# if there are signals to exclude
+if signals_to_exclude != []:
+    # only exclude
+    if signals_to_include == []:
+        all_signals = []
+        for signal in signal_properties:
+            all_signals.append(int(signal[0]))
+        all_signals = list(set(all_signals))
+        for ids in all_signals:
+            if ids in signals_under_inspection:
+                all_signals.remove(ids)
+        signals_under_inspection = all_signals
+    # include and then exclude
+    else:
+        # find signals to exclude (same as above)
+        modules_under_inspection = []
+        special_signals = [[], []]
+        for k in signals_to_exclude:
+            tmp = k.split("->")
+            if "module" in tmp[-1]:
+                modules_under_inspection.append(k)
+            else:
+                special_signals[0].append(tmp[-1])
+                special_signals[1].append("->".join(tmp[:-1]))
+        # find signal ids to exclude (same as above)
+        signalid_to_exclude = []
+        signals = []
+        for signal in signal_properties:
+            signals.append(int(signal[0]))
+            if any(signal[3] == v for v in modules_under_inspection):
+                signalid_to_exclude.append(int(signal[0]))
+            else:
+                for vdx, v in enumerate(special_signals[1]):
+                    if signal[3] == v:
+                        if signal[1] == special_signals[0][vdx]:
+                            signalid_to_exclude.append(int(signal[0]))
+        # exclude signal_ids from signals_under_inspection
+        for ids in signalid_to_exclude:
+            if ids in signals_under_inspection:
+                signals_under_inspection.remove(ids)
 
 # write file
 with open(configFileOut, "w", encoding="utf-8") as fid:
