@@ -6,6 +6,10 @@
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
     "python.linting.lintOnSave": true,
+    "python.linting.pycodestyleArgs": [
+        "--ignore=E501",
+        "--max-line-length=300"
+    ],
     "python.formatting.provider": "black",
     "python.formatting.blackPath": "${workspaceFolder}/tofu_python/bin/black",
     "python.formatting.blackArgs": [
