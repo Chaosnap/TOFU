@@ -25,15 +25,15 @@ import pickle
 h5py.get_config().default_file_mode = "r+"
 
 # work with huge plots
-plt.rcParams['agg.path.chunksize'] = 10000
+plt.rcParams["agg.path.chunksize"] = 10000
 
 # create a logger
-logger = logging.getLogger('analyze')
-if (logger.hasHandlers()):
+logger = logging.getLogger("analyze")
+if logger.hasHandlers():
     logger.handlers.clear()
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
+formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 logger.setLevel(logging.DEBUG)
@@ -41,8 +41,8 @@ logger.setLevel(logging.INFO)
 
 # loading settings from file
 settingsFile = "./settings.json"
-parser = argparse.ArgumentParser(description='TOFU')
-parser.add_argument('-s', '--settings', type=str, help='path to settings.json', required=False)
+parser = argparse.ArgumentParser(description="TOFU")
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=False)
 namespace = parser.parse_args()
 if namespace.settings is not None:
     settingsFile = namespace.settings
@@ -65,6 +65,7 @@ fixedVal = settings["analyze"]["value_signal_fixed"]
 # our partitioning is based on the index of the trace the first half of the traces is random the last half is fixed key
 # so fixedVal should be the index of the first fixed key trace
 
+
 def partition_function(value):
     # partition_function must take 1 argument: the value returned by the container at each trace
     compare = ([value][0] >= np.array(fixedVal, dtype=np.uint8)).all()
@@ -74,6 +75,7 @@ def partition_function(value):
 
 
 ###################################################################################################################################
+
 
 def _foo_finalize(self):
 
@@ -95,7 +97,7 @@ def _foo_finalize(self):
     logger.debug("v1: %s" % v1)
 
     # how to catch that
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         result = (m0 - m1) / (np.sqrt((v0 / n0) + (v1 / n1)))
         logger.debug("result: %s" % result)
         # since we have no noise set the vals to zero
@@ -123,7 +125,8 @@ ttest_engine = TTestEngine("ttest", partition_function)
 # Extract timestamps
 if not settings["synthesize"]["allign"]:
     import glob
-    with open(glob.glob(settings["synthesize"]["pickleGlob"])[0], 'rb') as f:
+
+    with open(glob.glob(settings["synthesize"]["pickleGlob"])[0], "rb") as f:
         simulation_time_steps = pickle.load(f)
     simulation_time_steps = list(set([i[0] for i in simulation_time_steps]))
     simulation_time_steps.sort()
@@ -155,7 +158,7 @@ ttest = np.nan_to_num(ttest, copy=False, nan=-1, posinf=-1, neginf=-1)
 
 
 # plot mix max t value
-plt.axhline(y=+4.5, color='r', linestyle='-')
+plt.axhline(y=+4.5, color="r", linestyle="-")
 # plt.axhline(y=-4.5, color='r', linestyle='-')
 # plt.axvline(x=1358530, color='g', linestyle='-')
 

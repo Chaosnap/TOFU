@@ -21,12 +21,12 @@ import pickle
 time_start = time.time()
 
 # create a logger
-logger = logging.getLogger('parse')
-if (logger.hasHandlers()):
+logger = logging.getLogger("parse")
+if logger.hasHandlers():
     logger.handlers.clear()
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
+formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 # logger.setLevel(logging.DEBUG)
@@ -34,8 +34,8 @@ logger.setLevel(logging.INFO)
 
 # loading settings from file
 settingsFile = "./settings.json"
-parser = argparse.ArgumentParser(description='TOFU')
-parser.add_argument('-s', '--settings', type=str, help='path to settings.json', required=False)
+parser = argparse.ArgumentParser(description="TOFU")
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=False)
 namespace = parser.parse_args()
 if namespace.settings is not None:
     settingsFile = namespace.settings
@@ -57,9 +57,9 @@ def token_generator(fid):
 
 def buildfromtokens(token):
     collector = []
-    while(True):
+    while True:
         current_token = next(token)
-        if(current_token == "$end"):
+        if current_token == "$end":
             break
         collector.append(current_token)
     collected = " ".join(collector)
@@ -73,6 +73,7 @@ def buildfromtokens(token):
 #             # Ähhhh vielleicht sollte man identifier mit dem scope hashen???
 #             blah[var["identifier"]] = var["name"]
 #     return blah
+
 
 def identifierToNames(vcdHeader):
     blah = {}
@@ -92,7 +93,7 @@ def identifierToNames(vcdHeader):
 
 # sort naturaly not in aphabetic order
 def natural_sort_key(s):
-    natural_sort_regex = re.compile('([0-9]+)')
+    natural_sort_regex = re.compile("([0-9]+)")
     return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
 
 
@@ -124,42 +125,42 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
 
     logger.info("extracting header")
     # extract header
-    while(True):
+    while True:
         # extract header from value change dump
         keyword = next(tokens)
         # process extracted data
-        if(keyword == "$comment"):
+        if keyword == "$comment":
             comment = buildfromtokens(tokens)
             # logger.debug("comment: %s" % comment)
             vcdHeader[keyword[1:]] = comment
 
-        if(keyword == "$date"):
+        if keyword == "$date":
             date = buildfromtokens(tokens)
             # logger.debug("date: %s" % date)
             vcdHeader[keyword[1:]] = date
 
-        elif(keyword == "$version"):
+        elif keyword == "$version":
             version = buildfromtokens(tokens)
             # logger.debug("version: %s" % version)
             vcdHeader[keyword[1:]] = version
 
-        elif(keyword == "$timescale"):
+        elif keyword == "$timescale":
             timescale = buildfromtokens(tokens)
             # logger.debug("timescale: %s" % timescale)
             vcdHeader[keyword[1:]] = timescale
 
-        elif(keyword == "$scope"):
+        elif keyword == "$scope":
             scope = buildfromtokens(tokens)
             currScope.append(scope)
             # logger.debug("->".join(currScope))
             vcdHeader["scope"]["->".join(currScope)] = []
 
-        elif(keyword == "$upscope"):
+        elif keyword == "$upscope":
             upscope = buildfromtokens(tokens)
             # logger.debug("upscope: %s" % upscope)
             currScope.pop()
 
-        elif(keyword == "$var"):
+        elif keyword == "$var":
             var = buildfromtokens(tokens)
             # logger.debug("var: %s" % var)
             match = re.match("^wire\\s+([0-9]+)\\s+(\\S*)\\s+(.*)$", var)
@@ -174,7 +175,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
 
             vcdHeader["scope"]["->".join(currScope)].append({"name": name, "width": int(width), "identifier": identifier})
 
-        elif(keyword == "$enddefinitions"):
+        elif keyword == "$enddefinitions":
             enddefinition = buildfromtokens(tokens)
             # logger.debug("enddefinition: %s" % enddefinition)
             break
@@ -193,15 +194,15 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
                 iddict[signal["scope"] + "->" + signal["name"]] = signal["numeric_id"]
 
         # pickle that shit
-        with open(signalPropertiesFile, 'wb') as f:
+        with open(signalPropertiesFile, "wb") as f:
             logger.info("pickling signal properties to file: %s" % (signalPropertiesFile))
             pickle.dump(signal_properties, f, pickle.HIGHEST_PROTOCOL)
 
         # pickle the metadata
         exclude_keys = {"scope"}
         vcd_meta = {x: vcdHeader[x] for x in vcdHeader if x not in exclude_keys}
-        with open(signalPropertiesFile.rsplit('.', 1)[0] + '_meta.pickle', 'wb') as f:
-            logger.info("pickling signal properties to file: %s" % (signalPropertiesFile.rsplit('.', 1)[0] + '_meta.pickle'))
+        with open(signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle", "wb") as f:
+            logger.info("pickling signal properties to file: %s" % (signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle"))
             pickle.dump(vcd_meta, f, pickle.HIGHEST_PROTOCOL)
 
     # get num id in all but the first trace
@@ -233,7 +234,7 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
         elif match_dumpvars is not None:
             # extract initial value
             for dumpvar_token in tokens:
-                if(dumpvar_token == "$end"):
+                if dumpvar_token == "$end":
                     break
 
                 match_dumpvar_scalar = re.match("^([01xXzZ])(.+)$", dumpvar_token)

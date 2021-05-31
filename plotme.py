@@ -3,12 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 
-parser = argparse.ArgumentParser(description='FOOBAR')
-parser.add_argument('-f', '--file', type=str, help='path to ttest hdf', required=True)
+parser = argparse.ArgumentParser(description="FOOBAR")
+parser.add_argument("-f", "--file", type=str, help="path to ttest hdf", required=True)
 namespace = parser.parse_args()
 
 
-with h5py.File(namespace.file, 'r') as f:
+with h5py.File(namespace.file, "r") as f:
     foo = list(f.keys())[0]
     bar = list(f[foo].keys())[0]
     a = np.array(f[foo][bar])
@@ -16,7 +16,7 @@ with h5py.File(namespace.file, 'r') as f:
 a = np.abs(a)
 
 
-plt.axhline(y=+4.5, color='r', linestyle='-')
+plt.axhline(y=+4.5, color="r", linestyle="-")
 
 # # key loading
 # plt.axvline(x=26406, color='g', linestyle='-')

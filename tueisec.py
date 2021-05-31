@@ -27,7 +27,7 @@ def convert_time_scale(timescale_string):
     :return: timescale: float
     :return: timefactor: float
     """
-    timescale = [re.findall(r'(\d+?)(\w+)', timescale_string)[0]][0]
+    timescale = [re.findall(r"(\d+?)(\w+)", timescale_string)[0]][0]
     if timescale[1] == "ps":
         timefactor = 1e-12
     elif timescale[1] == "ns":
@@ -51,27 +51,21 @@ def export(container, settings):
     # Use the file name specified by the settings file
     config = {"HDF5": {"output_file": settings["synthesize"]["traceFileName"]}}
     # create a dataset according the size and datatype of leakages
-    config["HDF5"]['datasets'] = {"samples": {
-        "datatype": container.leakages.dtype,
-        "dim": None,
-        "create": True
-    }}
+    config["HDF5"]["datasets"] = {"samples": {"datatype": container.leakages.dtype, "dim": None, "create": True}}
     num_samples = container.leakages.shape[1]
     try:
         # load the VCD metadata
-        with open(container.signalPropertiesFile.rsplit('.', 1)[0] + '_meta.pickle', 'rb') as f:
+        with open(container.signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle", "rb") as f:
             vcd_meta = pickle.load(f)
 
         timescale, timefactor = convert_time_scale(vcd_meta["timescale"])
 
-        config["scope"] = {"sampling": {
-            "sampling rate [S/s]": 1 / (timescale * timefactor),
-            "sampling duration [s]": (container.simulation_time_steps[-1] - container.simulation_time_steps[-2]) * (
-                    len(container.simulation_time_steps) - 1) * timefactor
-        },
+        config["scope"] = {
+            "sampling": {"sampling rate [S/s]": 1 / (timescale * timefactor), "sampling duration [s]": (container.simulation_time_steps[-1] - container.simulation_time_steps[-2]) * (len(container.simulation_time_steps) - 1) * timefactor},
             "type": vcd_meta["version"],
             "channel1": {},
-            "trigger": {}}
+            "trigger": {},
+        }
     except FileNotFoundError:
         pass
 
@@ -83,17 +77,16 @@ def export(container, settings):
 
     # find all .npy files in the same folder as the .vcd files and add the data contained as datasets to the HDF5
     vcddir = os.path.dirname(settings["synthesize"]["pickleGlob"]) + "/"  # same folder as VCD files
-    npyfiles = [f for f in os.listdir(vcddir) if f.endswith('.npy')]  # get list of .npy files
+    npyfiles = [f for f in os.listdir(vcddir) if f.endswith(".npy")]  # get list of .npy files
     for file in npyfiles:
         # use filename as dataset name
         datasetname = os.path.splitext(file)[0]
         # directly copy data. Requiers the user to take care that the correct data is present
-        h5filehandle["0000"][datasetname] = np.load(vcddir + file, 'r')
+        h5filehandle["0000"][datasetname] = np.load(vcddir + file, "r")
 
     # add traces (could also be done by h5utils.hdf5_add_data_multitrace?!)
     for trace_idx in range(0, n_traces):
-        h5utils.hdf5_add_data(h5filehandle=h5filehandle, dataset_name="samples", data=container[trace_idx][0],
-                              trace_number=trace_idx, group=0)
+        h5utils.hdf5_add_data(h5filehandle=h5filehandle, dataset_name="samples", data=container[trace_idx][0], trace_number=trace_idx, group=0)
 
     # close HDF5 file
     h5utils.hdf5_file_close(h5filehandle)

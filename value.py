@@ -20,7 +20,7 @@ class valueExtractException(Exception):
 
 def valueExtract(self):
     # create a logger
-    logger = logging.getLogger('synthesize')
+    logger = logging.getLogger("synthesize")
     logger.info("extracting value (key)")
 
     value_signal_numeric_id = 6776
@@ -37,21 +37,21 @@ def valueExtract(self):
     for update in self.updates:
         if update[0] >= value_signal_time_from and update[0] <= value_signal_time___to and update[1] == value_signal_numeric_id:
             foo = update[2]
-            value_signal_list.append(bytearray(int("0b" + foo, 2).to_bytes(4, 'big')))
-    assert(len(value_signal_list) == 16)
+            value_signal_list.append(bytearray(int("0b" + foo, 2).to_bytes(4, "big")))
+    assert len(value_signal_list) == 16
 
     # unshare
     for i in range(0, 8):
         x = value_signal_list[i * 2]
         y = value_signal_list[i * 2 + 1]
-        assert(len(x) == len(y))
+        assert len(x) == len(y)
         unshared = bytes(x ^ y for (x, y) in zip(x, y))
         value_signal_list_unshared.append(unshared)
 
     # flatten
     value = [item for sub in value_signal_list_unshared for item in sub]
 
-    assert(len(value) == 32)
+    assert len(value) == 32
     value = np.array([value], dtype=np.uint8)
 
     return value
@@ -59,6 +59,6 @@ def valueExtract(self):
 
 def valueExtractIndex(self):
     # create a logger
-    logger = logging.getLogger('synthesize')
+    logger = logging.getLogger("synthesize")
     logger.info("extracting value (key) i.e. index: %d" % (self.index))
     return np.array([[self.index]], dtype=np.uint8)

@@ -17,21 +17,20 @@ import argparse
 import os.path
 
 # create a logger
-logger = logging.getLogger('extractsignalids')
-if (logger.hasHandlers()):
+logger = logging.getLogger("extractsignalids")
+if logger.hasHandlers():
     logger.handlers.clear()
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
+formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 logger.setLevel(logging.DEBUG)
 logger.setLevel(logging.INFO)
 
 # loading settings from file
-parser = argparse.ArgumentParser(description='Extract signal IDs for given modules and signals. Requires '
-                                             '"signalsFileNameLiterals" entry')
-parser.add_argument('-s', '--settings', type=str, help='path to settings.json', required=True)
+parser = argparse.ArgumentParser(description="Extract signal IDs for given modules and signals. Requires " '"signalsFileNameLiterals" entry')
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=True)
 namespace = parser.parse_args()
 if namespace.settings is not None:
     settingsFile = namespace.settings
@@ -85,7 +84,7 @@ else:
 logger.info("extracting signals from signal properties")
 signalPropertiesFile = settings["parse"]["signalPropertiesFile"]
 signal_properties = []
-with open(signalPropertiesFile, 'rb') as f:
+with open(signalPropertiesFile, "rb") as f:
     signal_properties = pickle.load(f)
 
 # find modules and signals

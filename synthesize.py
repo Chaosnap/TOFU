@@ -30,27 +30,27 @@ import tueisec
 # h5py.get_config().default_file_mode = "w"
 
 # create a logger
-logger = logging.getLogger('synthesize')
-if (logger.hasHandlers()):
+logger = logging.getLogger("synthesize")
+if logger.hasHandlers():
     logger.handlers.clear()
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
+formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 # loading settings from file
 settingsFile = "./settings.json"
-parser = argparse.ArgumentParser(description='TOFU')
-parser.add_argument('-s', '--settings', type=str, help='path to settings.json', required=False)
-parser.add_argument('-l', '--loglevel', type=str, help ='specify loglevel', required=False, default="info")
+parser = argparse.ArgumentParser(description="TOFU")
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=False)
+parser.add_argument("-l", "--loglevel", type=str, help="specify loglevel", required=False, default="info")
 namespace = parser.parse_args()
 
 # parse loglevel
 loglevel = namespace.loglevel
 numeric_log_id = getattr(logging, loglevel.upper(), None)
 if not isinstance(numeric_log_id, int):
-	raise ValueError("Invalid log level: %s" % loglevel)
+    raise ValueError("Invalid log level: %s" % loglevel)
 logger.setLevel(numeric_log_id)
 
 if namespace.settings is not None:
@@ -81,7 +81,7 @@ def hammingDistanceFromBitString(x, y):
 logger.info("extracting signals from signal properties")
 signalPropertiesFile = settings["parse"]["signalPropertiesFile"]
 signal_properties = []
-with open(signalPropertiesFile, 'rb') as f:
+with open(signalPropertiesFile, "rb") as f:
     signal_properties = pickle.load(f)
 
 signals = []
@@ -115,7 +115,7 @@ numeric_ids_under_inspection = list(set(numeric_ids_under_inspection))
 
 # sort naturaly not in aphabetic order
 def natural_sort_key(s):
-    natural_sort_regex = re.compile('([0-9]+)')
+    natural_sort_regex = re.compile("([0-9]+)")
     return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
 
 
@@ -130,19 +130,7 @@ logger.info("processing: %d traces" % (simulation_trace_max))
 
 # Then the AbstractContainer:
 class AcquisitionSetupToggle(AbstractContainer):
-    def __init__(self,
-                 pickleGlob,
-                 signalPropertiesFile,
-                 valueExtract,
-                 numeric_ids_under_inspection=None,
-                 reload_numeric_ids=False,
-                 leakage="HammingDistance",
-                 window=False,
-                 windowFrom=None,
-                 windowTo=None,
-                 allign=False,
-                 downsample=1
-                 ):
+    def __init__(self, pickleGlob, signalPropertiesFile, valueExtract, numeric_ids_under_inspection=None, reload_numeric_ids=False, leakage="HammingDistance", window=False, windowFrom=None, windowTo=None, allign=False, downsample=1):
         """
         :param number_of_traces: only required argument for the constructor of an AbstractContainer
         """
@@ -174,7 +162,7 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # extract signal properties
         self.signalPropertiesFile = signalPropertiesFile
-        with open(self.signalPropertiesFile, 'rb') as f:
+        with open(self.signalPropertiesFile, "rb") as f:
             self.signal_properties = pickle.load(f)
         self.signal_properties = [{"numeric_id": int(signal[0]), "name": signal[1], "width": int(signal[2]), "scope": signal[3]} for signal in self.signal_properties]
 
@@ -185,7 +173,7 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # sort naturaly not in aphabetic order
         def natural_sort_key(s):
-            natural_sort_regex = re.compile('([0-9]+)')
+            natural_sort_regex = re.compile("([0-9]+)")
             return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
 
         # globbing for pickle files
@@ -196,7 +184,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         self.number_of_traces = len(self.pickleFiles)
 
         # extract the simulation time stamps
-        with open(self.pickleFiles[0], 'rb') as f:
+        with open(self.pickleFiles[0], "rb") as f:
             self.simulation_time_steps = pickle.load(f)
         self.simulation_time_steps = list(set([i[0] for i in self.simulation_time_steps]))
         self.simulation_time_steps.sort()
@@ -236,7 +224,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         # fetch all updates
         logger.info("extracting state updates from picklefile")
         updates = None
-        with open(self.pickleFiles[index], 'rb') as f:
+        with open(self.pickleFiles[index], "rb") as f:
             updates = pickle.load(f)
 
         # extract key from pickle
@@ -302,10 +290,10 @@ class AcquisitionSetupToggle(AbstractContainer):
 
                 # this extracts the hamming weight
                 if self.leakage == "HammingWeight":
-                    leakage[nextval_index_old: nextval_index + 1] = hammingWeightFromBitString("".join(state))
+                    leakage[nextval_index_old : nextval_index + 1] = hammingWeightFromBitString("".join(state))
                 elif self.leakage == "HammingDistance":
                     # calculate the hamming distance
-                    leakage[nextval_index_old: nextval_index + 1] = toggles
+                    leakage[nextval_index_old : nextval_index + 1] = toggles
                     toggles = 0
                 else:
                     raise synthesizeException("undefined leakage model: %s" % self.leakage)
@@ -319,13 +307,13 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         # this extracts the hamming weight
         if self.leakage == "HammingWeight":
-            leakage[nextval_index_old: nextval_index + 1] = hammingWeightFromBitString("".join(state))
+            leakage[nextval_index_old : nextval_index + 1] = hammingWeightFromBitString("".join(state))
             # ignore first point
             leakage = leakage[1:]
         elif self.leakage == "HammingDistance":
             # calculate the hamming distance
             # last update after loop
-            leakage[nextval_index_old: nextval_index + 1] = toggles
+            leakage[nextval_index_old : nextval_index + 1] = toggles
             # ignore first point
             leakage = leakage[1:]
         else:
@@ -339,7 +327,7 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         if (self.windowFrom is not None or self.windowTo is not None) and self.window is True:
             logger.info("extracting window from leakage %d:%d" % (self.windowFrom, self.windowTo))
-            leakage = leakage[self.windowFrom: self.windowTo]
+            leakage = leakage[self.windowFrom : self.windowTo]
 
         # dynamic scaling of trace eigentlich sollte man hier nach dem max suchen wenn das kleiner als max wer uint8 alles zu einem uint8
 
@@ -372,17 +360,7 @@ allign = settings["synthesize"]["allign"]
 downsample = settings["synthesize"]["downsample"]
 
 # create our acquisition setup
-aqc = AcquisitionSetupToggle(pickleGlob,
-                             signalPropertiesFile,
-                             valueExtractFunction,
-                             numeric_ids_under_inspection,
-                             leakage=leakageModel,
-                             window=window,
-                             windowFrom=windowFrom,
-                             windowTo=windowTo,
-                             reload_numeric_ids=True,
-                             allign=allign,
-                             downsample=downsample)
+aqc = AcquisitionSetupToggle(pickleGlob, signalPropertiesFile, valueExtractFunction, numeric_ids_under_inspection, leakage=leakageModel, window=window, windowFrom=windowFrom, windowTo=windowTo, reload_numeric_ids=True, allign=allign, downsample=downsample)
 # set lascar log level
 aqc.logger.setLevel(numeric_log_id)
 
