@@ -16,8 +16,9 @@ venv_attack_framework: venv
 
 example: clean
 	$(VENV); python3 parse.py --settings example/settings_example.json
+	$(VENV); python3 extractsignalids.py --settings example/settings_example.json
 	$(VENV); python3 synthesize.py --settings example/settings_example.json
-	$(VENV); python3 analyze.py --settings example/settings_example.json
+	@#$(VENV); python3 analyze.py --settings example/settings_example.json
 
 venvclean:
 	rm -rf tofu_python
