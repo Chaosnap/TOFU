@@ -37,3 +37,7 @@ TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power trace
  
  # Contact
  [Michael Gruber](https://www.ei.tum.de/sec/mitarbeiter/michael-gruber/), [m.gruber@tum.de](mailto:m.gruber@tum.de)
+
+# Pipeline
+
+[![pipeline status](https://gitlab.lrz.de/TUEISEC-Intern/tofu/badges/master/pipeline.svg)](https://gitlab.lrz.de/TUEISEC-Intern/tofu/commits/master)

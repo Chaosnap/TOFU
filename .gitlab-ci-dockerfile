@@ -1,0 +1,11 @@
+FROM ubuntu:20.04
+
+LABEL maintainer="Michael Gruber <m.gruber@tum.de>"
+LABEL description="foo"
+
+# add setup script to container image
+ADD .gitlab-ci-setup.sh /gitlab-ci-setup.sh
+RUN bash /gitlab-ci-setup.sh
+
+# cleanup ubuntu image
+RUN apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
