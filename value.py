@@ -57,6 +57,32 @@ def valueExtract(self):
     return value
 
 
+def valueExtractPlaintext(self):
+    # create a logger
+    logger = logging.getLogger("synthesize")
+    logger.info("extracting value (plaintext)")
+
+    value_signal_numeric_id = 2
+    value_signal_time_from = 0
+
+    if value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
+        raise valueExtractException("signal %s is not in the loaded pickle" % value_signal_numeric_id)
+
+    for update in self.updates:
+        if update[0] == value_signal_time_from and update[1] == value_signal_numeric_id:
+            plain = update[2]
+            foo = int(plain, 2).to_bytes(-(-len(plain) // 8), byteorder="big")
+            foo = list(foo)
+            break
+
+    # print(update)
+    # print(plain)
+
+    value = np.array(foo, dtype=np.uint8)
+
+    return value
+
+
 def valueExtractIndex(self):
     # create a logger
     logger = logging.getLogger("synthesize")
