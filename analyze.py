@@ -17,8 +17,7 @@ import time
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
-from lascar import Hdf5Container, TTestEngine, MatPlotLibOutputMethod, Hdf5OutputMethod, DictOutputMethod, Session
-import random
+from lascar import Hdf5Container, TTestEngine, Hdf5OutputMethod, Session
 import pickle
 
 # supress a lascar warning

@@ -17,12 +17,9 @@ import json
 import os.path
 import glob
 import numpy as np
-import h5py
 import re
 import pickle
-import importlib
 import time
-import matplotlib.pyplot as plt
 from lascar import AbstractContainer, Trace, Hdf5Container
 import tueisec
 
@@ -227,7 +224,9 @@ class AcquisitionSetupToggle(AbstractContainer):
         with open(self.pickleFiles[index], "rb") as f:
             updates = pickle.load(f)
 
-        # extract key from pickle
+        # extract value from pickle
+        self.updates = updates
+        # print(updates)
         value = self.valueExtract(self)
 
         if self.allign:

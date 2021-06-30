@@ -77,7 +77,6 @@ def buildfromtokens(token):
 
 def identifierToNames(vcdHeader):
     blah = {}
-    signal_num = 0
     for scope in vcdHeader["scope"].keys():
         for var in vcdHeader["scope"][scope]:
             if var["identifier"] in blah:
@@ -163,11 +162,11 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
         elif keyword == "$var":
             var = buildfromtokens(tokens)
             # logger.debug("var: %s" % var)
-            match = re.match("^wire\\s+([0-9]+)\\s+(\\S*)\\s+(.*)$", var)
+            match = re.match("^(wire|reg)\\s+([0-9]+)\\s+(\\S*)\\s+(.*)$", var)
             if match is not None:
-                width = match.groups()[0]
-                identifier = match.groups()[1]
-                name = match.groups()[2]
+                width = match.groups()[1]
+                identifier = match.groups()[2]
+                name = match.groups()[3]
                 # logger.debug("scope: %s\twidth: %s\tidentifier: %s\tname: %s" % ("->".join(currScope), width, identifier, name))
                 # logger.debug(width)
             else:
@@ -220,8 +219,8 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
         # logger.debug(current_token)
 
         match_time = re.match("^#([0-9]+)$", current_token)
-        match_update_scalar = re.match("^([01xXzZ])(.+)$", current_token)
-        match_update_vector = re.match("^([bB][01xXzZ]+)$", current_token)
+        match_update_scalar = re.match("^([01xXzZuU])(.+)$", current_token)
+        match_update_vector = re.match("^([bB][01xXzZuU]+)$", current_token)
         match_dumpvars = re.match("^(\\$dumpvars)$", current_token)
 
         if match_time is not None:
@@ -237,8 +236,8 @@ for (simulation_trace, vcdFile) in enumerate(vcdFiles):
                 if dumpvar_token == "$end":
                     break
 
-                match_dumpvar_scalar = re.match("^([01xXzZ])(.+)$", dumpvar_token)
-                match_dumpvar_vector = re.match("^([bB][01xXzZ]+)$", dumpvar_token)
+                match_dumpvar_scalar = re.match("^([01xXzZuU])(.+)$", dumpvar_token)
+                match_dumpvar_vector = re.match("^([bB][01xXzZuU]+)$", dumpvar_token)
 
                 if match_dumpvar_scalar is not None:
                     # update scalar signal values

@@ -1,0 +1,9 @@
+aes-vhdl/
+testvector/
+vcd/
+*.h5
+*.pdf
+*.h5_C++
+aes-vhdl-work/
+e~test_enc.o
+test_enc
