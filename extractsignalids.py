@@ -6,7 +6,7 @@
 # All Rights Reserved.
 # For internal use only.
 # -------------------------------------------------------------------------------------------------
-# Author: Lars Tebelmann lars.tebelmann@tum.de
+# Author: Lars Tebelmann lars.tebelmann@tum.de, Michael Gruber m.gruber@tum.de
 # Date:   11.11.2020
 # -------------------------------------------------------------------------------------------------
 

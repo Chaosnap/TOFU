@@ -10,11 +10,9 @@
 # Date:   18.05.2020
 # -------------------------------------------------------------------------------------------------
 
-import value
 import argparse
 import logging
 import json
-import re
 import pickle
 
 # supress a lascar warning

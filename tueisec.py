@@ -43,7 +43,6 @@ def convert_time_scale(timescale_string):
 
 def export(container, settings):
     try:
-        from attack.helper.utils import JSONutils as jsonutils
         from attack.helper.utils import HDF5utils as h5utils
     except ImportError:
         raise tueisecException("Attack Framework not installed")
