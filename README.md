@@ -6,13 +6,14 @@
 
 ### Toggle Analysis in more than 20 lines of code.
 
-TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power traces which can be used for Test Vector Leakage Assessment (TVLA).
+TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power traces which can be used for further analysis like DPA/TVLA.
 
 # List of files
 
 	.
 	├── analyze.py                   # extract infos from vcd files
-	├── example                      # folder with the examples
+	├── example                      # folder with the basic example
+	├── example-aes-vhdl             # folder with the aes example requires ghdl
 	├── extractsignalids.py          # extract signal ids based on signal names
 	├── Makefile                     # Makefile to build venv and run example
 	├── parse.py                     # parse vcd files
