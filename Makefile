@@ -1,5 +1,6 @@
 VENV=source tofu_python/bin/activate
 NRPOC:=$(shell nproc)
+SHELL:=$(shell which bash)
 
 all:
 	@echo "ich bin eine katze und weiß von nichts"
