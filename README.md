@@ -11,7 +11,6 @@ TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power trace
 # List of files
 
 	.
-	├── analyze.py                   # extract infos from vcd files
 	├── example                      # folder with the basic example
 	├── example-aes-vhdl             # folder with the aes example requires ghdl
 	├── extractsignalids.py          # extract signal ids based on signal names
@@ -33,7 +32,6 @@ TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power trace
   3. `python3 parse.py --settings example/settings_example.json`
   4. `python3 extractsignalids.py --settings example/settings_example.json`
   5. `python3 synthesize.py --settings example/settings_example.json`
-  6. `python3 analyze.py --settings example/settings_example.json`
  
  # Contact
  [Michael Gruber](https://www.ei.tum.de/sec/mitarbeiter/michael-gruber/), [m.gruber@tum.de](mailto:m.gruber@tum.de)
