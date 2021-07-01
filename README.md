@@ -18,6 +18,8 @@ TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power trace
 	├── parse.py                     # parse vcd files
 	├── plotme.py                    # sample plotting file for a ttes
 	├── README.md                    # the file you are looking at
+	├── selftest.sh                  # selftest wrapper script
+	├── selftest.py                  # selftest compare ntofu with tofu (AES example)
 	├── setup_attack_framework.sh    # setup the attack framework TUEISEC intern only
 	├── setup_tofu_python.sh         # setup tofu venv
 	├── signals.py                   # dump signals to dictionary (debugging)
