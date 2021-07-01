@@ -1,0 +1,4 @@
+[
+    "module test_enc->plaintext[127:0]",
+    "module test_enc->module enc_inst->module sub_byte_inst->module gen(15)->module sbox_inst->output_byte[7:0]"
+]

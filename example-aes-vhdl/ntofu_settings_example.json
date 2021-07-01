@@ -1,0 +1,21 @@
+{
+    "parse": {
+        "vcdGlob": "./vcd/*.vcd"
+    },
+    "synthesize": {
+        "signalsFileNameLiterals": null,
+        "signalsFileNameLiterals_comment": "./ntofu_filtered_signals.json",
+        "leakageModel": "HammingWeight",
+        "window": false,
+        "windowFrom": null,
+        "windowTo": null,
+        "valueExtractFunction": "valueExtract",
+        "valueExtractFile": "./ntofu_values_to_extract.val",
+        "writeTraces": true,
+        "writeTracesBatchSize": 100,
+        "traceFileName": "./traces.h5",
+        "allign": false,
+        "downsample": 1,
+        "format": "lascar"
+    }
+}
