@@ -117,7 +117,18 @@ signal_properties = []
 
 ###################################################################################################
 # iterate over all vcd files
-for (simulation_trace, vcdFile) in enumerate(vcdFiles):
+# for (simulation_trace, vcdFile) in enumerate(vcdFiles):
+widgets = [
+    "parse" + " |",
+    progressbar.Percentage(),
+    progressbar.Bar(),
+    progressbar.FormatLabel("%(value)d vcd"),
+    "/%d |" % (len(vcdFiles)),
+    progressbar.AdaptiveETA(),
+]
+
+for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=widgets):
+    vcdFile = vcdFiles[simulation_trace]
 
     logger.info("processing vcd file (%d/%d): %s" % (simulation_trace + 1, len(vcdFiles), vcdFile))
 
