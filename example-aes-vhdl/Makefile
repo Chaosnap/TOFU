@@ -25,6 +25,9 @@ dpa:
 	python3 dpa_lascar.py
 	cat generate_testvectors.py | grep key | head -n 1
 
+ntofu:
+	python3 ../ntofu.py --settings ntofu_settings_example.json
+
 clean:
 	rm -rf aes-vhdl-work
 	rm -f correlation.pdf
@@ -33,6 +36,8 @@ clean:
 	rm -f test_enc
 	rm -f *test_enc.o
 	rm -f signals.json
+	rm -f tofu_traces.h5
+	rm -f ntofu_traces.h5
 
 cleansim:
 	rm -rf testvector/

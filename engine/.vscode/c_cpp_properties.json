@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "engine",
+            "includePath": [
+                "${workspaceFolder}/src"
+            ],
+            "defines": [
+                "PARSE_DEBUG"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/src",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": false,
+                "databaseFilename": ""
+            },
+            "compilerPath": "/usr/bin/clang",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
