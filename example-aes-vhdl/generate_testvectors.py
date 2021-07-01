@@ -10,6 +10,11 @@ key = binascii.hexlify(bytearray([i for i in range(100, 116)])).decode("ascii")
 file_name = sys.argv[1]
 index = int(sys.argv[2])
 
+# # ensure same plaintext on every run
+# random.seed(a=index)
+# # warmup
+# random.randbytes(10000)
+
 
 def get_random_plaintext():
     return "%032x" % random.randrange(16 ** 32)
