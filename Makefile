@@ -26,14 +26,14 @@ example: clean
 example_aes: clean
 	$(VENV); make -C example-aes-vhdl clean cleansim get_sources
 	$(VENV); make -C example-aes-vhdl simulate -j $(NRPOC)
-	$(VENV); python3 parse.py --settings example-aes-vhdl/settings_example.json
+	$(VENV); python3 parse.py --settings example-aes-vhdl/settings_example.json --loglevel warning
 	$(VENV); python3 synthesize.py --settings example-aes-vhdl/settings_example.json --loglevel warning
 	$(VENV); make -C example-aes-vhdl dpa
 
 example_aes_filtered: clean
 	$(VENV); make -C example-aes-vhdl clean cleansim get_sources
 	$(VENV); make -C example-aes-vhdl simulate -j $(NRPOC)
-	$(VENV); python3 parse.py --settings example-aes-vhdl/settings_example.json
+	$(VENV); python3 parse.py --settings example-aes-vhdl/settings_example.json --loglevel warning
 	@# generate filtered signals.json
 	$(VENV); python3 extractsignalids.py --settings example-aes-vhdl/settings_example.json
 	$(VENV); python3 synthesize.py --settings example-aes-vhdl/settings_example.json --loglevel warning
