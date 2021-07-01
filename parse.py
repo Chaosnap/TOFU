@@ -17,6 +17,7 @@ import logging
 import re
 import time
 import pickle
+import progressbar
 
 time_start = time.time()
 
@@ -29,14 +30,21 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-# logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.INFO)
 
 # loading settings from file
 settingsFile = "./settings.json"
 parser = argparse.ArgumentParser(description="TOFU")
 parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=False)
+parser.add_argument("-l", "--loglevel", type=str, help="specify loglevel", required=False, default="info")
 namespace = parser.parse_args()
+
+# parse loglevel
+loglevel = namespace.loglevel
+numeric_log_id = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_log_id, int):
+    raise ValueError("Invalid log level: %s" % loglevel)
+logger.setLevel(numeric_log_id)
+
 if namespace.settings is not None:
     settingsFile = namespace.settings
 settings = None
