@@ -274,8 +274,8 @@ void Parser::ParseValueChangeSection(LeakageModel leakage_model, bool align, uin
         {
             // value_change ::= scalar_value_change | vector_value_change
             const char first_char = *file_pointer_++;
-            const bool is_scalar_0 = first_char == '0' || first_char == 'x' || first_char == 'X'; // TODO: How should x and z be interpreted?
-            const bool is_scalar_1 = first_char == '1' || first_char == 'z' || first_char == 'Z';
+            const bool is_scalar_0 = first_char == '0' || first_char == 'x' || first_char == 'X' || first_char == 'z' || first_char == 'Z'; // every value despite 1 is interpreted as 0
+            const bool is_scalar_1 = first_char == '1';
             if (is_scalar_0 || is_scalar_1)
             {
                 // scalar_value_change ::= value identifier_code
@@ -332,6 +332,7 @@ void Parser::ParseValueChangeSection(LeakageModel leakage_model, bool align, uin
                     const char currentChar = i >= nr_of_bits ? '0' : *file_pointer_++; // ljust with 0 if necessary
                     // if (currentChar == 'U')
                     //     continue;
+                    // every value despite 1 is interpreted as 0
                     DCHECK(currentChar == '0' ||
                            currentChar == '1' ||
                            currentChar == 'x' ||
