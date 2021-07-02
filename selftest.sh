@@ -17,6 +17,9 @@ mv example/traces.h5 example/ntofu_traces.h5
 # generate aes simulation traces
 make -C example-aes-vhdl cleansim simulate NR_SIMULATIONS=10
 
+# build ntofu engine
+make engine
+
 # generate tofu traces
 python3 parse.py --settings example-aes-vhdl/settings_example.json  --loglevel warning
 python3 synthesize.py --settings example-aes-vhdl/settings_example.json --loglevel warning
