@@ -274,8 +274,8 @@ class AcquisitionSetupToggle(AbstractContainer):
             numeric_id = update[1]
             nextval = update[2]
 
-            # replace x with 0
-            nextval = nextval.replace("x", "0")
+            # interpret all values despite 1 as 0
+            nextval = re.sub("x|X|u|U|z|Z", "0", nextval)
 
             # das bremst aus wie noch was
             # check if signal is tracked
