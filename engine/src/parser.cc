@@ -196,11 +196,11 @@ void Parser::ParseValueChangeSection(LeakageModel leakage_model, bool align, uin
     }
 
     // sort value_extract by time (<)
-    std::sort(values_to_extract->begin(), values_to_extract->end(), [](auto a, auto b) -> bool {
-        return a->time < b->time;
-    });
+    std::sort(values_to_extract->begin(), values_to_extract->end(), [](auto a, auto b) -> bool
+              { return a->time < b->time; });
 
-    auto maybe_add_extracted_values = [&]() {
+    auto maybe_add_extracted_values = [&]()
+    {
         while (current_value_extract != values_to_extract->end() &&
                (*current_value_extract)->time <= last_simulation_time)
         {
@@ -330,9 +330,16 @@ void Parser::ParseValueChangeSection(LeakageModel leakage_model, bool align, uin
                 for (int i = var_state_.var_size(identifier_code) - 1; i >= 0; i--)
                 {
                     const char currentChar = i >= nr_of_bits ? '0' : *file_pointer_++; // ljust with 0 if necessary
-                    if (currentChar == 'U')
-                        continue;
-                    DCHECK(currentChar == '0' || currentChar == '1' || currentChar == 'x');
+                    // if (currentChar == 'U')
+                    //     continue;
+                    DCHECK(currentChar == '0' ||
+                           currentChar == '1' ||
+                           currentChar == 'x' ||
+                           currentChar == 'X' ||
+                           currentChar == 'u' ||
+                           currentChar == 'U' ||
+                           currentChar == 'z' ||
+                           currentChar == 'Z');
                     switch (leakage_model)
                     {
                     case HammingDistance:
