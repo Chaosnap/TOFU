@@ -38,6 +38,8 @@ clean:
 	rm -f signals.json
 	rm -f tofu_traces.h5
 	rm -f ntofu_traces.h5
+	rm -f signal_properties_meta.pickle
+	rm -f signal_properties.pickle
 
 cleansim:
 	rm -rf testvector/
