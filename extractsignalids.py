@@ -38,14 +38,17 @@ settings = None
 logger.info("loading settings from file: %s" % (settingsFile))
 with open(settingsFile) as fid:
     settings = json.load(fid)
+# extract path to settings file
+settingsFileLocation = os.path.abspath(settingsFile)
+settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
 # extract signals which should be used for synthesis
 signals_under_inspection = []
-configFileOut = settings["signalsFileName"]
+configFileOut = settingsFilePath + settings["signalsFileName"]
 
 # catch the error if the file is not defined
 try:
-    configFile = settings["signalsFileNameLiterals"]
+    configFile = settingsFilePath + settings["signalsFileNameLiterals"]
 except KeyError:
     # if not defined in the
     logging.error("You need to specify the file name 'signalsFileNameLiterals' in the settings file.")
@@ -82,7 +85,7 @@ else:
 
 # extracting signals from database
 logger.info("extracting signals from signal properties")
-signalPropertiesFile = settings["parse"]["signalPropertiesFile"]
+signalPropertiesFile = settingsFilePath + settings["signalPropertiesFile"]
 signal_properties = []
 with open(signalPropertiesFile, "rb") as f:
     signal_properties = pickle.load(f)

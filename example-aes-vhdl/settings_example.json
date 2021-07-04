@@ -1,9 +1,9 @@
 {
-    "vcdGlob": "./example-aes-vhdl/vcd/aes*.vcd",
-    "pickleGlob": "./example-aes-vhdl/vcd/aes*.pickle",
-    "signalsFileNameLiterals": "./example-aes-vhdl/signals_name.json",
-    "signalsFileName": "./example-aes-vhdl/signals.json",
-    "signalPropertiesFile": "./example-aes-vhdl/signal_properties.pickle",
+    "vcdGlob": "vcd/aes*.vcd",
+    "pickleGlob": "vcd/aes*.pickle",
+    "signalsFileNameLiterals": "signals_name.json",
+    "signalsFileName": "signals.json",
+    "signalPropertiesFile": "signal_properties.pickle",
     "leakageModel": "HammingWeight",
     "window": false,
     "windowFrom": null,
@@ -11,7 +11,7 @@
     "valueExtractFunction": "valueExtractPlaintext",
     "writeTraces": true,
     "writeTracesBatchSize": 100,
-    "traceFileName": "./example-aes-vhdl/traces.h5",
+    "traceFileName": "traces.h5",
     "allign": false,
     "downsample": 1,
     "format": "lascar"

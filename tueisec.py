@@ -48,7 +48,7 @@ def export(container, settings):
         raise tueisecException("Attack Framework not installed")
 
     # Use the file name specified by the settings file
-    config = {"HDF5": {"output_file": settings["synthesize"]["traceFileName"]}}
+    config = {"HDF5": {"output_file": settings["traceFileName"]}}
     # create a dataset according the size and datatype of leakages
     config["HDF5"]["datasets"] = {"samples": {"datatype": container.leakages.dtype, "dim": None, "create": True}}
     num_samples = container.leakages.shape[1]
@@ -75,7 +75,7 @@ def export(container, settings):
     h5utils.hdf5_add_group(h5filehandle, config, N_traces=n_traces, noSamples=num_samples)
 
     # find all .npy files in the same folder as the .vcd files and add the data contained as datasets to the HDF5
-    vcddir = os.path.dirname(settings["synthesize"]["pickleGlob"]) + "/"  # same folder as VCD files
+    vcddir = os.path.dirname(settings["pickleGlob"]) + "/"  # same folder as VCD files
     npyfiles = [f for f in os.listdir(vcddir) if f.endswith(".npy")]  # get list of .npy files
     for file in npyfiles:
         # use filename as dataset name

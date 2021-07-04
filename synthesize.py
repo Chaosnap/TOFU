@@ -56,6 +56,9 @@ settings = None
 logger.info("loading settings from file: %s" % (settingsFile))
 with open(settingsFile) as fid:
     settings = json.load(fid)
+# extract path to settings file
+settingsFileLocation = os.path.abspath(settingsFile)
+settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
 
 class synthesizeException(Exception):
@@ -76,7 +79,7 @@ def hammingDistanceFromBitString(x, y):
 
 # extracting signals from database
 logger.info("extracting signals from signal properties")
-signalPropertiesFile = settings["signalPropertiesFile"]
+signalPropertiesFile = settingsFilePath + settings["signalPropertiesFile"]
 signal_properties = []
 with open(signalPropertiesFile, "rb") as f:
     signal_properties = pickle.load(f)
@@ -91,7 +94,7 @@ signals = list(set(signals))
 
 # extract signals which shoul be used for synthesis
 signals_under_inspection = []
-configFile = settings["signalsFileName"]
+configFile = settingsFilePath + settings["signalsFileName"]
 if not os.path.isfile(configFile):
     logger.info("no signals configured generating standard signals.json")
     with open(configFile, "w", encoding="utf-8") as fid:
@@ -176,7 +179,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         # globbing for pickle files
         self.pickleGlob = pickleGlob
         self.pickleFiles = glob.glob(self.pickleGlob)
-        self.pickleFiles = sorted(pickleFiles, key=natural_sort_key)
+        self.pickleFiles = sorted(self.pickleFiles, key=natural_sort_key)
 
         self.number_of_traces = len(self.pickleFiles)
 
@@ -339,10 +342,10 @@ class AcquisitionSetupToggle(AbstractContainer):
         return Trace(leakage, value)
 
 
-pickleGlob = settings["pickleGlob"]
-signalPropertiesFile = settings["signalPropertiesFile"]
+pickleGlob = settingsFilePath + settings["pickleGlob"]
+signalPropertiesFile = settingsFilePath + settings["signalPropertiesFile"]
 leakageModel = settings["leakageModel"]
-traceFileName = settings["traceFileName"]
+traceFileName = settingsFilePath + settings["traceFileName"]
 
 # put null in json to load everything
 window = settings["window"]
