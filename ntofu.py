@@ -46,38 +46,38 @@ def natural_sort_key(s):
 
 
 # globbing for vcd files
-files = glob.glob(settings["parse"]["vcdGlob"])
+files = glob.glob(settings["vcdGlob"])
 files = sorted(files, key=natural_sort_key)
 files = [i.encode() for i in files]
 num_files = len(files)
 
 
-inspected_signals_file_name = settings["synthesize"]["signalsFileNameLiterals"]
+inspected_signals_file_name = settings["signalsFileNameLiterals"]
 if inspected_signals_file_name is not None:
     inspected_signals_file_name = inspected_signals_file_name.encode()
 
-leakage_model = settings["synthesize"]["leakageModel"]
+leakage_model = settings["leakageModel"]
 
 if leakage_model not in ["HammingWeight", "HammingDistance"]:
     raise Exception("undefined leakage model: %s" % leakage_model)
 use_hamming_weight = leakage_model == "HammingWeight"
 
 
-trace_file_name = settings["synthesize"]["traceFileName"]
-write_traces = settings["synthesize"]["writeTraces"]
-writeTracesFormat = settings["synthesize"]["format"]
-batch_size = settings["synthesize"]["writeTracesBatchSize"]
-window = settings["synthesize"]["window"]
-window_from = settings["synthesize"]["windowFrom"]
-window_to = settings["synthesize"]["windowTo"]
-valueExtractFunction = settings["synthesize"]["valueExtractFunction"]
+trace_file_name = settings["traceFileName"]
+write_traces = settings["writeTraces"]
+writeTracesFormat = settings["format"]
+batch_size = settings["writeTracesBatchSize"]
+window = settings["window"]
+window_from = settings["windowFrom"]
+window_to = settings["windowTo"]
+valueExtractFunction = settings["valueExtractFunction"]
 valueExtractFile = None  # if None, then valueExtractIndex is used, otherwise valueExtract
 if valueExtractFunction == "valueExtract":
-    valueExtractFile = settings["synthesize"]["valueExtractFile"].encode()
+    valueExtractFile = settings["valueExtractFile"].encode()
 use_value_extract = valueExtractFile is not None
-write_trace_format = settings["synthesize"]["format"]
-align = settings["synthesize"]["allign"]
-downsample = ctypes.c_uint64(int(settings["synthesize"]["downsample"]))
+write_trace_format = settings["format"]
+align = settings["allign"]
+downsample = ctypes.c_uint64(int(settings["downsample"]))
 
 lib = ctypes.CDLL(fdir + "/engine/build/library.so")
 lib.SetupParser(use_hamming_weight, inspected_signals_file_name, align, downsample, valueExtractFile)

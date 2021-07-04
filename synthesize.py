@@ -76,7 +76,7 @@ def hammingDistanceFromBitString(x, y):
 
 # extracting signals from database
 logger.info("extracting signals from signal properties")
-signalPropertiesFile = settings["parse"]["signalPropertiesFile"]
+signalPropertiesFile = settings["signalPropertiesFile"]
 signal_properties = []
 with open(signalPropertiesFile, "rb") as f:
     signal_properties = pickle.load(f)
@@ -91,7 +91,7 @@ signals = list(set(signals))
 
 # extract signals which shoul be used for synthesis
 signals_under_inspection = []
-configFile = settings["synthesize"]["signalsFileName"]
+configFile = settings["signalsFileName"]
 if not os.path.isfile(configFile):
     logger.info("no signals configured generating standard signals.json")
     with open(configFile, "w", encoding="utf-8") as fid:
@@ -117,7 +117,7 @@ def natural_sort_key(s):
 
 
 # globbing for pickle files
-pickleFiles = glob.glob(settings["synthesize"]["pickleGlob"])
+pickleFiles = glob.glob(settings["pickleGlob"])
 pickleFiles = sorted(pickleFiles, key=natural_sort_key)
 
 # extract the number of traces
@@ -339,24 +339,24 @@ class AcquisitionSetupToggle(AbstractContainer):
         return Trace(leakage, value)
 
 
-pickleGlob = settings["synthesize"]["pickleGlob"]
-signalPropertiesFile = settings["synthesize"]["signalPropertiesFile"]
-leakageModel = settings["synthesize"]["leakageModel"]
-traceFileName = settings["synthesize"]["traceFileName"]
+pickleGlob = settings["pickleGlob"]
+signalPropertiesFile = settings["signalPropertiesFile"]
+leakageModel = settings["leakageModel"]
+traceFileName = settings["traceFileName"]
 
 # put null in json to load everything
-window = settings["synthesize"]["window"]
-windowFrom = settings["synthesize"]["windowFrom"]
-windowTo = settings["synthesize"]["windowTo"]
+window = settings["window"]
+windowFrom = settings["windowFrom"]
+windowTo = settings["windowTo"]
 
-writeTraces = settings["synthesize"]["writeTraces"]
-writeTracesBatchSize = settings["synthesize"]["writeTracesBatchSize"]
-writeTracesFormat = settings["synthesize"]["format"]
+writeTraces = settings["writeTraces"]
+writeTracesBatchSize = settings["writeTracesBatchSize"]
+writeTracesFormat = settings["format"]
 
-valueExtractFunction = getattr(value, settings["synthesize"]["valueExtractFunction"])
+valueExtractFunction = getattr(value, settings["valueExtractFunction"])
 
-allign = settings["synthesize"]["allign"]
-downsample = settings["synthesize"]["downsample"]
+allign = settings["allign"]
+downsample = settings["downsample"]
 
 # create our acquisition setup
 aqc = AcquisitionSetupToggle(pickleGlob, signalPropertiesFile, valueExtractFunction, numeric_ids_under_inspection, leakage=leakageModel, window=window, windowFrom=windowFrom, windowTo=windowTo, reload_numeric_ids=True, allign=allign, downsample=downsample)
