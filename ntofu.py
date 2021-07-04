@@ -37,6 +37,9 @@ print("settings file: %s" % settings_file)
 
 with open(settings_file) as f:
     settings = json.load(f)
+# extract path to settings file
+settingsFileLocation = os.path.abspath(settings_file)
+settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
 
 # sort naturaly not in aphabetic order
@@ -46,7 +49,7 @@ def natural_sort_key(s):
 
 
 # globbing for vcd files
-files = glob.glob(settings["vcdGlob"])
+files = glob.glob(settingsFilePath + settings["vcdGlob"])
 files = sorted(files, key=natural_sort_key)
 files = [i.encode() for i in files]
 num_files = len(files)
@@ -54,6 +57,7 @@ num_files = len(files)
 
 inspected_signals_file_name = settings["signalsFileNameLiterals"]
 if inspected_signals_file_name is not None:
+    inspected_signals_file_name = settingsFilePath + inspected_signals_file_name
     inspected_signals_file_name = inspected_signals_file_name.encode()
 
 leakage_model = settings["leakageModel"]
@@ -63,7 +67,7 @@ if leakage_model not in ["HammingWeight", "HammingDistance"]:
 use_hamming_weight = leakage_model == "HammingWeight"
 
 
-trace_file_name = settings["traceFileName"]
+trace_file_name = settingsFilePath + settings["traceFileName"]
 write_traces = settings["writeTraces"]
 writeTracesFormat = settings["format"]
 batch_size = settings["writeTracesBatchSize"]
@@ -73,7 +77,8 @@ window_to = settings["windowTo"]
 valueExtractFunction = settings["valueExtractFunction"]
 valueExtractFile = None  # if None, then valueExtractIndex is used, otherwise valueExtract
 if valueExtractFunction == "valueExtract":
-    valueExtractFile = settings["valueExtractFile"].encode()
+    valueExtractFile = settingsFilePath + settings["valueExtractFile"]
+    valueExtractFile = valueExtractFile.encode()
 use_value_extract = valueExtractFile is not None
 write_trace_format = settings["format"]
 align = settings["allign"]

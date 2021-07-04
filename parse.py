@@ -18,6 +18,7 @@ import re
 import time
 import pickle
 import progressbar
+import os
 
 time_start = time.time()
 
@@ -51,6 +52,9 @@ settings = None
 logger.info("loading settings from file: %s" % (settingsFile))
 with open(settingsFile) as fid:
     settings = json.load(fid)
+# extract path to settings file
+settingsFileLocation = os.path.abspath(settingsFile)
+settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
 
 class vcdException(Exception):
@@ -105,10 +109,10 @@ def natural_sort_key(s):
 
 
 # globbing for vcd files
-vcdFiles = glob.glob(settings["vcdGlob"])
+vcdFiles = glob.glob(settingsFilePath + settings["vcdGlob"])
 vcdFiles = sorted(vcdFiles, key=natural_sort_key)
 
-signalPropertiesFile = settings["signalPropertiesFile"]
+signalPropertiesFile = settingsFilePath + settings["signalPropertiesFile"]
 traceFormat = settings["format"]
 
 iddict = {}

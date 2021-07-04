@@ -1,9 +1,9 @@
 {
-    "vcdGlob": "./example/dummy-vivado.vcd",
-    "pickleGlob": "./example/dummy-vivado.pickle",
-    "signalsFileNameLiterals": "./example/signals_name.json",
-    "signalsFileName": "./example/signals.json",
-    "signalPropertiesFile": "./example/signal_properties.pickle",
+    "vcdGlob": "dummy-vivado.vcd",
+    "pickleGlob": "dummy-vivado.pickle",
+    "signalsFileNameLiterals": "signals_name.json",
+    "signalsFileName": "signals.json",
+    "signalPropertiesFile": "signal_properties.pickle",
     "leakageModel": "HammingDistance",
     "window": false,
     "windowFrom": null,
@@ -11,7 +11,7 @@
     "valueExtractFunction": "valueExtractIndex",
     "writeTraces": true,
     "writeTracesBatchSize": 10,
-    "traceFileName": "./example/traces.h5",
+    "traceFileName": "traces.h5",
     "allign": false,
     "downsample": 1e5,
     "format": "lascar"
