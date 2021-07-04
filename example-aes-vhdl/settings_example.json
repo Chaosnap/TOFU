@@ -1,23 +1,18 @@
 {
-    "parse": {
-        "vcdGlob": "./example-aes-vhdl/vcd/*.vcd",
-        "signalPropertiesFile": "./example-aes-vhdl/signal_properties.pickle"
-    },
-    "synthesize": {
-        "pickleGlob": "./example-aes-vhdl/vcd/aes*.pickle",
-        "signalsFileNameLiterals": "./example-aes-vhdl/signals_name.json",
-        "signalsFileName": "./example-aes-vhdl/signals.json",
-        "signalPropertiesFile": "./example-aes-vhdl/signal_properties.pickle",
-        "leakageModel": "HammingWeight",
-        "window": false,
-        "windowFrom": null,
-        "windowTo": null,
-        "valueExtractFunction": "valueExtractPlaintext",
-        "writeTraces": true,
-        "writeTracesBatchSize": 100,
-        "traceFileName": "./example-aes-vhdl/traces.h5",
-        "allign": false,
-        "downsample": 1,
-        "format": "lascar"
-    }
+    "vcdGlob": "./example-aes-vhdl/vcd/aes*.vcd",
+    "pickleGlob": "./example-aes-vhdl/vcd/aes*.pickle",
+    "signalsFileNameLiterals": "./example-aes-vhdl/signals_name.json",
+    "signalsFileName": "./example-aes-vhdl/signals.json",
+    "signalPropertiesFile": "./example-aes-vhdl/signal_properties.pickle",
+    "leakageModel": "HammingWeight",
+    "window": false,
+    "windowFrom": null,
+    "windowTo": null,
+    "valueExtractFunction": "valueExtractPlaintext",
+    "writeTraces": true,
+    "writeTracesBatchSize": 100,
+    "traceFileName": "./example-aes-vhdl/traces.h5",
+    "allign": false,
+    "downsample": 1,
+    "format": "lascar"
 }

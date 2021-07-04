@@ -105,11 +105,11 @@ def natural_sort_key(s):
 
 
 # globbing for vcd files
-vcdFiles = glob.glob(settings["parse"]["vcdGlob"])
+vcdFiles = glob.glob(settings["vcdGlob"])
 vcdFiles = sorted(vcdFiles, key=natural_sort_key)
 
-signalPropertiesFile = settings["parse"]["signalPropertiesFile"]
-
+signalPropertiesFile = settings["signalPropertiesFile"]
+traceFormat = settings["format"]
 
 iddict = {}
 
@@ -216,12 +216,13 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             logger.info("pickling signal properties to file: %s" % (signalPropertiesFile))
             pickle.dump(signal_properties, f, pickle.HIGHEST_PROTOCOL)
 
-        # pickle the metadata
-        exclude_keys = {"scope"}
-        vcd_meta = {x: vcdHeader[x] for x in vcdHeader if x not in exclude_keys}
-        with open(signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle", "wb") as f:
-            logger.info("pickling signal properties to file: %s" % (signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle"))
-            pickle.dump(vcd_meta, f, pickle.HIGHEST_PROTOCOL)
+        # pickle the metadata only required by tueisec format
+        if traceFormat == "tueisec":
+            exclude_keys = {"scope"}
+            vcd_meta = {x: vcdHeader[x] for x in vcdHeader if x not in exclude_keys}
+            with open(signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle", "wb") as f:
+                logger.info("pickling signal properties meta to file: %s" % (signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle"))
+                pickle.dump(vcd_meta, f, pickle.HIGHEST_PROTOCOL)
 
     # get num id in all but the first trace
     # fix this

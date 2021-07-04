@@ -41,11 +41,11 @@ with open(settingsFile) as fid:
 
 # extract signals which should be used for synthesis
 signals_under_inspection = []
-configFileOut = settings["synthesize"]["signalsFileName"]
+configFileOut = settings["signalsFileName"]
 
 # catch the error if the file is not defined
 try:
-    configFile = settings["synthesize"]["signalsFileNameLiterals"]
+    configFile = settings["signalsFileNameLiterals"]
 except KeyError:
     # if not defined in the
     logging.error("You need to specify the file name 'signalsFileNameLiterals' in the settings file.")
