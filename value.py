@@ -14,10 +14,6 @@ import numpy as np
 import logging
 
 
-class valueExtractException(Exception):
-    pass
-
-
 def valueExtract(self):
     # create a logger
     logger = logging.getLogger("synthesize")
@@ -31,7 +27,7 @@ def valueExtract(self):
     value_signal_list_unshared = []
 
     if value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
-        raise valueExtractException("signal %s is not in the loaded pickle" % value_signal_numeric_id)
+        raise Exception("signal %s is not in the loaded pickle" % value_signal_numeric_id)
 
     # extract key updates
     for update in self.updates:
@@ -66,7 +62,7 @@ def valueExtractPlaintext(self):
     value_signal_time_from = 0
 
     if value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
-        raise valueExtractException("signal %s is not in the loaded pickle" % value_signal_numeric_id)
+        raise Exception("signal %s is not in the loaded pickle" % value_signal_numeric_id)
 
     for update in self.updates:
         if update[0] == value_signal_time_from and update[1] == value_signal_numeric_id:

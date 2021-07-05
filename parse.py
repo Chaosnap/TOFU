@@ -57,10 +57,6 @@ settingsFileLocation = os.path.abspath(settingsFile)
 settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
 
-class vcdException(Exception):
-    pass
-
-
 def token_generator(fid):
     for line in fid:
         for word in line.split():
@@ -193,7 +189,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                 # logger.debug("scope: %s\twidth: %s\tidentifier: %s\tname: %s" % ("->".join(currScope), width, identifier, name))
                 # logger.debug(width)
             else:
-                raise vcdException("unable to parse variable: %s" % var)
+                raise Exception("unable to parse variable: %s" % var)
 
             vcdHeader["scope"]["->".join(currScope)].append({"name": name, "width": int(width), "identifier": identifier})
 
@@ -203,7 +199,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             break
 
         else:
-            raise vcdException("undefined keyword: %s" % keyword)
+            raise Exception("undefined keyword: %s" % keyword)
 
     # replace the verilog identifiers
     # iton = identifierToName(vcdHeader)
@@ -288,7 +284,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     updates.append((simulation_time, numeric_id, val))
 
                 else:
-                    raise vcdException("unable to parse variable: %s" % dumpvar_token)
+                    raise Exception("unable to parse variable: %s" % dumpvar_token)
 
         elif match_update_scalar is not None:
             # update scalar signal values
@@ -315,7 +311,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             updates.append((simulation_time, numeric_id, val))
 
         else:
-            raise vcdException("unable to parse variable: %s" % current_token)
+            raise Exception("unable to parse variable: %s" % current_token)
 
     # batch insert to database
     pickleFile = re.sub(r".vcd$", r".pickle", vcdFile)

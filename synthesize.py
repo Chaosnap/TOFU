@@ -61,10 +61,6 @@ settingsFileLocation = os.path.abspath(settingsFile)
 settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
 
-class synthesizeException(Exception):
-    pass
-
-
 def hammingWeightFromBitString(x):
     return x.count("1")
 
@@ -148,7 +144,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         # elif self.leakage == "HammingHybrid":
         #     pass
         else:
-            raise synthesizeException("undefined leakage model: %s" % self.leakage)
+            raise Exception("undefined leakage model: %s" % self.leakage)
 
         self.window = window
         self.windowFrom = windowFrom
@@ -298,7 +294,7 @@ class AcquisitionSetupToggle(AbstractContainer):
                     leakage[nextval_index_old : nextval_index + 1] = toggles
                     toggles = 0
                 else:
-                    raise synthesizeException("undefined leakage model: %s" % self.leakage)
+                    raise Exception("undefined leakage model: %s" % self.leakage)
 
                 nextval_index_old = nextval_index
 
@@ -319,7 +315,7 @@ class AcquisitionSetupToggle(AbstractContainer):
             # ignore first point
             leakage = leakage[1:]
         else:
-            raise synthesizeException("undefined leakage model: %s" % self.leakage)
+            raise Exception("undefined leakage model: %s" % self.leakage)
 
         ###################################################################################################################################
 
@@ -377,7 +373,7 @@ if writeTraces:
     elif writeTracesFormat == "tueisec":
         tueisec.export(aqc, settings)
     else:
-        synthesizeException("format not supported")
+        Exception("format not supported")
 
 
 # print("trace 0:", aqc[0])
