@@ -1,4 +1,4 @@
-VENV:=source tofu_python/bin/activate
+VENV?=source tofu_python/bin/activate
 NRPOC:=$(shell nproc)
 SHELL:=$(shell which bash)
 

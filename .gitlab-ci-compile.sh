@@ -12,14 +12,9 @@ pkgver() {
 # compile
 rm -rf build
 mkdir -p build
+mkdir -p tofu_python
 
-# selftest
-make venv
-make pep
-make selftest
-
-# aes example
-make example_aes NR_SIMULATIONS=3000
+make pep selftest example_aes NR_SIMULATIONS=3000 VENV=false AES_SOURCE_PATH=/aes-vhdl
 zip -rq build/vcd.zip example-aes-vhdl/vcd
 zip -rq build/testvector.zip example-aes-vhdl/testvector
 cp example-aes-vhdl/correlation.pdf build/
