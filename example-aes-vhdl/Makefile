@@ -7,6 +7,8 @@ SIMS:=$(addsuffix .vcd, ${SIMS})
 TVS:=$(addprefix testvector/testvector, ${NUMBERS})
 TVS:=$(addsuffix .tv, ${TVS})
 
+AES_SOURCE_PATH?=aes-vhdl
+
 all:
 	@echo "make aes_vhdl"
 	@echo "make simulate -j numberofcores"
@@ -19,7 +21,7 @@ simulate: test_enc $(TVS) $(SIMS)
 attack: dpa
 
 get_sources:
-	[ -d aes-vhdl ] || git clone https://github.com/hadipourh/AES-VHDL aes-vhdl
+	[ -d $(AES_SOURCE_PATH) ] || git clone https://github.com/hadipourh/AES-VHDL $(AES_SOURCE_PATH)
 
 dpa:
 	python3 dpa_lascar.py
@@ -47,7 +49,7 @@ cleansim:
 
 test_enc:
 	mkdir -p aes-vhdl-work
-	ghdl -i --workdir=aes-vhdl-work aes-vhdl/AES-ENC/RTL/*.vhd enc_tb.vhd
+	ghdl -i --workdir=aes-vhdl-work $(AES_SOURCE_PATH)/AES-ENC/RTL/*.vhd enc_tb.vhd
 	ghdl -m --workdir=aes-vhdl-work test_enc
 
 testvector/testvector%.tv:
