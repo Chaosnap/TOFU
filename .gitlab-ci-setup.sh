@@ -12,4 +12,4 @@ apt update
 apt upgrade --assume-yes
 
 #install required tools
-apt install --assume-yes make git sudo ghdl python3.8 python3-venv zip
+apt install --assume-yes make git sudo ghdl python3.8 python3-venv zip clang

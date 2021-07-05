@@ -15,7 +15,7 @@ python3 ntofu.py --settings example/settings_example.json
 mv example/traces.h5 example/ntofu_traces.h5
 
 # generate aes simulation traces
-make -C example-aes-vhdl cleansim simulate NR_SIMULATIONS=10
+make -C example-aes-vhdl get_sources cleansim simulate NR_SIMULATIONS=10
 
 # build ntofu engine
 make engine

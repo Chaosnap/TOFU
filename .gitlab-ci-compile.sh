@@ -9,17 +9,19 @@ pkgver() {
     printf "revision-%s-%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
-#compile
+# compile
 rm -rf build
 mkdir -p build
 
+# selftest
 make venv
 make pep
-source tofu_python/bin/activate
-make example_aes NR_SIMULATIONS=3000
+make selftest
 
-zip -r build/vcd.zip example-aes-vhdl/vcd
-zip -r build/testvector.zip example-aes-vhdl/testvector
+# aes example
+make example_aes NR_SIMULATIONS=3000
+zip -rq build/vcd.zip example-aes-vhdl/vcd
+zip -rq build/testvector.zip example-aes-vhdl/testvector
 cp example-aes-vhdl/correlation.pdf build/
 cp example-aes-vhdl/correlation.pdf build/
 cp example-aes-vhdl/correlation.h5 build/
