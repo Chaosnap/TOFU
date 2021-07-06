@@ -14,9 +14,7 @@ import argparse
 import logging
 import json
 import pickle
-
-# supress a lascar warning
-# h5py.get_config().default_file_mode = "w"
+import os
 
 # create a logger
 logger = logging.getLogger("signals")
@@ -41,11 +39,13 @@ settings = None
 logger.info("loading settings from file: %s" % (settingsFile))
 with open(settingsFile) as fid:
     settings = json.load(fid)
-
+# extract path to settings file
+settingsFileLocation = os.path.abspath(settingsFile)
+settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
 # extracting signals from database
 logger.info("extracting signals from signal properties")
-signalPropertiesFile = settings["parse"]["signalPropertiesFile"]
+signalPropertiesFile = settingsFilePath + settings["parse"]["signalPropertiesFile"]
 signal_properties = []
 with open(signalPropertiesFile, "rb") as f:
     signal_properties = pickle.load(f)
