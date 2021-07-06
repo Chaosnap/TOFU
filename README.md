@@ -7,6 +7,7 @@
 ### Toggle Analysis in more than 20 lines of code.
 
 TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power traces which can be used for further analysis like DPA/TVLA.
+NTOFU is still buggy and should not be used.
 
 # List of files
 
