@@ -22,11 +22,19 @@ Parser::Parser(const char *file_name, std::set<std::string> *inspected_signals, 
     file_end_ = file_start + file_length;
     file_pointer_ = const_cast<char *>(file_start);
 
+    // Collect all IDs which should be extracted
+    std::vector<IdentifierCode> ids_to_extract;
+    for (auto ve : *values_to_extract) {
+        for (auto id : ve->ids) {
+            ids_to_extract.push_back(id);
+        }
+    }
+
     // Preallocate memory to avoid reallocations.
     leakage_.reserve(file_length / 100);
 
     // VCD File ::= { declaration_command } { simulation_command }
-    ParseHeader(inspected_signals, var_definitions);
+    ParseHeader(inspected_signals, var_definitions, &ids_to_extract);
     ParseValueChangeSection(leakage_model, align, downsample, values_to_extract);
     CHECK(munmap(const_cast<void *>(static_cast<const void *>(file_start)), file_length) != -1);
 }
@@ -64,7 +72,8 @@ IdentifierCode Parser::ReadIdentifierCode(const char *start, size_t length)
     }
 }
 
-void Parser::ParseHeader(std::set<std::string> *inspected_signals, std::set<std::string> *var_definitions)
+void Parser::ParseHeader(std::set<std::string> *inspected_signals, std::set<std::string> *var_definitions, 
+                         std::vector<IdentifierCode> *ids_to_extract)
 {
     bool should_filter_signals = !inspected_signals->empty();
     std::string current_scope = "";
@@ -109,6 +118,10 @@ void Parser::ParseHeader(std::set<std::string> *inspected_signals, std::set<std:
                 if (inspected_signals->find(current_scope) != inspected_signals->end() ||
                     inspected_signals->find(current_scope + "->" + reference) != inspected_signals->end())
                 {
+                    var_state_.insert(identifier_code, size);
+                }
+                else if (std::find(ids_to_extract->begin(), ids_to_extract->end(), identifier_code) != ids_to_extract->end()) {
+                    ids_to_extract_not_filter_.push_back(identifier_code);
                     var_state_.insert(identifier_code, size);
                 }
             }
@@ -294,19 +307,22 @@ void Parser::ParseValueChangeSection(LeakageModel leakage_model, bool align, uin
 
                 DCHECK(var_state_.var_size(identifier_code) == 1);
 
-                switch (leakage_model)
-                {
-                case HammingDistance:
-                    current_leakage += var_state_.get(identifier_code, 0) ^ is_scalar_1;
-                    break;
-                case HammingWeight:
-                    if (var_state_.get(identifier_code, 0) ^ is_scalar_1)
+                if (std::find(ids_to_extract_not_filter_.begin(), ids_to_extract_not_filter_.end(), identifier_code) == ids_to_extract_not_filter_.end()) {
+                    switch (leakage_model)
                     {
-                        current_leakage += is_scalar_1 ? 1 : -1;
+                    case HammingDistance:
+                        current_leakage += var_state_.get(identifier_code, 0) ^ is_scalar_1;
+                        break;
+                    case HammingWeight:
+                        if (var_state_.get(identifier_code, 0) ^ is_scalar_1)
+                        {
+                            current_leakage += is_scalar_1 ? 1 : -1;
+                        }
+                        break;
                     }
-                    break;
+                    DCHECK(current_leakage >= 0);
                 }
-                DCHECK(current_leakage >= 0);
+
                 var_state_.set(identifier_code, 0, is_scalar_1);
                 file_pointer_ += 1; // skip newline
             }
@@ -341,18 +357,22 @@ void Parser::ParseValueChangeSection(LeakageModel leakage_model, bool align, uin
                            currentChar == 'U' ||
                            currentChar == 'z' ||
                            currentChar == 'Z');
-                    switch (leakage_model)
-                    {
-                    case HammingDistance:
-                        current_leakage += var_state_.get(identifier_code, i) ^ (currentChar == '1');
-                        break;
-                    case HammingWeight:
-                        if (var_state_.get(identifier_code, i) ^ (currentChar == '1'))
+
+                    if (std::find(ids_to_extract_not_filter_.begin(), ids_to_extract_not_filter_.end(), identifier_code) == ids_to_extract_not_filter_.end()) {
+                        switch (leakage_model)
                         {
-                            current_leakage += (currentChar == '1') ? 1 : -1;
+                        case HammingDistance:
+                            current_leakage += var_state_.get(identifier_code, i) ^ (currentChar == '1');
+                            break;
+                        case HammingWeight:
+                            if (var_state_.get(identifier_code, i) ^ (currentChar == '1'))
+                            {
+                                current_leakage += (currentChar == '1') ? 1 : -1;
+                            }
+                            break;
                         }
-                        break;
                     }
+                    
                     DCHECK(current_leakage >= 0);
                     var_state_.set(identifier_code, i, currentChar == '1');
                 }

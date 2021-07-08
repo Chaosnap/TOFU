@@ -12,8 +12,11 @@ enum LeakageModel { HammingWeight, HammingDistance };
 class Parser {
     private:
         // Keeps track of the current value of a variable.
-        // Only contains signals under inspection.
+        // Contains signals under inspection and signals to extract.
         VariableState var_state_;
+
+        // Keeps track of all IDs that should be extracted but not used for leakage generation.
+        std::vector<IdentifierCode> ids_to_extract_not_filter_;
 
         // Current position within the file.
         char* file_pointer_;
@@ -27,7 +30,8 @@ class Parser {
         // Collects the extraced value (same order as in file)
         std::vector<char*> extracted_values_;
 
-        void ParseHeader(std::set<std::string>* inspected_signals, std::set<std::string>* var_definitions);
+        void ParseHeader(std::set<std::string>* inspected_signals, std::set<std::string>* var_definitions,
+                         std::vector<IdentifierCode>* ids_to_extract);
         void ParseValueChangeSection(LeakageModel leakage_model, bool align, uint64_t downsample, 
                                      std::vector<ValueExtract*>* values_to_extract);
         
