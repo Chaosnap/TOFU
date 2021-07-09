@@ -30,7 +30,7 @@ char* VariableState::get_bit_string(std::vector<IdentifierCode> ids) {
     }
     char* ret = static_cast<char*>(malloc(values.size() + 1));
     ret[values.size()] = '\0';
-    for (int i = 0; i < values.size(); ++i) {
+    for (size_t i = 0; i < values.size(); ++i) {
         ret[i] = values[i] ? '1' : '0';
     }
     return ret;

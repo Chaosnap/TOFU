@@ -6,7 +6,7 @@
                 "${workspaceFolder}/src"
             ],
             "defines": [
-                "PARSE_DEBUG"
+                "DEBUG=1"
             ],
             "intelliSenseMode": "clang-x64",
             "browse": {
@@ -17,7 +17,7 @@
                 "limitSymbolsToIncludedHeaders": false,
                 "databaseFilename": ""
             },
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "/usr/bin/g++",
             "cppStandard": "c++17"
         }
     ],

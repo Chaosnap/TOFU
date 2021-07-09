@@ -34,9 +34,9 @@ void FreeAll() {
     if (last_num_files_ == 0)
         return;
 
-    for (int i = 0; i < last_num_files_; ++i) {
+    for (size_t i = 0; i < last_num_files_; ++i) {
         free(last_leakages_[i]);
-        for (int j = 0; j < last_extracted_values_count_; ++j) {
+        for (size_t j = 0; j < last_extracted_values_count_; ++j) {
             free(last_extracted_values_[i][j]);
         }
     }
@@ -149,7 +149,67 @@ extern "C" void ParseFiles(const char* path, size_t* num_files, int64_t*** leaka
                       &var_definitions_, &values_to_extract_);
         size_t leakage_length; 
         (*leakages)[i] = parser.GetLeakage(&leakage_length);
+#ifdef DEBUG
+        std::cout << vcd_files[i] << " leakages: {";
+        for (size_t o=0; o< leakage_length; o++){
+            std::cout << " " << (*leakages)[i][o];
+        }
+        std::cout << "}" << std::endl;
+#endif
         (*leakages_count)[i] = leakage_length;
         (*extracted_values)[i] = parser.GetExtractedValues();
     }
 }
+
+/// This section is only used in the standalone executable
+#ifdef DEBUG
+
+#ifndef INSPECTED_SIGNALS_FILENAME
+#error INSPECTED_SIGNALS_FILENAME is not defined in Makefile
+#endif
+#ifndef VALUE_EXTRACT_FILE
+#error VALUE_EXTRACT_FILE is not defined in Makefile
+#endif
+#ifndef VCD_GLOB
+#error VCD_GLOB is not defined in Makefile
+#endif
+
+// This strange workaround is needed so that one can define preprocessor strings in the Makefile
+#define STRING(x) #x
+#define TO_STRING(x) STRING(x)
+#define INSPECTED_SIGNALS_FILENAME_STRING TO_STRING(INSPECTED_SIGNALS_FILENAME)
+#define VALUE_EXTRACT_FILE_STRING TO_STRING(VALUE_EXTRACT_FILE)
+#define VCD_GLOB_STRING TO_STRING(VCD_GLOB)
+
+
+int main(){
+    
+    bool use_hamming_weight = true;
+    bool align = false;
+    uint64_t downsample = 1;
+    
+    std::string inspected_signals_file_name = INSPECTED_SIGNALS_FILENAME_STRING;
+    std::string value_extract_file = VALUE_EXTRACT_FILE_STRING;
+    std::string vcd_glob = VCD_GLOB_STRING;
+    
+    std::cout << "inspected_signals_filename: \"" << inspected_signals_file_name << "\"" << std::endl;
+    std::cout << "value_extract_file:         \""<< value_extract_file << "\"" << std::endl;
+    std::cout << "vcd_glob:                   \"" << vcd_glob << "\"" << std::endl;
+    
+    //SetupParser(use_hamming_weight, inspected_signals_file_name.c_str(), align, downsample, value_extract_file.c_str());
+    SetupParser(use_hamming_weight, nullptr, align, downsample, value_extract_file.c_str());
+    
+    size_t num_files_ref = 0;
+    int64_t** leakages;
+    size_t* leakages_count;
+    char*** extracted_values;
+    size_t extracted_values_count = 0;
+    ParseFiles(vcd_glob.c_str(), &num_files_ref, &leakages, &leakages_count, &extracted_values, &extracted_values_count);
+    
+    std::cout << "num_files_ref:  " << num_files_ref << std::endl;
+    std::cout << "leakages_count: " << *leakages_count << std::endl;
+    std::cout << "leakages:       " << leakages << std::endl;
+    
+    return 0;
+}
+#endif
