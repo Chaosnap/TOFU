@@ -152,7 +152,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             # logger.debug("comment: %s" % comment)
             vcdHeader[keyword[1:]] = comment
 
-        if keyword == "$date":
+        elif keyword == "$date":
             date = buildfromtokens(tokens)
             # logger.debug("date: %s" % date)
             vcdHeader[keyword[1:]] = date
