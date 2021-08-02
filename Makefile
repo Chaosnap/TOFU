@@ -26,26 +26,26 @@ example: clean venv
 	@#$(VENV); python3 analyze.py --settings example/settings_example.json
 
 example_aes: clean venv
-	$(VENV); make -C example-aes-vhdl clean cleansim get_sources
+	$(VENV); make -C example-aes-vhdl clean cleansim
 	$(VENV); make -C example-aes-vhdl simulate -j $(NRPOC)
 	$(VENV); python3 parse.py --settings example-aes-vhdl/settings_example.json --loglevel warning
 	$(VENV); python3 synthesize.py --settings example-aes-vhdl/settings_example.json --loglevel warning
 	$(VENV); make -C example-aes-vhdl dpa
 
 example_aes_filtered: clean venv
-	$(VENV); make -C example-aes-vhdl clean cleansim get_sources
+	$(VENV); make -C example-aes-vhdl clean cleansim
 	$(VENV); make -C example-aes-vhdl simulate -j $(NRPOC)
 	$(VENV); python3 parse.py --settings example-aes-vhdl/settings_example.json --loglevel warning
 	@# generate filtered signals.json
 	$(VENV); python3 extractsignalids.py --settings example-aes-vhdl/settings_example.json
 	$(VENV); python3 synthesize.py --settings example-aes-vhdl/settings_example.json --loglevel warning
-	$(VENV); make -C example-aes-vhdl dpa
+	$(VENV); make -C example-aes-vhdl dpa 
 
 ntofu_example_aes: clean venv engine
-	$(VENV); make -C example-aes-vhdl clean cleansim get_sources
+	$(VENV); make -C example-aes-vhdl clean cleansim
 	$(VENV); make -C example-aes-vhdl simulate -j $(NRPOC)
 	$(VENV); make -C example-aes-vhdl ntofu
-	$(VENV); make -C example-aes-vhdl dpa
+	$(VENV); make -C example-aes-vhdl dpa DPA_SETTINGS_FILE=ntofu_settings_example.json
 
 selftest: venv engine
 	$(VENV); bash selftest.sh

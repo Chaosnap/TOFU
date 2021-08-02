@@ -39,54 +39,43 @@ entity test_enc is
 end test_enc;
 
 
-architecture behavior of test_enc is
-	component aes_enc
+architecture simul_behavior of test_enc is
+	component simple_aes
 		port(
 			clk        : in  std_logic;
-			rst        : in  std_logic;
+			reset      : in  std_logic;
 			key        : in  std_logic_vector(127 downto 0);
 			plaintext  : in  std_logic_vector(127 downto 0);
 			ciphertext : out std_logic_vector(127 downto 0);
 			done       : out std_logic
 		);		
-	end component aes_enc;	
-	-- Input signals
+	end component simple_aes;	
+	
 	signal clk : std_logic := '0';
-	signal rst : std_logic := '0';
+	signal reset : std_logic := '0';
 	signal plaintext : std_logic_vector(127 downto 0);
 	signal key : std_logic_vector(127 downto 0);	
 	
-	-- Output signals
 	signal done : std_logic;
 	signal ciphertext : std_logic_vector(127 downto 0);	
 	
-	-- Clock period definition
 	constant clk_period : time := 2 ms;
 	
 begin
-	enc_inst : aes_enc
+	enc_inst : simple_aes
 		port map(
 			clk        => clk,
-			rst        => rst,
+			reset      => reset,
 			key        => key,
 			plaintext  => plaintext,
 			ciphertext => ciphertext,
 			done       => done
 		);	
-	-- clock process definitions
-	clk_process : process is
-	begin
-		clk <= '0';
-		wait for clk_period/2;
-		clk <= '1';
-		wait for clk_period/2;
-	end process clk_process;
 	
 	-- Simulation process
 	sim_proc : process is
 	begin
 		-- Initialize Inputs
-		--plaintext <= x"711816261678746845eff616e0724f9a";
 		plaintext(15 downto 0)    <= std_logic_vector(to_unsigned(p7, 16));
 		plaintext(31 downto 16)   <= std_logic_vector(to_unsigned(p6, 16));
 		plaintext(47 downto 32)   <= std_logic_vector(to_unsigned(p5, 16));
@@ -96,7 +85,6 @@ begin
 		plaintext(111 downto 96)  <= std_logic_vector(to_unsigned(p1, 16));
 		plaintext(127 downto 112) <= std_logic_vector(to_unsigned(p0, 16));
 
-		--key <= x"2b7e151628aed2a6abf7158809cf4f3c";
 		key(15 downto 0)    <= std_logic_vector(to_unsigned(k7, 16));
 		key(31 downto 16)   <= std_logic_vector(to_unsigned(k6, 16));
 		key(47 downto 32)   <= std_logic_vector(to_unsigned(k5, 16));
@@ -106,14 +94,22 @@ begin
 		key(111 downto 96)  <= std_logic_vector(to_unsigned(k1, 16));
 		key(127 downto 112) <= std_logic_vector(to_unsigned(k0, 16));
 
-		rst <= '0';
+		reset <= '1';
 		-- Hold reset state for one cycle		
 		wait for clk_period * 1;
-		rst <= '1';
+		reset <= '0';
 		wait until done = '1';
 		wait for clk_period;			
 		--std.env.finish;
 		report "finished";
 	end process sim_proc;
 	
-end architecture behavior;
+	clk_proc : process is
+	begin
+		clk <= '0';
+		wait for clk_period/2;
+		clk <= '1';
+		wait for clk_period/2;
+	end process clk_proc;
+	
+end architecture simul_behavior;

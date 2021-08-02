@@ -11,6 +11,8 @@
 # -------------------------------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
+import argparse
+import json
 from lascar.tools.aes import sbox
 from lascar.container import Hdf5Container
 from lascar.engine import CpaEngine
@@ -21,6 +23,22 @@ from lascar.tools.leakage_model import hamming
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 
+# parse hamming weight or hamming distance
+parser = argparse.ArgumentParser(description="TOFU")
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=False)
+namespace = parser.parse_args()
+if namespace.settings is not None:
+    settings_file = namespace.settings
+print("settings file: %s" % settings_file)
+
+with open(settings_file) as f:
+    settings = json.load(f)
+
+leakage_model = settings["leakageModel"]
+
+if leakage_model not in ["HammingWeight", "HammingDistance"]:
+    raise Exception("undefined leakage model: %s" % leakage_model)
+
 fileName = "traces.h5"
 
 container = Hdf5Container(fileName)
@@ -28,13 +46,29 @@ container = Hdf5Container(fileName)
 
 guess_range = range(256)
 
+if leakage_model == "HammingWeight":
 
-def generate_selection_function(byte):
-    # only encrypt
-    def selection_with_guess(value, guess):
-        return hamming(sbox[value[byte] ^ guess])
+    def generate_selection_function(byte):
+        # only encrypt
+        # hw leakage is then hw(sbox[plain + key])
+        def selection_with_guess(value, guess):
+            return hamming(sbox[value[byte] ^ guess])
 
-    return selection_with_guess
+        return selection_with_guess
+
+
+else:
+
+    def generate_selection_function(byte):
+        # only encrypt
+        # 0xUU is converted into integer and thus into 0x00 during the VCD simulation, which is then substituted by the s-box
+        # hd leakage is then hw(sbox[0] ^ sbox[plain + key])
+        initial_register_value = 0x00
+
+        def selection_with_guess(value, guess):
+            return hamming(sbox[initial_register_value] ^ sbox[value[byte] ^ guess])
+
+        return selection_with_guess
 
 
 cpa_engines = [

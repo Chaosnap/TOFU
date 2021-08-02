@@ -35,6 +35,3 @@ rm -rf lascar.git
 
 # workaround lascar lacks psutil
 python3 -m  pip install --upgrade psutil
-
-# clone aes example repo
-git clone https://github.com/hadipourh/AES-VHDL /aes-vhdl

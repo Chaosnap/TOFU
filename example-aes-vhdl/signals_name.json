@@ -1,6 +1,6 @@
 {
     "include": [
-        "module test_enc->module enc_inst->module sub_byte_inst->module gen(15)->module sbox_inst->output_byte[7:0]"
+        "module test_enc->module enc_inst->module aes_round_entity->module sub_bytes_inst->module gen(15)->module sbox_inst->output_byte[7:0]"
     ],
     "exclude": []
 }

@@ -9,24 +9,23 @@ TVS:=$(addsuffix .tv, ${TVS})
 
 AES_SOURCE_PATH?=aes-vhdl
 
+DPA_SETTINGS_FILE?=settings_example.json
+
 all:
 	@echo "make aes_vhdl"
 	@echo "make simulate -j numberofcores"
 	@echo "make attack"
 
-aes_vhdl: get_sources test_enc
+aes_vhdl: test_enc
 
 simulate: test_enc $(TVS) $(SIMS)
 
 attack: dpa
 
-get_sources:
-	[ -d $(AES_SOURCE_PATH) ] || git clone https://github.com/hadipourh/AES-VHDL $(AES_SOURCE_PATH)
-
 dpa:
-	python3 dpa_lascar.py
+	python3 dpa_lascar.py --settings $(DPA_SETTINGS_FILE)
 	cat generate_testvectors.py | grep key | head -n 1
-
+	
 ntofu:
 	python3 ../ntofu.py --settings ntofu_settings_example.json
 
@@ -49,7 +48,7 @@ cleansim:
 
 test_enc:
 	mkdir -p aes-vhdl-work
-	ghdl -i --workdir=aes-vhdl-work $(AES_SOURCE_PATH)/AES-ENC/RTL/*.vhd enc_tb.vhd
+	ghdl -i --workdir=aes-vhdl-work $(AES_SOURCE_PATH)/aes.vhdl enc_tb.vhd
 	ghdl -m --workdir=aes-vhdl-work test_enc
 
 testvector/testvector%.tv:
@@ -72,4 +71,4 @@ vcd/aes%.vcd: testvector/testvector%.tv test_enc
 		ki=$$(echo $$f | cut -c$$((34+i*4))-$$((33+(i+1)*4))) ; \
 		args="$$args -gk$$i=16#$$ki#" ; \
 	done ; \
-	ghdl -r --workdir=aes-vhdl-work test_enc --vcd=vcd/aes$*.vcd $$args --stop-time=25ms
+	ghdl -r --workdir=aes-vhdl-work test_enc --vcd=vcd/aes$*.vcd $$args --ieee-asserts=disable --stop-time=30ms
