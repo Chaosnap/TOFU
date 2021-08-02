@@ -21,7 +21,9 @@ rm -rf lascar.git
 # setup required python packages
 python3 -m  pip install --upgrade pip
 python3 -m  pip install --upgrade ipython
-python3 -m  pip install --upgrade numpy
+# python3 -m  pip install --upgrade numpy
+# fix numpy numba dep clash
+python3 -m  pip install --upgrade numba
 python3 -m  pip install --upgrade autopep8
 python3 -m  pip install --upgrade flake8
 python3 -m  pip install --upgrade black
