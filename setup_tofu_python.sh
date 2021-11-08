@@ -13,13 +13,15 @@ python3 -m venv tofu_python
 source tofu_python/bin/activate
 python3 -m  pip install --upgrade pip
 python3 -m  pip install --upgrade ipython
-# python3 -m  pip install --upgrade numpy
-# fix numpy numba dep clash
 python3 -m  pip install --upgrade numba
 python3 -m  pip install --upgrade autopep8
 python3 -m  pip install --upgrade flake8
 python3 -m  pip install --upgrade black
 python3 -m  pip install --upgrade cython
+
+# fix version clash
+python3 -m  pip uninstall pyparsing
+python3 -m  pip install pyparsing==2.4.7
 
 git clone https://github.com/Ledger-Donjon/lascar lascar.git
 cd lascar.git
