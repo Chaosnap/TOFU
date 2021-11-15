@@ -41,14 +41,30 @@ def convert_time_scale(timescale_string):
     return float(timescale[0]), timefactor
 
 
-def export(container, settings):
+def export(container, settings, settingsFileLocation="./"):
+    """
+    Export function to generate a HDF5 in the TUEISEC format from simulations
+    :param container: container with the simulated traces
+    :param settings: dictionary from the provided settings file
+    :param settingsFileLocation: absolute path of the settings file (including filename)
+    :return:
+    """
     try:
         from attack.helper.utils import HDF5utils as h5utils
     except ImportError:
         raise tueisecException("Attack Framework not installed")
 
+    # Get absolute file path and file name of the settings file
+    settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
+    settingsFileName = os.path.split(settingsFileLocation)[1]
+
     # Use the file name specified by the settings file
-    config = {"HDF5": {"output_file": settings["traceFileName"]}}
+    outputfilename = settings["traceFileName"]
+    if not os.path.isabs(outputfilename):
+        # If a relative path is given, join with the path where the settings file is located, i.e. paths are relative to the settings file
+        outputfilename = settingsFilePath + outputfilename
+
+    config = {"HDF5": {"output_file": outputfilename}}
     # create a dataset according the size and datatype of leakages
     config["HDF5"]["datasets"] = {"samples": {"datatype": container.leakages.dtype, "dim": None, "create": True}}
     num_samples = container.leakages.shape[1]
@@ -61,12 +77,18 @@ def export(container, settings):
 
         config["scope"] = {
             "sampling": {"sampling rate [S/s]": 1 / (timescale * timefactor), "sampling duration [s]": (container.simulation_time_steps[-1] - container.simulation_time_steps[-2]) * (len(container.simulation_time_steps) - 1) * timefactor},
-            "type": vcd_meta["version"],
+            "type": "Vivado " + vcd_meta["version"],
             "channel1": {},
             "trigger": {},
         }
     except FileNotFoundError:
         pass
+
+    # Add the Leakage model
+    config["scope"]["sampling"]["leakage model"] = container.leakage
+
+    # save the settings file in the HDF5
+    config["HDF5"]["documentation"] = {settingsFileName: settingsFileLocation}
 
     # Initialize the HDF5 file
     h5filehandle = h5utils.hdf5_file_init(config, target_info="VCD dump simulation by TOFU tool.")
@@ -75,12 +97,15 @@ def export(container, settings):
     h5utils.hdf5_add_group(h5filehandle, config, N_traces=n_traces, noSamples=num_samples)
 
     # find all .npy files in the same folder as the .vcd files and add the data contained as datasets to the HDF5
-    vcddir = os.path.dirname(settings["pickleGlob"]) + "/"  # same folder as VCD files
+    vcd_dump_path = settings["pickleGlob"]
+    if not os.path.isabs(settings["pickleGlob"]):
+        vcd_dump_path = settingsFilePath + vcd_dump_path
+    vcddir = os.path.dirname(vcd_dump_path) + "/"  # same folder as VCD files
     npyfiles = [f for f in os.listdir(vcddir) if f.endswith(".npy")]  # get list of .npy files
     for file in npyfiles:
         # use filename as dataset name
         datasetname = os.path.splitext(file)[0]
-        # directly copy data. Requiers the user to take care that the correct data is present
+        # directly copy data. Requires the user to take care that the correct data is present
         h5filehandle["0000"][datasetname] = np.load(vcddir + file, "r")
 
     # add traces (could also be done by h5utils.hdf5_add_data_multitrace?!)

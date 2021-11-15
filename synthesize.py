@@ -371,7 +371,7 @@ if writeTraces:
             pass
         hdf5_container = Hdf5Container.export(aqc, traceFileName, batch_size=writeTracesBatchSize)
     elif writeTracesFormat == "tueisec":
-        tueisec.export(aqc, settings)
+        tueisec.export(aqc, settings, settingsFileLocation=settingsFileLocation)
     else:
         Exception("format not supported")
 
