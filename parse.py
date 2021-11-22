@@ -329,7 +329,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             match_dumpvars = None
             continue
 
-        raise Exception("unable to parse variable: %s" % current_token)
+        raise Exception("unable to parse token: %s" % current_token)
 
     # batch insert to database
     pickleFile = re.sub(r".vcd$", r".pickle", vcdFile)
