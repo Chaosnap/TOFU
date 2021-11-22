@@ -255,7 +255,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             # update scalar signal values
             val = match_update_scalar.groups()[0]
             var = match_update_scalar.groups()[1]
-            logger.debug("update: %s ---> %s" % (var, val))
+            # logger.debug("update: %s ---> %s" % (var, val))
 
             signal_name = itons[var][0]["name"]
             signal_scope = itons[var][0]["scope"]
@@ -271,7 +271,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             # remove b prefix
             val = val[1:]
             var = next(tokens)
-            logger.debug("update: %s ---> %s" % (var, val))
+            # logger.debug("update: %s ---> %s" % (var, val))
 
             signal_name = itons[var][0]["name"]
             signal_scope = itons[var][0]["scope"]
@@ -285,8 +285,8 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             simulation_time_old = simulation_time
             simulation_time = int(match_time.groups()[0])
 
-            logger.debug("-" * 100)
-            logger.debug("time: %s" % simulation_time)
+            # logger.debug("-" * 100)
+            # logger.debug("time: %s" % simulation_time)
             match_time = None
             continue
 
@@ -304,7 +304,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     # update scalar signal values
                     val = match_dumpvar_scalar.groups()[0]
                     var = match_dumpvar_scalar.groups()[1]
-                    logger.debug("update: %s ---> %s" % (var, val))
+                    # logger.debug("update: %s ---> %s" % (var, val))
 
                     signal_name = itons[var][0]["name"]
                     signal_scope = itons[var][0]["scope"]
@@ -317,7 +317,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     # remove b prefix
                     val = val[1:]
                     var = next(tokens)
-                    logger.debug("update: %s ---> %s" % (var, val))
+                    # logger.debug("update: %s ---> %s" % (var, val))
 
                     signal_name = itons[var][0]["name"]
                     signal_scope = itons[var][0]["scope"]
