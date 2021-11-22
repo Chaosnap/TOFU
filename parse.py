@@ -171,7 +171,10 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             scope = buildfromtokens(tokens)
             currScope.append(scope)
             # logger.debug("->".join(currScope))
-            vcdHeader["scope"]["->".join(currScope)] = []
+            # ??? wtf scoping verilator
+            currScopeKey = "->".join(currScope)
+            if currScopeKey not in vcdHeader["scope"].keys():
+                vcdHeader["scope"][currScopeKey] = []
 
         elif keyword == "$upscope":
             upscope = buildfromtokens(tokens)
@@ -181,12 +184,13 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
         elif keyword == "$var":
             var = buildfromtokens(tokens)
             # logger.debug("var: %s" % var)
-            match = re.match("^(wire|reg)\\s+([0-9]+)\\s+(\\S*)\\s+(.*)$", var)
+            match = re.match("^(wire|reg|logic|parameter|int|bit|byte)\\s+([0-9]+)\\s+(\\S*)\\s+(.*)$", var)
             if match is not None:
+                dtype = match.groups()[0]
                 width = match.groups()[1]
                 identifier = match.groups()[2]
                 name = match.groups()[3]
-                # logger.debug("scope: %s\twidth: %s\tidentifier: %s\tname: %s" % ("->".join(currScope), width, identifier, name))
+                # logger.debug("scope: %s\twidth: %s\tidentifier: \t%s dtype: %s\tname: %s" % ("->".join(currScope), width, identifier, dtype, name))
                 # logger.debug(width)
             else:
                 raise Exception("unable to parse variable: %s" % var)
