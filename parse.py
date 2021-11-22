@@ -56,6 +56,14 @@ with open(settingsFile) as fid:
 settingsFileLocation = os.path.abspath(settingsFile)
 settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
+# compiled regexes for faster matching tested to be faster
+re_match_time = re.compile("^#([0-9]+)$")
+re_match_update_scalar = re.compile("^([01xXzZuU])(.+)$")
+re_match_update_vector = re.compile("^([bB][01xXzZuU]+)$")
+re_match_dumpvars = re.compile("^(\\$dumpvars)$")
+re_match_dumpvar_scalar = re.compile("^([01xXzZuU])(.+)$")
+re_match_dumpvar_vector = re.compile("^([bB][01xXzZuU]+)$")
+
 
 def token_generator(fid):
     for line in fid:
@@ -242,26 +250,55 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
     for current_token in tokens:
         # logger.debug(current_token)
 
-        match_time = re.match("^#([0-9]+)$", current_token)
-        match_update_scalar = re.match("^([01xXzZuU])(.+)$", current_token)
-        match_update_vector = re.match("^([bB][01xXzZuU]+)$", current_token)
-        match_dumpvars = re.match("^(\\$dumpvars)$", current_token)
+        match_update_scalar = re_match_update_scalar.match(current_token)
+        if match_update_scalar is not None:
+            # update scalar signal values
+            val = match_update_scalar.groups()[0]
+            var = match_update_scalar.groups()[1]
+            logger.debug("update: %s ---> %s" % (var, val))
 
+            signal_name = itons[var][0]["name"]
+            signal_scope = itons[var][0]["scope"]
+            numeric_id = iddict[signal_scope + "->" + signal_name]
+            updates.append((simulation_time, numeric_id, val))
+            match_update_scalar = None
+            continue
+
+        match_update_vector = re_match_update_vector.match(current_token)
+        if match_update_vector is not None:
+            # update vector signal values
+            val = match_update_vector.groups()[0]
+            # remove b prefix
+            val = val[1:]
+            var = next(tokens)
+            logger.debug("update: %s ---> %s" % (var, val))
+
+            signal_name = itons[var][0]["name"]
+            signal_scope = itons[var][0]["scope"]
+            numeric_id = iddict[signal_scope + "->" + signal_name]
+            updates.append((simulation_time, numeric_id, val))
+            match_update_vector = None
+            continue
+
+        match_time = re_match_time.match(current_token)
         if match_time is not None:
             simulation_time_old = simulation_time
             simulation_time = int(match_time.groups()[0])
 
             logger.debug("-" * 100)
             logger.debug("time: %s" % simulation_time)
+            match_time = None
+            continue
 
-        elif match_dumpvars is not None:
+        match_dumpvars = re_match_dumpvars.match(current_token)
+        if match_dumpvars is not None:
             # extract initial value
             for dumpvar_token in tokens:
                 if dumpvar_token == "$end":
                     break
 
-                match_dumpvar_scalar = re.match("^([01xXzZuU])(.+)$", dumpvar_token)
-                match_dumpvar_vector = re.match("^([bB][01xXzZuU]+)$", dumpvar_token)
+                match_dumpvar_scalar = re_match_dumpvar_scalar.match(dumpvar_token)
+                match_dumpvar_vector = re_match_dumpvar_vector.match(dumpvar_token)
 
                 if match_dumpvar_scalar is not None:
                     # update scalar signal values
@@ -289,33 +326,10 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
 
                 else:
                     raise Exception("unable to parse variable: %s" % dumpvar_token)
+            match_dumpvars = None
+            continue
 
-        elif match_update_scalar is not None:
-            # update scalar signal values
-            val = match_update_scalar.groups()[0]
-            var = match_update_scalar.groups()[1]
-            logger.debug("update: %s ---> %s" % (var, val))
-
-            signal_name = itons[var][0]["name"]
-            signal_scope = itons[var][0]["scope"]
-            numeric_id = iddict[signal_scope + "->" + signal_name]
-            updates.append((simulation_time, numeric_id, val))
-
-        elif match_update_vector is not None:
-            # update vector signal values
-            val = match_update_vector.groups()[0]
-            # remove b prefix
-            val = val[1:]
-            var = next(tokens)
-            logger.debug("update: %s ---> %s" % (var, val))
-
-            signal_name = itons[var][0]["name"]
-            signal_scope = itons[var][0]["scope"]
-            numeric_id = iddict[signal_scope + "->" + signal_name]
-            updates.append((simulation_time, numeric_id, val))
-
-        else:
-            raise Exception("unable to parse variable: %s" % current_token)
+        raise Exception("unable to parse variable: %s" % current_token)
 
     # batch insert to database
     pickleFile = re.sub(r".vcd$", r".pickle", vcdFile)
