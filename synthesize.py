@@ -234,7 +234,12 @@ class AcquisitionSetupToggle(AbstractContainer):
             leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.uint32)
 
         # umbauen ummappen auf signale die benutzt werden
-        state = ["".ljust(i, "0") for i in self.numeric_id_to_width.values()]
+        if self.leakage == "HammingWeight":
+            state = [0 for i in self.numeric_id_to_width.values()]
+        elif self.leakage == "HammingDistance":
+            state = ["".ljust(i, "0") for i in self.numeric_id_to_width.values()]
+        else:
+            raise Exception("undefined leakage model: %s" % self.leakage)
 
         logger.info("iterating through all state updates")
         logger.info("performing %d updates" % (len(updates)))
@@ -270,7 +275,7 @@ class AcquisitionSetupToggle(AbstractContainer):
 
                 # this extracts the hamming weight
                 if self.leakage == "HammingWeight":
-                    leakage[nextval_index_old : nextval_index + 1] = hammingWeightFromBitString("".join(state))
+                    leakage[nextval_index_old : nextval_index + 1] = sum(state)
                 elif self.leakage == "HammingDistance":
                     # calculate the hamming distance
                     leakage[nextval_index_old : nextval_index + 1] = toggles
@@ -280,15 +285,19 @@ class AcquisitionSetupToggle(AbstractContainer):
 
                 nextval_index_old = nextval_index
 
-            nextval_padded = nextval.rjust(self.numeric_id_to_width[numeric_id], "0")
-            toggles += hammingDistanceFromBitString(state[numeric_id], nextval_padded)
-
-            state[numeric_id] = nextval_padded
+            if self.leakage == "HammingWeight":
+                state[numeric_id] = hammingWeightFromBitString(nextval)
+            elif self.leakage == "HammingDistance":
+                nextval_padded = nextval.rjust(self.numeric_id_to_width[numeric_id], "0")
+                toggles += hammingDistanceFromBitString(state[numeric_id], nextval_padded)
+                state[numeric_id] = nextval_padded
+            else:
+                raise Exception("undefined leakage model: %s" % self.leakage)
 
         # perform the last update after the loop
         if self.leakage == "HammingWeight":
             # this extracts the hamming weight
-            leakage[nextval_index_old : nextval_index + 1] = hammingWeightFromBitString("".join(state))
+            leakage[nextval_index_old : nextval_index + 1] = sum(state)
             # ignore first point
             leakage = leakage[1:]
         elif self.leakage == "HammingDistance":
