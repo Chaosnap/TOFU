@@ -60,6 +60,14 @@ with open(settingsFile) as fid:
 settingsFileLocation = os.path.abspath(settingsFile)
 settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
+# translate all paths to relativ paths
+settings["vcdGlob"] = settingsFilePath + settings["vcdGlob"]
+settings["pickleGlob"] = settingsFilePath + settings["pickleGlob"]
+settings["signalsFileNameLiterals"] = settingsFilePath + settings["signalsFileNameLiterals"]
+settings["signalsFileName"] = settingsFilePath + settings["signalsFileName"]
+settings["signalPropertiesFile"] = settingsFilePath + settings["signalPropertiesFile"]
+settings["traceFileName"] = settingsFilePath + settings["traceFileName"]
+
 
 def hammingWeightFromBitString(x):
     return x.count("1")
@@ -73,11 +81,16 @@ def hammingDistanceFromBitString(x, y):
         return sum(a != b for a, b in zip(x, y))
 
 
+# sort naturaly not in aphabetic order
+def natural_sort_key(s):
+    natural_sort_regex = re.compile("([0-9]+)")
+    return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
+
+
 # extracting signals from database
 logger.info("extracting signals from signal properties")
-signalPropertiesFile = settingsFilePath + settings["signalPropertiesFile"]
 signal_properties = []
-with open(signalPropertiesFile, "rb") as f:
+with open(settings["signalPropertiesFile"], "rb") as f:
     signal_properties = pickle.load(f)
 
 signals = []
@@ -90,15 +103,14 @@ signals = list(set(signals))
 
 # extract signals which shoul be used for synthesis
 signals_under_inspection = []
-configFile = settingsFilePath + settings["signalsFileName"]
-if not os.path.isfile(configFile):
+if not os.path.isfile(settings["signalsFileName"]):
     logger.info("no signals configured generating standard signals.json")
-    with open(configFile, "w", encoding="utf-8") as fid:
+    with open(settings["signalsFileName"], "w", encoding="utf-8") as fid:
         json.dump(signals, fid, ensure_ascii=False, indent=4)
         signals_under_inspection = signals
 else:
-    logger.info("%s found using signals as specified" % (configFile))
-    with open(configFile, "r", encoding="utf-8") as fid:
+    logger.info("%s found using signals as specified" % (settings["signalsFileName"]))
+    with open(settings["signalsFileName"], "r", encoding="utf-8") as fid:
         signals_under_inspection = json.load(fid)
 
 
@@ -106,18 +118,13 @@ else:
 # numeric_ids_under_inspection = [i["numeric_id"] for i in signals_under_inspection]
 numeric_ids_under_inspection = signals_under_inspection
 # ids can appear in several scopes so reduce them
-numeric_ids_under_inspection = list(set(numeric_ids_under_inspection))
+settings["numeric_ids_under_inspection"] = list(set(numeric_ids_under_inspection))
 
-
-# sort naturaly not in aphabetic order
-def natural_sort_key(s):
-    natural_sort_regex = re.compile("([0-9]+)")
-    return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
-
+# hardcode or not ???
+settings["reloadNumericIds"] = True
 
 # globbing for pickle files
 pickleFiles = glob.glob(settings["pickleGlob"])
-pickleFiles = sorted(pickleFiles, key=natural_sort_key)
 
 # extract the number of traces
 simulation_trace_max = len(pickleFiles)
@@ -126,17 +133,13 @@ logger.info("processing: %d traces" % (simulation_trace_max))
 
 # Then the AbstractContainer:
 class AcquisitionSetupToggle(AbstractContainer):
-    def __init__(self, pickleGlob, signalPropertiesFile, valueExtract, numeric_ids_under_inspection=None, reload_numeric_ids=False, leakage="HammingDistance", window=False, windowFrom=None, windowTo=None, allign=False, downsample=1):
+    def __init__(self, settings):
         """
         :param number_of_traces: only required argument for the constructor of an AbstractContainer
         """
 
-        # extract the key
-        # value extract function
-        self.valueExtract = valueExtract
-
         # store the assumed leakage model
-        self.leakage = leakage
+        self.leakage = settings["leakageModel"]
         if self.leakage == "HammingWeight":
             pass
         elif self.leakage == "HammingDistance":
@@ -146,18 +149,20 @@ class AcquisitionSetupToggle(AbstractContainer):
         else:
             raise Exception("undefined leakage model: %s" % self.leakage)
 
-        self.window = window
-        self.windowFrom = windowFrom
-        self.windowTo = windowTo
+        self.window = settings["window"]
+        self.windowFrom = settings["windowFrom"]
+        self.windowTo = settings["windowTo"]
+
+        # value extract function
+        self.valueExtract = getattr(value, settings["valueExtractFunction"])
 
         # signals which should be inspected
         self.numeric_ids_under_inspection = numeric_ids_under_inspection
         self.numeric_ids_under_inspection_set = set(self.numeric_ids_under_inspection)
-
-        self.reload_numeric_ids = reload_numeric_ids
+        self.reload_numeric_ids = settings["reloadNumericIds"]
 
         # extract signal properties
-        self.signalPropertiesFile = signalPropertiesFile
+        self.signalPropertiesFile = settings["signalPropertiesFile"]
         with open(self.signalPropertiesFile, "rb") as f:
             self.signal_properties = pickle.load(f)
         self.signal_properties = [{"numeric_id": int(signal[0]), "name": signal[1], "width": int(signal[2]), "scope": signal[3]} for signal in self.signal_properties]
@@ -167,15 +172,11 @@ class AcquisitionSetupToggle(AbstractContainer):
         # reduce signals to distinct ones
         logger.info("traces consist from %d signals" % (len(signals)))
 
-        # sort naturaly not in aphabetic order
-        def natural_sort_key(s):
-            natural_sort_regex = re.compile("([0-9]+)")
-            return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
-
         # globbing for pickle files
-        self.pickleGlob = pickleGlob
+        self.pickleGlob = settings["pickleGlob"]
         self.pickleFiles = glob.glob(self.pickleGlob)
         self.pickleFiles = sorted(self.pickleFiles, key=natural_sort_key)
+        print(self.pickleGlob)
 
         self.number_of_traces = len(self.pickleFiles)
 
@@ -191,8 +192,8 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         self.numeric_id_to_width = {i["numeric_id"]: i["width"] for i in self.signal_properties}
 
-        self.allign = allign
-        self.downsample = downsample
+        self.allign = settings["allign"]
+        self.downsample = settings["downsample"]
 
         AbstractContainer.__init__(self, self.number_of_traces)
 
@@ -212,7 +213,7 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         if self.reload_numeric_ids:
             self.logger.info("reloading numeric ids")
-            with open(configFile, "r", encoding="utf-8") as fid:
+            with open(settings["signalsFileName"], "r", encoding="utf-8") as fid:
                 self.numeric_ids_under_inspection = json.load(fid)
                 self.numeric_ids_under_inspection_set = set(self.numeric_ids_under_inspection)
 
@@ -338,39 +339,20 @@ class AcquisitionSetupToggle(AbstractContainer):
         return Trace(leakage, value)
 
 
-pickleGlob = settingsFilePath + settings["pickleGlob"]
-signalPropertiesFile = settingsFilePath + settings["signalPropertiesFile"]
-leakageModel = settings["leakageModel"]
-traceFileName = settingsFilePath + settings["traceFileName"]
-
-# put null in json to load everything
-window = settings["window"]
-windowFrom = settings["windowFrom"]
-windowTo = settings["windowTo"]
-
-writeTraces = settings["writeTraces"]
-writeTracesBatchSize = settings["writeTracesBatchSize"]
-writeTracesFormat = settings["format"]
-
-valueExtractFunction = getattr(value, settings["valueExtractFunction"])
-
-allign = settings["allign"]
-downsample = settings["downsample"]
-
 # create our acquisition setup
-aqc = AcquisitionSetupToggle(pickleGlob, signalPropertiesFile, valueExtractFunction, numeric_ids_under_inspection, leakage=leakageModel, window=window, windowFrom=windowFrom, windowTo=windowTo, reload_numeric_ids=True, allign=allign, downsample=downsample)
+aqc = AcquisitionSetupToggle(settings)
 # set lascar log level
 aqc.logger.setLevel(numeric_log_id)
 
 # export traces to container
-if writeTraces:
-    if writeTracesFormat == "lascar":
+if settings["writeTraces"]:
+    if settings["format"] == "lascar":
         try:
             hdf5_container._file.close()
         except NameError:
             pass
-        hdf5_container = Hdf5Container.export(aqc, traceFileName, batch_size=writeTracesBatchSize)
-    elif writeTracesFormat == "tueisec":
+        hdf5_container = Hdf5Container.export(aqc, settings["traceFileName"], batch_size=settings["writeTracesBatchSize"])
+    elif settings["format"] == "tueisec":
         tueisec.export(aqc, settings, settingsFileLocation=settingsFileLocation)
     else:
         Exception("format not supported")

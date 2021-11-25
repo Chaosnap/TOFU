@@ -42,24 +42,32 @@ with open(settingsFile) as fid:
 settingsFileLocation = os.path.abspath(settingsFile)
 settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
+# translate all paths to relativ paths
+settings["vcdGlob"] = settingsFilePath + settings["vcdGlob"]
+settings["pickleGlob"] = settingsFilePath + settings["pickleGlob"]
+# settings["signalsFileNameLiterals"] = settingsFilePath + settings["signalsFileNameLiterals"]
+settings["signalsFileName"] = settingsFilePath + settings["signalsFileName"]
+settings["signalPropertiesFile"] = settingsFilePath + settings["signalPropertiesFile"]
+settings["traceFileName"] = settingsFilePath + settings["traceFileName"]
+
+
 # extract signals which should be used for synthesis
 signals_under_inspection = []
-configFileOut = settingsFilePath + settings["signalsFileName"]
 
 # catch the error if the file is not defined
 try:
-    configFile = settingsFilePath + settings["signalsFileNameLiterals"]
+    settings["signalsFileNameLiterals"] = settingsFilePath + settings["signalsFileNameLiterals"]
 except KeyError:
     # if not defined in the
     logging.error("You need to specify the file name 'signalsFileNameLiterals' in the settings file.")
     exit(1)
 
-if not os.path.isfile(configFile):
-    logger.error("%s not found." % (configFile))
+if not os.path.isfile(settings["signalsFileNameLiterals"]):
+    logger.error("%s not found." % (settings["signalsFileNameLiterals"]))
     exit(0)
 else:
-    logger.info("%s found using signals as specified" % (configFile))
-    with open(configFile, "r", encoding="utf-8") as fid:
+    logger.info("%s found using signals as specified" % (settings["signalsFileNameLiterals"]))
+    with open(settings["signalsFileNameLiterals"], "r", encoding="utf-8") as fid:
         signals_under_inspection_names = json.load(fid)
 
 try:
@@ -85,9 +93,8 @@ else:
 
 # extracting signals from database
 logger.info("extracting signals from signal properties")
-signalPropertiesFile = settingsFilePath + settings["signalPropertiesFile"]
 signal_properties = []
-with open(signalPropertiesFile, "rb") as f:
+with open(settings["signalPropertiesFile"], "rb") as f:
     signal_properties = pickle.load(f)
 
 # find modules and signals
@@ -168,5 +175,5 @@ if signals_to_exclude != []:
                 signals_under_inspection.remove(ids)
 
 # write file
-with open(configFileOut, "w", encoding="utf-8") as fid:
+with open(settings["signalsFileName"], "w", encoding="utf-8") as fid:
     json.dump(signals_under_inspection, fid, ensure_ascii=False, indent=4)

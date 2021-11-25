@@ -56,6 +56,14 @@ with open(settingsFile) as fid:
 settingsFileLocation = os.path.abspath(settingsFile)
 settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
 
+# translate all paths to relativ paths
+settings["vcdGlob"] = settingsFilePath + settings["vcdGlob"]
+settings["pickleGlob"] = settingsFilePath + settings["pickleGlob"]
+settings["signalsFileNameLiterals"] = settingsFilePath + settings["signalsFileNameLiterals"]
+settings["signalsFileName"] = settingsFilePath + settings["signalsFileName"]
+settings["signalPropertiesFile"] = settingsFilePath + settings["signalPropertiesFile"]
+settings["traceFileName"] = settingsFilePath + settings["traceFileName"]
+
 # compiled regexes for faster matching tested to be faster
 re_match_time = re.compile("^#([0-9]+)$")
 re_match_update_scalar = re.compile("^([01xXzZuU])(.+)$")
@@ -113,11 +121,8 @@ def natural_sort_key(s):
 
 
 # globbing for vcd files
-vcdFiles = glob.glob(settingsFilePath + settings["vcdGlob"])
+vcdFiles = glob.glob(settings["vcdGlob"])
 vcdFiles = sorted(vcdFiles, key=natural_sort_key)
-
-signalPropertiesFile = settingsFilePath + settings["signalPropertiesFile"]
-traceFormat = settings["format"]
 
 iddict = {}
 
@@ -224,16 +229,16 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                 iddict[signal["scope"] + "->" + signal["name"]] = signal["numeric_id"]
 
         # pickle that shit
-        with open(signalPropertiesFile, "wb") as f:
-            logger.info("pickling signal properties to file: %s" % (signalPropertiesFile))
+        with open(settings["signalPropertiesFile"], "wb") as f:
+            logger.info("pickling signal properties to file: %s" % (settings["signalPropertiesFile"]))
             pickle.dump(signal_properties, f, pickle.HIGHEST_PROTOCOL)
 
         # pickle the metadata only required by tueisec format
-        if traceFormat == "tueisec":
+        if settings["format"] == "tueisec":
             exclude_keys = {"scope"}
             vcd_meta = {x: vcdHeader[x] for x in vcdHeader if x not in exclude_keys}
-            with open(signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle", "wb") as f:
-                logger.info("pickling signal properties meta to file: %s" % (signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle"))
+            with open(settings["signalPropertiesFile"].rsplit(".", 1)[0] + "_meta.pickle", "wb") as f:
+                logger.info("pickling signal properties meta to file: %s" % (settings["signalPropertiesFile"].rsplit(".", 1)[0] + "_meta.pickle"))
                 pickle.dump(vcd_meta, f, pickle.HIGHEST_PROTOCOL)
 
     # get num id in all but the first trace
