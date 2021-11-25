@@ -243,6 +243,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         nextval_index_old = 0
         toggles = 0
 
+        # perform updates inside the loop
         for update in updates:
 
             if self.allign:
@@ -284,14 +285,14 @@ class AcquisitionSetupToggle(AbstractContainer):
 
             state[numeric_id] = nextval_padded
 
-        # this extracts the hamming weight
+        # perform the last update after the loop
         if self.leakage == "HammingWeight":
+            # this extracts the hamming weight
             leakage[nextval_index_old : nextval_index + 1] = hammingWeightFromBitString("".join(state))
             # ignore first point
             leakage = leakage[1:]
         elif self.leakage == "HammingDistance":
             # calculate the hamming distance
-            # last update after loop
             leakage[nextval_index_old : nextval_index + 1] = toggles
             # ignore first point
             leakage = leakage[1:]
