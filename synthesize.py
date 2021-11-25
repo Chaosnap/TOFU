@@ -14,7 +14,7 @@ import value
 import argparse
 import logging
 import json
-import os.path
+import os
 import glob
 import numpy as np
 import re
@@ -22,12 +22,16 @@ import pickle
 import time
 from lascar import AbstractContainer, Trace, Hdf5Container
 import tueisec
+import helper
 
-# supress a lascar warning
-# h5py.get_config().default_file_mode = "w"
+# loading settings from file
+parser = argparse.ArgumentParser(description="TOFU")
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=True)
+parser.add_argument("-l", "--loglevel", type=str, help="specify loglevel", required=False, default="info")
+namespace = parser.parse_args()
 
 # create a logger
-logger = logging.getLogger("synthesize")
+logger = logging.getLogger(os.path.basename(__file__))
 if logger.hasHandlers():
     logger.handlers.clear()
 ch = logging.StreamHandler()
@@ -36,13 +40,6 @@ formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# loading settings from file
-settingsFile = "./settings.json"
-parser = argparse.ArgumentParser(description="TOFU")
-parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=False)
-parser.add_argument("-l", "--loglevel", type=str, help="specify loglevel", required=False, default="info")
-namespace = parser.parse_args()
-
 # parse loglevel
 loglevel = namespace.loglevel
 numeric_log_id = getattr(logging, loglevel.upper(), None)
@@ -50,23 +47,12 @@ if not isinstance(numeric_log_id, int):
     raise ValueError("Invalid log level: %s" % loglevel)
 logger.setLevel(numeric_log_id)
 
-if namespace.settings is not None:
-    settingsFile = namespace.settings
-settings = None
+# prepare settings dictionary
+settingsFile = namespace.settings
 logger.info("loading settings from file: %s" % (settingsFile))
-with open(settingsFile) as fid:
-    settings = json.load(fid)
-# extract path to settings file
-settingsFileLocation = os.path.abspath(settingsFile)
-settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
-
-# translate all paths to relativ paths
-settings["vcdGlob"] = settingsFilePath + settings["vcdGlob"]
-settings["pickleGlob"] = settingsFilePath + settings["pickleGlob"]
-settings["signalsFileNameLiterals"] = settingsFilePath + settings["signalsFileNameLiterals"]
-settings["signalsFileName"] = settingsFilePath + settings["signalsFileName"]
-settings["signalPropertiesFile"] = settingsFilePath + settings["signalPropertiesFile"]
-settings["traceFileName"] = settingsFilePath + settings["traceFileName"]
+settings = helper.loadSettings(settingsFile)
+settings = helper.validateSettings(settings)
+settings = helper.prepareSettings(settingsFile, settings)
 
 
 def hammingWeightFromBitString(x):
@@ -79,12 +65,6 @@ def hammingDistanceFromBitString(x, y):
         return x != y
     else:
         return sum(a != b for a, b in zip(x, y))
-
-
-# sort naturaly not in aphabetic order
-def natural_sort_key(s):
-    natural_sort_regex = re.compile("([0-9]+)")
-    return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
 
 
 # extracting signals from database
@@ -175,7 +155,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         # globbing for pickle files
         self.pickleGlob = settings["pickleGlob"]
         self.pickleFiles = glob.glob(self.pickleGlob)
-        self.pickleFiles = sorted(self.pickleFiles, key=natural_sort_key)
+        self.pickleFiles = sorted(self.pickleFiles, key=helper.natural_sort_key)
         print(self.pickleGlob)
 
         self.number_of_traces = len(self.pickleFiles)
@@ -353,7 +333,7 @@ if settings["writeTraces"]:
             pass
         hdf5_container = Hdf5Container.export(aqc, settings["traceFileName"], batch_size=settings["writeTracesBatchSize"])
     elif settings["format"] == "tueisec":
-        tueisec.export(aqc, settings, settingsFileLocation=settingsFileLocation)
+        tueisec.export(aqc, settings, settingsFileLocation=settings["settingsFileLocation"])
     else:
         Exception("format not supported")
 

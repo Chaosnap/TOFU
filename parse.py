@@ -11,19 +11,23 @@
 # -------------------------------------------------------------------------------------------------
 
 import argparse
-import json
 import glob
 import logging
 import re
 import time
 import pickle
 import progressbar
+import helper
 import os
 
-time_start = time.time()
+# loading settings from file
+parser = argparse.ArgumentParser(description="TOFU")
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=True)
+parser.add_argument("-l", "--loglevel", type=str, help="specify loglevel", required=False, default="info")
+namespace = parser.parse_args()
 
 # create a logger
-logger = logging.getLogger("parse")
+logger = logging.getLogger(os.path.basename(__file__))
 if logger.hasHandlers():
     logger.handlers.clear()
 ch = logging.StreamHandler()
@@ -32,13 +36,6 @@ formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# loading settings from file
-settingsFile = "./settings.json"
-parser = argparse.ArgumentParser(description="TOFU")
-parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=False)
-parser.add_argument("-l", "--loglevel", type=str, help="specify loglevel", required=False, default="info")
-namespace = parser.parse_args()
-
 # parse loglevel
 loglevel = namespace.loglevel
 numeric_log_id = getattr(logging, loglevel.upper(), None)
@@ -46,31 +43,24 @@ if not isinstance(numeric_log_id, int):
     raise ValueError("Invalid log level: %s" % loglevel)
 logger.setLevel(numeric_log_id)
 
-if namespace.settings is not None:
-    settingsFile = namespace.settings
-settings = None
+# prepare settings dictionary
+settingsFile = namespace.settings
 logger.info("loading settings from file: %s" % (settingsFile))
-with open(settingsFile) as fid:
-    settings = json.load(fid)
-# extract path to settings file
-settingsFileLocation = os.path.abspath(settingsFile)
-settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
+settings = helper.loadSettings(settingsFile)
+settings = helper.validateSettings(settings)
+settings = helper.prepareSettings(settingsFile, settings)
 
-# translate all paths to relativ paths
-settings["vcdGlob"] = settingsFilePath + settings["vcdGlob"]
-settings["pickleGlob"] = settingsFilePath + settings["pickleGlob"]
-settings["signalsFileNameLiterals"] = settingsFilePath + settings["signalsFileNameLiterals"]
-settings["signalsFileName"] = settingsFilePath + settings["signalsFileName"]
-settings["signalPropertiesFile"] = settingsFilePath + settings["signalPropertiesFile"]
-settings["traceFileName"] = settingsFilePath + settings["traceFileName"]
 
 # compiled regexes for faster matching tested to be faster
-re_match_time = re.compile("^#([0-9]+)$")
-re_match_update_scalar = re.compile("^([01xXzZuU])(.+)$")
-re_match_update_vector = re.compile("^([bB][01xXzZuU]+)$")
-re_match_dumpvars = re.compile("^(\\$dumpvars)$")
-re_match_dumpvar_scalar = re.compile("^([01xXzZuU])(.+)$")
-re_match_dumpvar_vector = re.compile("^([bB][01xXzZuU]+)$")
+re_match_time = re.compile(r"^#([0-9]+)$")
+re_match_update_scalar = re.compile(r"^([01xXzZuU])(.+)$")
+re_match_update_vector = re.compile(r"^([bB][01xXzZuU]+)$")
+re_match_dumpvars = re.compile(r"^(\$dumpvars)$")
+re_match_dumpvar_scalar = re.compile(r"^([01xXzZuU])(.+)$")
+re_match_dumpvar_vector = re.compile(r"^([bB][01xXzZuU]+)$")
+re_match_variable = re.compile(r"^(wire|reg|logic|parameter|int|bit|byte)\s+([0-9]+)\s+(\S*)\s+(.*)$")
+
+time_start = time.time()
 
 
 def token_generator(fid):
@@ -114,15 +104,9 @@ def identifierToNames(vcdHeader):
     return blah
 
 
-# sort naturaly not in aphabetic order
-def natural_sort_key(s):
-    natural_sort_regex = re.compile("([0-9]+)")
-    return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
-
-
 # globbing for vcd files
 vcdFiles = glob.glob(settings["vcdGlob"])
-vcdFiles = sorted(vcdFiles, key=natural_sort_key)
+vcdFiles = sorted(vcdFiles, key=helper.natural_sort_key)
 
 iddict = {}
 
@@ -197,7 +181,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
         elif keyword == "$var":
             var = buildfromtokens(tokens)
             # logger.debug("var: %s" % var)
-            match = re.match("^(wire|reg|logic|parameter|int|bit|byte)\\s+([0-9]+)\\s+(\\S*)\\s+(.*)$", var)
+            match = re_match_variable.match(var)
             if match is not None:
                 dtype = match.groups()[0]
                 width = match.groups()[1]

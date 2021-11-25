@@ -15,9 +15,16 @@ import json
 import pickle
 import argparse
 import os.path
+import helper
+
+# loading settings from file
+parser = argparse.ArgumentParser(description="TOFU")
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=True)
+parser.add_argument("-l", "--loglevel", type=str, help="specify loglevel", required=False, default="info")
+namespace = parser.parse_args()
 
 # create a logger
-logger = logging.getLogger("extractsignalids")
+logger = logging.getLogger(os.path.basename(__file__))
 if logger.hasHandlers():
     logger.handlers.clear()
 ch = logging.StreamHandler()
@@ -25,42 +32,24 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.INFO)
 
-# loading settings from file
-parser = argparse.ArgumentParser(description="Extract signal IDs for given modules and signals. Requires " '"signalsFileNameLiterals" entry')
-parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=True)
-namespace = parser.parse_args()
-if namespace.settings is not None:
-    settingsFile = namespace.settings
-settings = None
+# parse loglevel
+loglevel = namespace.loglevel
+numeric_log_id = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_log_id, int):
+    raise ValueError("Invalid log level: %s" % loglevel)
+logger.setLevel(numeric_log_id)
+
+# prepare settings dictionary
+settingsFile = namespace.settings
 logger.info("loading settings from file: %s" % (settingsFile))
-with open(settingsFile) as fid:
-    settings = json.load(fid)
-# extract path to settings file
-settingsFileLocation = os.path.abspath(settingsFile)
-settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
-
-# translate all paths to relativ paths
-settings["vcdGlob"] = settingsFilePath + settings["vcdGlob"]
-settings["pickleGlob"] = settingsFilePath + settings["pickleGlob"]
-# settings["signalsFileNameLiterals"] = settingsFilePath + settings["signalsFileNameLiterals"]
-settings["signalsFileName"] = settingsFilePath + settings["signalsFileName"]
-settings["signalPropertiesFile"] = settingsFilePath + settings["signalPropertiesFile"]
-settings["traceFileName"] = settingsFilePath + settings["traceFileName"]
+settings = helper.loadSettings(settingsFile)
+settings = helper.validateSettings(settings)
+settings = helper.prepareSettings(settingsFile, settings)
 
 
 # extract signals which should be used for synthesis
 signals_under_inspection = []
-
-# catch the error if the file is not defined
-try:
-    settings["signalsFileNameLiterals"] = settingsFilePath + settings["signalsFileNameLiterals"]
-except KeyError:
-    # if not defined in the
-    logging.error("You need to specify the file name 'signalsFileNameLiterals' in the settings file.")
-    exit(1)
 
 if not os.path.isfile(settings["signalsFileNameLiterals"]):
     logger.error("%s not found." % (settings["signalsFileNameLiterals"]))

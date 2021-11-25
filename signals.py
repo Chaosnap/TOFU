@@ -12,12 +12,18 @@
 
 import argparse
 import logging
-import json
 import pickle
 import os
+import helper
+
+# loading settings from file
+parser = argparse.ArgumentParser(description="TOFU")
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=True)
+parser.add_argument("-l", "--loglevel", type=str, help="specify loglevel", required=False, default="info")
+namespace = parser.parse_args()
 
 # create a logger
-logger = logging.getLogger("signals")
+logger = logging.getLogger(os.path.basename(__file__))
 if logger.hasHandlers():
     logger.handlers.clear()
 ch = logging.StreamHandler()
@@ -25,29 +31,25 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.INFO)
 
-# loading settings from file
-settingsFile = "./settings.json"
-parser = argparse.ArgumentParser(description="TOFU")
-parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=False)
-namespace = parser.parse_args()
-if namespace.settings is not None:
-    settingsFile = namespace.settings
-settings = None
+# parse loglevel
+loglevel = namespace.loglevel
+numeric_log_id = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_log_id, int):
+    raise ValueError("Invalid log level: %s" % loglevel)
+logger.setLevel(numeric_log_id)
+
+# prepare settings dictionary
+settingsFile = namespace.settings
 logger.info("loading settings from file: %s" % (settingsFile))
-with open(settingsFile) as fid:
-    settings = json.load(fid)
-# extract path to settings file
-settingsFileLocation = os.path.abspath(settingsFile)
-settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
+settings = helper.loadSettings(settingsFile)
+settings = helper.validateSettings(settings)
+settings = helper.prepareSettings(settingsFile, settings)
 
 # extracting signals from database
 logger.info("extracting signals from signal properties")
-signalPropertiesFile = settingsFilePath + settings["parse"]["signalPropertiesFile"]
 signal_properties = []
-with open(signalPropertiesFile, "rb") as f:
+with open(settings["signalPropertiesFile"], "rb") as f:
     signal_properties = pickle.load(f)
 
 signals = []
