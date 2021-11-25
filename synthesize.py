@@ -300,18 +300,9 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         ###################################################################################################################################
 
-        # rolling mean using convolution
-        # N = 5
-        # leakage = np.convolve(leakage, np.ones((N,)) / N, mode='valid')
-
         if (self.windowFrom is not None or self.windowTo is not None) and self.window is True:
             logger.info("extracting window from leakage %d:%d" % (self.windowFrom, self.windowTo))
             leakage = leakage[self.windowFrom : self.windowTo]
-
-        # dynamic scaling of trace eigentlich sollte man hier nach dem max suchen wenn das kleiner als max wer uint8 alles zu einem uint8
-
-        # artifical noise
-        # leakage += np.random.choice([0, 1], size=leakage.shape)
 
         time_finish = time.time()
         logger.info("capturing trace took %f seconds" % (time_finish - time_start))
