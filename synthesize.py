@@ -156,7 +156,7 @@ class AcquisitionSetupToggle(AbstractContainer):
         self.pickleGlob = settings["pickleGlob"]
         self.pickleFiles = glob.glob(self.pickleGlob)
         self.pickleFiles = sorted(self.pickleFiles, key=helper.natural_sort_key)
-        print(self.pickleGlob)
+        # print(self.pickleGlob)
 
         self.number_of_traces = len(self.pickleFiles)
 
