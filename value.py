@@ -67,7 +67,7 @@ def valueExtractPlaintext(self):
 
     for update in self.updates:
         if update[0] == value_signal_time_from and update[1] == value_signal_numeric_id:
-            plain = update[2]
+            plain = bin(update[2])[2:].rjust(128, "0")
             foo = int(plain, 2).to_bytes(-(-len(plain) // 8), byteorder="big")
             foo = list(foo)
             break

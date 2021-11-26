@@ -249,6 +249,8 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             signal_name = itons[var][0]["name"]
             signal_scope = itons[var][0]["scope"]
             numeric_id = iddict[signal_scope + "->" + signal_name]
+            # interpret all values despite 1 as 0
+            val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
             updates.append((simulation_time, numeric_id, val))
             match_update_scalar = None
             continue
@@ -265,6 +267,8 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             signal_name = itons[var][0]["name"]
             signal_scope = itons[var][0]["scope"]
             numeric_id = iddict[signal_scope + "->" + signal_name]
+            # interpret all values despite 1 as 0
+            val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
             updates.append((simulation_time, numeric_id, val))
             match_update_vector = None
             continue
@@ -298,6 +302,8 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     signal_name = itons[var][0]["name"]
                     signal_scope = itons[var][0]["scope"]
                     numeric_id = iddict[signal_scope + "->" + signal_name]
+                    # interpret all values despite 1 as 0
+                    val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
                     updates.append((simulation_time, numeric_id, val))
 
                 elif match_dumpvar_vector is not None:
@@ -311,6 +317,8 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     signal_name = itons[var][0]["name"]
                     signal_scope = itons[var][0]["scope"]
                     numeric_id = iddict[signal_scope + "->" + signal_name]
+                    # interpret all values despite 1 as 0
+                    val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
                     updates.append((simulation_time, numeric_id, val))
 
                 else:

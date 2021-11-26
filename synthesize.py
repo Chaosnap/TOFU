@@ -17,7 +17,6 @@ import json
 import os
 import glob
 import numpy as np
-import re
 import pickle
 import time
 from lascar import AbstractContainer, Trace, Hdf5Container
@@ -65,6 +64,14 @@ def hammingDistanceFromBitString(x, y):
         return x != y
     else:
         return sum(a != b for a, b in zip(x, y))
+
+
+def hammingWeightFromInt(x):
+    return bin(x).count("1")
+
+
+def hammingDistanceFromInt(x, y):
+    return hammingWeightFromInt(x ^ y)
 
 
 # extracting signals from database
@@ -124,8 +131,6 @@ class AcquisitionSetupToggle(AbstractContainer):
             pass
         elif self.leakage == "HammingDistance":
             pass
-        # elif self.leakage == "HammingHybrid":
-        #     pass
         else:
             raise Exception("undefined leakage model: %s" % self.leakage)
 
@@ -234,12 +239,7 @@ class AcquisitionSetupToggle(AbstractContainer):
             leakage = np.zeros((len(self.simulation_time_steps),), dtype=np.uint32)
 
         # umbauen ummappen auf signale die benutzt werden
-        if self.leakage == "HammingWeight":
-            state = [0 for i in self.numeric_id_to_width.values()]
-        elif self.leakage == "HammingDistance":
-            state = ["".ljust(i, "0") for i in self.numeric_id_to_width.values()]
-        else:
-            raise Exception("undefined leakage model: %s" % self.leakage)
+        state = [0 for i in self.numeric_id_to_width.values()]
 
         logger.info("iterating through all state updates")
         logger.info("performing %d updates" % (len(updates)))
@@ -259,9 +259,6 @@ class AcquisitionSetupToggle(AbstractContainer):
 
             numeric_id = update[1]
             nextval = update[2]
-
-            # interpret all values despite 1 as 0
-            nextval = re.sub("x|X|u|U|z|Z", "0", nextval)
 
             # das bremst aus wie noch was
             # check if signal is tracked
@@ -286,11 +283,10 @@ class AcquisitionSetupToggle(AbstractContainer):
                 nextval_index_old = nextval_index
 
             if self.leakage == "HammingWeight":
-                state[numeric_id] = hammingWeightFromBitString(nextval)
+                state[numeric_id] = hammingWeightFromInt(nextval)
             elif self.leakage == "HammingDistance":
-                nextval_padded = nextval.rjust(self.numeric_id_to_width[numeric_id], "0")
-                toggles += hammingDistanceFromBitString(state[numeric_id], nextval_padded)
-                state[numeric_id] = nextval_padded
+                toggles += hammingDistanceFromInt(state[numeric_id], nextval)
+                state[numeric_id] = nextval
             else:
                 raise Exception("undefined leakage model: %s" % self.leakage)
 
