@@ -246,7 +246,11 @@ class AcquisitionSetupToggle(AbstractContainer):
 
         nextval_index = 0
         nextval_index_old = 0
-        toggles = 0
+        # hamming weight calculation
+        state_hamming_weight = 0
+        state_hamming_weight_change = 0
+        # hamming distance calculation
+        state_hamming_distance_change = 0
 
         # perform updates inside the loop
         for update in updates:
@@ -272,20 +276,30 @@ class AcquisitionSetupToggle(AbstractContainer):
 
                 # this extracts the hamming weight
                 if self.leakage == "HammingWeight":
-                    leakage[nextval_index_old : nextval_index + 1] = sum(state)
+                    # fast approach track changes
+                    if nextval_index_old == 0:
+                        # calculate sum only once
+                        state_hamming_weight_change = sum(state)
+                    state_hamming_weight += state_hamming_weight_change
+                    leakage[nextval_index_old : nextval_index + 1] = state_hamming_weight
+                    state_hamming_weight_change = 0
+                    # slow approach due to sum calculation
+                    # leakage[nextval_index_old : nextval_index + 1] = sum(state)
                 elif self.leakage == "HammingDistance":
                     # calculate the hamming distance
-                    leakage[nextval_index_old : nextval_index + 1] = toggles
-                    toggles = 0
+                    leakage[nextval_index_old : nextval_index + 1] = state_hamming_distance_change
+                    state_hamming_distance_change = 0
                 else:
                     raise Exception("undefined leakage model: %s" % self.leakage)
 
                 nextval_index_old = nextval_index
 
             if self.leakage == "HammingWeight":
-                state[numeric_id] = hammingWeightFromInt(nextval)
+                nextval_hamming_weight = hammingWeightFromInt(nextval)
+                state_hamming_weight_change += nextval_hamming_weight - state[numeric_id]
+                state[numeric_id] = nextval_hamming_weight
             elif self.leakage == "HammingDistance":
-                toggles += hammingDistanceFromInt(state[numeric_id], nextval)
+                state_hamming_distance_change += hammingDistanceFromInt(state[numeric_id], nextval)
                 state[numeric_id] = nextval
             else:
                 raise Exception("undefined leakage model: %s" % self.leakage)
@@ -298,7 +312,7 @@ class AcquisitionSetupToggle(AbstractContainer):
             leakage = leakage[1:]
         elif self.leakage == "HammingDistance":
             # calculate the hamming distance
-            leakage[nextval_index_old : nextval_index + 1] = toggles
+            leakage[nextval_index_old : nextval_index + 1] = state_hamming_distance_change
             # ignore first point
             leakage = leakage[1:]
         else:
