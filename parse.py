@@ -233,6 +233,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
     simulation_time_old = 0
 
     updates = []
+    updates_append = updates.append
 
     logger.info("extracting signal values")
     # extract simulation values
@@ -250,8 +251,9 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             signal_scope = itons[var][0]["scope"]
             numeric_id = iddict[signal_scope + "->" + signal_name]
             # interpret all values despite 1 as 0
-            val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
-            updates.append((simulation_time, numeric_id, val))
+            # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
+            val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+            updates_append((simulation_time, numeric_id, val))
             match_update_scalar = None
             continue
 
@@ -268,8 +270,9 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             signal_scope = itons[var][0]["scope"]
             numeric_id = iddict[signal_scope + "->" + signal_name]
             # interpret all values despite 1 as 0
-            val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
-            updates.append((simulation_time, numeric_id, val))
+            # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
+            val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+            updates_append((simulation_time, numeric_id, val))
             match_update_vector = None
             continue
 
@@ -303,8 +306,9 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     signal_scope = itons[var][0]["scope"]
                     numeric_id = iddict[signal_scope + "->" + signal_name]
                     # interpret all values despite 1 as 0
-                    val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
-                    updates.append((simulation_time, numeric_id, val))
+                    # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
+                    val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+                    updates_append((simulation_time, numeric_id, val))
 
                 elif match_dumpvar_vector is not None:
                     # update vector signal values
@@ -318,8 +322,9 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     signal_scope = itons[var][0]["scope"]
                     numeric_id = iddict[signal_scope + "->" + signal_name]
                     # interpret all values despite 1 as 0
-                    val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
-                    updates.append((simulation_time, numeric_id, val))
+                    # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
+                    val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+                    updates_append((simulation_time, numeric_id, val))
 
                 else:
                     raise Exception("unable to parse variable: %s" % dumpvar_token)
