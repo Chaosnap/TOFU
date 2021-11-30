@@ -53,29 +53,33 @@ settings = helper.prepareSettings(settingsFile, settings)
 
 # compiled regexes for faster matching tested to be faster
 re_match_time = re.compile(r"^#([0-9]+)$")
-re_match_update_scalar = re.compile(r"^([01xXzZuU])(.+)$")
-re_match_update_vector = re.compile(r"^([bB][01xXzZuU]+)$")
+re_match_scalar = re.compile(r"^([01xXzZuU])(.+)$")
+re_match_vector = re.compile(r"^([bB][01xXzZuU]+)\s+(.*)$")
 re_match_dumpvars = re.compile(r"^(\$dumpvars)$")
-re_match_dumpvar_scalar = re.compile(r"^([01xXzZuU])(.+)$")
-re_match_dumpvar_vector = re.compile(r"^([bB][01xXzZuU]+)$")
+re_match_end = re.compile(r"^(\$end)$")
 re_match_variable = re.compile(r"^(wire|reg|logic|parameter|int|bit|byte)\s+([0-9]+)\s+(\S*)\s+(.*)$")
 
 time_start = time.time()
 
 
-def token_generator(fid):
+def word_generator(fid):
     for line in fid:
         for word in line.split():
             yield word
 
 
-def buildfromtokens(token):
+def line_generator(fid):
+    for line in fid:
+        yield line
+
+
+def buildfromwords(word):
     collector = []
     while True:
-        current_token = next(token)
-        if current_token == "$end":
+        current_word = next(word)
+        if current_word == "$end":
             break
-        collector.append(current_token)
+        collector.append(current_word)
     collected = " ".join(collector)
     return collected
 
@@ -131,7 +135,8 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
 
     fid = open(vcdFile)
 
-    tokens = token_generator(fid)
+    words = word_generator(fid)
+    lines = line_generator(fid)
 
     # reset all header informations
     vcdHeader = {}
@@ -142,30 +147,30 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
     # extract header
     while True:
         # extract header from value change dump
-        keyword = next(tokens)
+        keyword = next(words)
         # process extracted data
         if keyword == "$comment":
-            comment = buildfromtokens(tokens)
+            comment = buildfromwords(words)
             # logger.debug("comment: %s" % comment)
             vcdHeader[keyword[1:]] = comment
 
         elif keyword == "$date":
-            date = buildfromtokens(tokens)
+            date = buildfromwords(words)
             # logger.debug("date: %s" % date)
             vcdHeader[keyword[1:]] = date
 
         elif keyword == "$version":
-            version = buildfromtokens(tokens)
+            version = buildfromwords(words)
             # logger.debug("version: %s" % version)
             vcdHeader[keyword[1:]] = version
 
         elif keyword == "$timescale":
-            timescale = buildfromtokens(tokens)
+            timescale = buildfromwords(words)
             # logger.debug("timescale: %s" % timescale)
             vcdHeader[keyword[1:]] = timescale
 
         elif keyword == "$scope":
-            scope = buildfromtokens(tokens)
+            scope = buildfromwords(words)
             currScope.append(scope)
             # logger.debug("->".join(currScope))
             # ??? wtf scoping verilator
@@ -174,19 +179,16 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                 vcdHeader["scope"][currScopeKey] = []
 
         elif keyword == "$upscope":
-            upscope = buildfromtokens(tokens)
+            upscope = buildfromwords(words)
             # logger.debug("upscope: %s" % upscope)
             currScope.pop()
 
         elif keyword == "$var":
-            var = buildfromtokens(tokens)
+            var = buildfromwords(words)
             # logger.debug("var: %s" % var)
             match = re_match_variable.match(var)
             if match is not None:
-                dtype = match.groups()[0]
-                width = match.groups()[1]
-                identifier = match.groups()[2]
-                name = match.groups()[3]
+                (dtype, width, identifier, name) = match.groups()
                 # logger.debug("scope: %s\twidth: %s\tidentifier: \t%s dtype: %s\tname: %s" % ("->".join(currScope), width, identifier, dtype, name))
                 # logger.debug(width)
             else:
@@ -195,7 +197,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             vcdHeader["scope"]["->".join(currScope)].append({"name": name, "width": int(width), "identifier": identifier})
 
         elif keyword == "$enddefinitions":
-            enddefinition = buildfromtokens(tokens)
+            enddefinition = buildfromwords(words)
             # logger.debug("enddefinition: %s" % enddefinition)
             break
 
@@ -237,14 +239,13 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
 
     logger.info("extracting signal values")
     # extract simulation values
-    for current_token in tokens:
-        # logger.debug(current_token)
+    for line in lines:
+        # logger.debug(line)
 
-        match_update_scalar = re_match_update_scalar.match(current_token)
+        match_update_scalar = re_match_scalar.match(line)
         if match_update_scalar is not None:
             # update scalar signal values
-            val = match_update_scalar.groups()[0]
-            var = match_update_scalar.groups()[1]
+            (val, var) = match_update_scalar.groups()
             # logger.debug("update: %s ---> %s" % (var, val))
 
             signal_name = itons[var][0]["name"]
@@ -257,15 +258,14 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             match_update_scalar = None
             continue
 
-        match_update_vector = re_match_update_vector.match(current_token)
+        match_update_vector = re_match_vector.match(line)
         if match_update_vector is not None:
             # update vector signal values
-            val = match_update_vector.groups()[0]
-            # remove b prefix
-            val = val[1:]
-            var = next(tokens)
+            (val, var) = match_update_vector.groups()
             # logger.debug("update: %s ---> %s" % (var, val))
 
+            # remove b prefix
+            val = val[1:]
             signal_name = itons[var][0]["name"]
             signal_scope = itons[var][0]["scope"]
             numeric_id = iddict[signal_scope + "->" + signal_name]
@@ -276,7 +276,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             match_update_vector = None
             continue
 
-        match_time = re_match_time.match(current_token)
+        match_time = re_match_time.match(line)
         if match_time is not None:
             simulation_time_old = simulation_time
             simulation_time = int(match_time.groups()[0])
@@ -286,20 +286,18 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             match_time = None
             continue
 
-        match_dumpvars = re_match_dumpvars.match(current_token)
+        match_dumpvars = re_match_dumpvars.match(line)
         if match_dumpvars is not None:
             # extract initial value
-            for dumpvar_token in tokens:
-                if dumpvar_token == "$end":
+            while True:
+                line = next(lines)
+                if re_match_end.match(line) is not None:
                     break
 
-                match_dumpvar_scalar = re_match_dumpvar_scalar.match(dumpvar_token)
-                match_dumpvar_vector = re_match_dumpvar_vector.match(dumpvar_token)
-
+                match_dumpvar_scalar = re_match_scalar.match(line)
                 if match_dumpvar_scalar is not None:
                     # update scalar signal values
-                    val = match_dumpvar_scalar.groups()[0]
-                    var = match_dumpvar_scalar.groups()[1]
+                    (val, var) = match_dumpvar_scalar.groups()
                     # logger.debug("update: %s ---> %s" % (var, val))
 
                     signal_name = itons[var][0]["name"]
@@ -309,15 +307,17 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
                     val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
                     updates_append((simulation_time, numeric_id, val))
+                    match_dumpvar_scalar = None
+                    continue
 
-                elif match_dumpvar_vector is not None:
+                match_dumpvar_vector = re_match_vector.match(line)
+                if match_dumpvar_vector is not None:
                     # update vector signal values
-                    val = match_dumpvar_vector.groups()[0]
+                    (val, var) = match_dumpvar_vector.groups()
+                    # logger.debug("update: %s ---> %s" % (var, val))
+
                     # remove b prefix
                     val = val[1:]
-                    var = next(tokens)
-                    # logger.debug("update: %s ---> %s" % (var, val))
-
                     signal_name = itons[var][0]["name"]
                     signal_scope = itons[var][0]["scope"]
                     numeric_id = iddict[signal_scope + "->" + signal_name]
@@ -325,13 +325,15 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
                     val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
                     updates_append((simulation_time, numeric_id, val))
+                    match_dumpvar_vector = None
+                    continue
 
-                else:
-                    raise Exception("unable to parse variable: %s" % dumpvar_token)
+                raise Exception("unable to parse line: %s" % line)
+
             match_dumpvars = None
             continue
 
-        raise Exception("unable to parse token: %s" % current_token)
+        raise Exception("unable to parse line: %s" % line)
 
     # batch insert to database
     pickleFile = re.sub(r".vcd$", r".pickle", vcdFile)
