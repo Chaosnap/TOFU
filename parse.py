@@ -53,6 +53,7 @@ settings = helper.prepareSettings(settingsFile, settings)
 
 # compiled regexes for faster matching tested to be faster
 re_match_time = re.compile(r"^#([0-9]+)$")
+re_match_scalar_or_vector = re.compile(r"^([bB]{0,1}[01xXzZuU]+)\s*([^\s]+)$")
 re_match_scalar = re.compile(r"^([01xXzZuU])(.+)$")
 re_match_vector = re.compile(r"^([bB][01xXzZuU]+)\s+(.*)$")
 re_match_dumpvars = re.compile(r"^(\$dumpvars)$")
@@ -232,8 +233,6 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
 
     # fill signal data to traces
     simulation_time = 0
-    simulation_time_old = 0
-
     updates = []
     updates_append = updates.append
 
@@ -242,43 +241,23 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
     for line in lines:
         # logger.debug(line)
 
-        match_update_scalar = re_match_scalar.match(line)
-        if match_update_scalar is not None:
+        match_update = re_match_scalar_or_vector.match(line)
+        if match_update is not None:
             # update scalar signal values
-            (val, var) = match_update_scalar.groups()
+            (val, var) = match_update.groups()
             # logger.debug("update: %s ---> %s" % (var, val))
 
             signal_name = itons[var][0]["name"]
             signal_scope = itons[var][0]["scope"]
             numeric_id = iddict[signal_scope + "->" + signal_name]
-            # interpret all values despite 1 as 0
-            # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
-            val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+            # interpret all values despite 1 as 0 and remove b prefix for vectors
+            val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
             updates_append((simulation_time, numeric_id, val))
-            match_update_scalar = None
-            continue
-
-        match_update_vector = re_match_vector.match(line)
-        if match_update_vector is not None:
-            # update vector signal values
-            (val, var) = match_update_vector.groups()
-            # logger.debug("update: %s ---> %s" % (var, val))
-
-            # remove b prefix
-            val = val[1:]
-            signal_name = itons[var][0]["name"]
-            signal_scope = itons[var][0]["scope"]
-            numeric_id = iddict[signal_scope + "->" + signal_name]
-            # interpret all values despite 1 as 0
-            # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
-            val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
-            updates_append((simulation_time, numeric_id, val))
-            match_update_vector = None
+            match_update = None
             continue
 
         match_time = re_match_time.match(line)
         if match_time is not None:
-            simulation_time_old = simulation_time
             simulation_time = int(match_time.groups()[0])
 
             # logger.debug("-" * 100)
@@ -294,38 +273,19 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                 if re_match_end.match(line) is not None:
                     break
 
-                match_dumpvar_scalar = re_match_scalar.match(line)
-                if match_dumpvar_scalar is not None:
+                match_update = re_match_scalar_or_vector.match(line)
+                if match_update is not None:
                     # update scalar signal values
-                    (val, var) = match_dumpvar_scalar.groups()
+                    (val, var) = match_update.groups()
                     # logger.debug("update: %s ---> %s" % (var, val))
 
                     signal_name = itons[var][0]["name"]
                     signal_scope = itons[var][0]["scope"]
                     numeric_id = iddict[signal_scope + "->" + signal_name]
-                    # interpret all values despite 1 as 0
-                    # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
-                    val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+                    # interpret all values despite 1 as 0 and remove b prefix for vectors
+                    val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
                     updates_append((simulation_time, numeric_id, val))
-                    match_dumpvar_scalar = None
-                    continue
-
-                match_dumpvar_vector = re_match_vector.match(line)
-                if match_dumpvar_vector is not None:
-                    # update vector signal values
-                    (val, var) = match_dumpvar_vector.groups()
-                    # logger.debug("update: %s ---> %s" % (var, val))
-
-                    # remove b prefix
-                    val = val[1:]
-                    signal_name = itons[var][0]["name"]
-                    signal_scope = itons[var][0]["scope"]
-                    numeric_id = iddict[signal_scope + "->" + signal_name]
-                    # interpret all values despite 1 as 0
-                    # val = int(re.sub("x|X|u|U|z|Z", "0", val), 2)
-                    val = int(val.upper().replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
-                    updates_append((simulation_time, numeric_id, val))
-                    match_dumpvar_vector = None
+                    match_update = None
                     continue
 
                 raise Exception("unable to parse line: %s" % line)
