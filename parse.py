@@ -247,9 +247,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
             (val, var) = match_update.groups()
             # logger.debug("update: %s ---> %s" % (var, val))
 
-            signal_name = itons[var][0]["name"]
-            signal_scope = itons[var][0]["scope"]
-            numeric_id = iddict[signal_scope + "->" + signal_name]
+            numeric_id = itons[var][0]["numeric_id"]
             # interpret all values despite 1 as 0 and remove b prefix for vectors
             val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
             updates_append((simulation_time, numeric_id, val))
@@ -279,9 +277,7 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
                     (val, var) = match_update.groups()
                     # logger.debug("update: %s ---> %s" % (var, val))
 
-                    signal_name = itons[var][0]["name"]
-                    signal_scope = itons[var][0]["scope"]
-                    numeric_id = iddict[signal_scope + "->" + signal_name]
+                    numeric_id = itons[var][0]["numeric_id"]
                     # interpret all values despite 1 as 0 and remove b prefix for vectors
                     val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
                     updates_append((simulation_time, numeric_id, val))
