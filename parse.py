@@ -113,8 +113,6 @@ def identifierToNames(vcdHeader):
 vcdFiles = glob.glob(settings["vcdGlob"])
 vcdFiles = sorted(vcdFiles, key=helper.natural_sort_key)
 
-iddict = {}
-
 signal_properties = []
 
 ###################################################################################################
@@ -210,10 +208,11 @@ for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=wi
     itons = identifierToNames(vcdHeader)
 
     if simulation_trace == 0:
+        # iddict = dict()
         for identifier in itons:
             for signal in itons[identifier]:
                 signal_properties.append((signal["numeric_id"], signal["name"], signal["width"], signal["scope"]))
-                iddict[signal["scope"] + "->" + signal["name"]] = signal["numeric_id"]
+                # iddict[signal["scope"] + "->" + signal["name"]] = signal["numeric_id"]
 
         # pickle that shit
         with open(settings["signalPropertiesFile"], "wb") as f:
