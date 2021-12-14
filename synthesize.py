@@ -22,6 +22,7 @@ import time
 from lascar import AbstractContainer, Trace, Hdf5Container
 import tueisec
 import helper
+import sys
 
 # loading settings from file
 parser = argparse.ArgumentParser(description="TOFU")
@@ -66,8 +67,12 @@ def hammingDistanceFromBitString(x, y):
         return sum(a != b for a, b in zip(x, y))
 
 
-def hammingWeightFromInt(x):
-    return bin(x).count("1")
+if sys.version_info >= (3, 10):
+    def hammingWeightFromInt(x):
+        return x.bit_count()
+else:
+    def hammingWeightFromInt(x):
+        return bin(x).count("1")
 
 
 def hammingDistanceFromInt(x, y):
