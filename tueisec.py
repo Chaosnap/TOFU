@@ -106,7 +106,7 @@ def export(container, settings, settingsFileLocation="./"):
         # use filename as dataset name
         datasetname = os.path.splitext(file)[0]
         # directly copy data. Requires the user to take care that the correct data is present
-        h5filehandle["0000"][datasetname] = np.load(vcddir + file, "r")
+        h5filehandle["0000"][datasetname] = np.atleast_3d(np.load(vcddir + file, "r"))
 
     # add traces (could also be done by h5utils.hdf5_add_data_multitrace?!)
     for trace_idx in range(0, n_traces):
