@@ -39,7 +39,7 @@ index = int(sys.argv[2])
 
 
 def get_random_plaintext():
-    return "%032x" % random.randrange(16 ** 32)
+    return "%032x" % random.randrange(16**32)
 
 
 # AES-VHDL expects plaintext and key to be in little-endian.
