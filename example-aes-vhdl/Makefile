@@ -59,16 +59,6 @@ testvector/testvector%.tv:
 vcd/aes%.vcd: testvector/testvector%.tv test_enc
 	@mkdir -p vcd
 	@echo "running simulation $*"
-
 	@# The testbench requires key and plaintext as arguments.
-	@# Both are split into 8 shares.
-	@filename="testvector/testvector$*.tv" ; \
-	f=$$(cat $$filename) ; \
-	args="" ; \
-	for i in $$(seq 0 7) ; do \
-		pi=$$(echo $$f | cut -c$$((1+i*4))-$$(((i+1)*4))) ; \
-		args="$$args -gp$$i=16#$$pi#" ; \
-		ki=$$(echo $$f | cut -c$$((34+i*4))-$$((33+(i+1)*4))) ; \
-		args="$$args -gk$$i=16#$$ki#" ; \
-	done ; \
+	@args=$$(bash .arguments.sh $*); \
 	ghdl -r --workdir=aes-vhdl-work test_enc --vcd=vcd/aes$*.vcd $$args --ieee-asserts=disable --stop-time=30ms

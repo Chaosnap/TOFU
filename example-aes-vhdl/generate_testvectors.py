@@ -53,7 +53,7 @@ def reverse_byte_order(a):
 
 with open(file_name, "w") as f:
     f.write(get_random_plaintext())
-    f.write("\n")
+    f.write(" ")
     f.write(key)
 
 
