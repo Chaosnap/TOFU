@@ -7,6 +7,7 @@
 ### Toggle Analysis in more than 20 lines of code.
 
 TOFU is a versatile tool to translate Value Change Dumps (VCDs) into power traces which can be used for further analysis like DPA/TVLA.
+The according eprint is available at the [Cryptology ePrint Archive](https://eprint.iacr.org/2022/129).
 
 # List of files
 
