@@ -24,51 +24,54 @@
 import ctypes
 import time
 import numpy as np
-from lascar import AbstractContainer, Trace, Hdf5Container
-import json
 import argparse
 import glob
 import tueisec
 import os
-import re
+import logging
+import helper
 
-# import binascii
 
-
-fdir = os.path.dirname(os.path.realpath(__file__))
-
-settings_file = fdir + "/example/settings.json"
-
+# loading settings from file
 parser = argparse.ArgumentParser(description="TOFU")
-parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=False)
+parser.add_argument("-s", "--settings", type=str, help="path to settings.json", required=True)
+parser.add_argument("-l", "--loglevel", type=str, help="specify loglevel", required=False, default="info")
 namespace = parser.parse_args()
-if namespace.settings is not None:
-    settings_file = namespace.settings
-print("settings file: %s" % settings_file)
 
-with open(settings_file) as f:
-    settings = json.load(f)
-# extract path to settings file
-settingsFileLocation = os.path.abspath(settings_file)
-settingsFilePath = os.path.dirname(settingsFileLocation) + "/"
+# create a logger
+logger = logging.getLogger(os.path.basename(__file__))
+if logger.hasHandlers():
+    logger.handlers.clear()
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s : %(name)s : %(levelname)s : %(message)s")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
+# parse loglevel
+loglevel = namespace.loglevel
+numeric_log_id = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_log_id, int):
+    raise ValueError("Invalid log level: %s" % loglevel)
+logger.setLevel(numeric_log_id)
 
-# sort naturaly not in aphabetic order
-def natural_sort_key(s):
-    natural_sort_regex = re.compile("([0-9]+)")
-    return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
+# prepare settings dictionary
+settingsFile = namespace.settings
+logger.info("loading settings from file: %s" % (settingsFile))
+settings = helper.loadSettings(settingsFile)
+settings = helper.validateSettings(settings, mode="ntofu")
+settings = helper.prepareSettings(settingsFile, settings, mode="ntofu")
+fdir = os.path.dirname(os.path.realpath(__file__))
 
 
 # globbing for vcd files
-files = glob.glob(settingsFilePath + settings["vcdGlob"])
-files = sorted(files, key=natural_sort_key)
+files = glob.glob(settings["vcdGlob"])
+files = sorted(files, key=helper.natural_sort_key)
 files = [i.encode() for i in files]
 num_files = len(files)
 
-
 inspected_signals_file_name = settings["signalsFileNameLiterals"]
 if inspected_signals_file_name is not None:
-    inspected_signals_file_name = settingsFilePath + inspected_signals_file_name
     inspected_signals_file_name = inspected_signals_file_name.encode()
 
 leakage_model = settings["leakageModel"]
@@ -78,17 +81,14 @@ if leakage_model not in ["HammingWeight", "HammingDistance"]:
 use_hamming_weight = leakage_model == "HammingWeight"
 
 
-trace_file_name = settingsFilePath + settings["traceFileName"]
-write_traces = settings["writeTraces"]
-writeTracesFormat = settings["format"]
-batch_size = settings["writeTracesBatchSize"]
+trace_file_name = settings["traceFileName"]
 window = settings["window"]
 window_from = settings["windowFrom"]
 window_to = settings["windowTo"]
 valueExtractFunction = settings["valueExtractFunction"]
 valueExtractFile = None  # if None, then valueExtractIndex is used, otherwise valueExtract
 if valueExtractFunction == "valueExtract":
-    valueExtractFile = settingsFilePath + settings["valueExtractFile"]
+    valueExtractFile = settings["valueExtractFile"]
     valueExtractFile = valueExtractFile.encode()
 use_value_extract = valueExtractFile is not None
 write_trace_format = settings["format"]
@@ -113,10 +113,9 @@ def parse_file(name):
     return leakage, extracted_values, extracted_values_count.value
 
 
-class AcquisitionSetupToggle(AbstractContainer):
+class AcquisitionSetupToggle:
     def __init__(self):
         self.number_of_traces = num_files
-        AbstractContainer.__init__(self, self.number_of_traces)
 
     def generate_trace(self, index):
         assert index < self.number_of_traces
@@ -139,12 +138,18 @@ class AcquisitionSetupToggle(AbstractContainer):
 
             # return Trace(leakage, value)
             # bug ?
-            return Trace(leakage, value[0])
+            return (leakage, value[0])
         else:
             # index_ttest = int(re.findall(b"aes(.+?)\.vcd", files[index])[0])
-            value = np.array([[index]], dtype=np.uint8)
+            value = np.array([index], dtype=np.uint32)
             # print(value)
-            return Trace(leakage, value)
+            return (leakage, value)
+
+    def __getitem__(self, key):
+        return self.generate_trace(key)
+
+    def __len__(self):
+        return self.number_of_traces
 
 
 aqc = AcquisitionSetupToggle()
@@ -155,15 +160,11 @@ aqc = AcquisitionSetupToggle()
 
 
 # export traces to container
-if write_traces:
-    if writeTracesFormat == "lascar":
-        try:
-            hdf5_container._file.close()
-        except NameError:
-            pass
-        hdf5_container = Hdf5Container.export(aqc, trace_file_name, batch_size=batch_size)
-    elif writeTracesFormat == "tueisec":
-        tueisec.export(aqc, settings)
+if settings["writeTraces"]:
+    if settings["format"] == "lascar":
+        helper.lascarHDF5Export(aqc, settings["traceFileName"], writeTracesBatchSize=settings["writeTracesBatchSize"], logger=logger)
+    elif settings["format"] == "tueisec":
+        tueisec.export(aqc, settings, settingsFileLocation=settings["settingsFileLocation"])
     else:
         Exception("format not supported")
 

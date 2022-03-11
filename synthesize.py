@@ -30,10 +30,10 @@ import glob
 import numpy as np
 import pickle
 import time
-from lascar import AbstractContainer, Trace, Hdf5Container
 import tueisec
 import helper
 import sys
+
 
 # loading settings from file
 parser = argparse.ArgumentParser(description="TOFU")
@@ -62,8 +62,8 @@ logger.setLevel(numeric_log_id)
 settingsFile = namespace.settings
 logger.info("loading settings from file: %s" % (settingsFile))
 settings = helper.loadSettings(settingsFile)
-settings = helper.validateSettings(settings)
-settings = helper.prepareSettings(settingsFile, settings)
+settings = helper.validateSettings(settings, mode="tofu")
+settings = helper.prepareSettings(settingsFile, settings, mode="tofu")
 
 
 def hammingWeightFromBitString(x):
@@ -138,10 +138,10 @@ logger.info("processing: %d traces" % (simulation_trace_max))
 
 
 # Then the AbstractContainer:
-class AcquisitionSetupToggle(AbstractContainer):
+class AcquisitionSetupToggle:
     def __init__(self, settings):
         """
-        :param number_of_traces: only required argument for the constructor of an AbstractContainer
+        :param settings: dictionary containing the tofu settings
         """
 
         # store the assumed leakage model
@@ -199,24 +199,16 @@ class AcquisitionSetupToggle(AbstractContainer):
         self.allign = settings["allign"]
         self.downsample = settings["downsample"]
 
-        AbstractContainer.__init__(self, self.number_of_traces)
-
     def generate_trace(self, index):
-        """
-        generate_trace is the only method needed by AcquisitionSetup to work properly
-        :param index: index of trace, not used here.
-        :return:  Trace with leakage from oscilloscope, and value from the dut plaintext/ciphertext
-        """
-        # set lascar log level
-        self.logger.setLevel(numeric_log_id)
+        assert index < self.number_of_traces
 
         self.index = index
 
         time_start = time.time()
-        self.logger.info("capturing trace: %d" % (index))
+        logger.info("capturing trace: %d" % (index))
 
         if self.reload_numeric_ids:
-            self.logger.info("reloading numeric ids")
+            logger.info("reloading numeric ids")
             with open(settings["signalsFileName"], "r", encoding="utf-8") as fid:
                 self.numeric_ids_under_inspection = json.load(fid)
                 self.numeric_ids_under_inspection_set = set(self.numeric_ids_under_inspection)
@@ -346,22 +338,23 @@ class AcquisitionSetupToggle(AbstractContainer):
         time_finish = time.time()
         logger.info("capturing trace took %f seconds" % (time_finish - time_start))
 
-        return Trace(leakage, value)
+        return (leakage, value)
+
+    def __getitem__(self, key):
+        return self.generate_trace(key)
+
+    def __len__(self):
+        return self.number_of_traces
 
 
 # create our acquisition setup
 aqc = AcquisitionSetupToggle(settings)
-# set lascar log level
-aqc.logger.setLevel(numeric_log_id)
+
 
 # export traces to container
 if settings["writeTraces"]:
     if settings["format"] == "lascar":
-        try:
-            hdf5_container._file.close()
-        except NameError:
-            pass
-        hdf5_container = Hdf5Container.export(aqc, settings["traceFileName"], batch_size=settings["writeTracesBatchSize"])
+        helper.lascarHDF5Export(aqc, settings["traceFileName"], writeTracesBatchSize=settings["writeTracesBatchSize"], logger=logger)
     elif settings["format"] == "tueisec":
         tueisec.export(aqc, settings, settingsFileLocation=settings["settingsFileLocation"])
     else:

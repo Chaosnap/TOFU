@@ -27,7 +27,6 @@ import logging
 import re
 import time
 import pickle
-import progressbar
 import helper
 import os
 
@@ -58,8 +57,8 @@ logger.setLevel(numeric_log_id)
 settingsFile = namespace.settings
 logger.info("loading settings from file: %s" % (settingsFile))
 settings = helper.loadSettings(settingsFile)
-settings = helper.validateSettings(settings)
-settings = helper.prepareSettings(settingsFile, settings)
+settings = helper.validateSettings(settings, mode="tofu")
+settings = helper.prepareSettings(settingsFile, settings, mode="tofu")
 
 
 # compiled regexes for faster matching tested to be faster
@@ -129,17 +128,8 @@ signal_properties = []
 ###################################################################################################
 # iterate over all vcd files
 # for (simulation_trace, vcdFile) in enumerate(vcdFiles):
-widgets = [
-    "parse" + " |",
-    progressbar.Percentage(),
-    progressbar.Bar(),
-    progressbar.FormatLabel("%(value)d vcd"),
-    "/%d |" % (len(vcdFiles)),
-    progressbar.AdaptiveETA(),
-]
 
-for simulation_trace in progressbar.progressbar(range(len(vcdFiles)), widgets=widgets):
-    vcdFile = vcdFiles[simulation_trace]
+for simulation_trace, vcdFile in helper.progressbar(vcdFiles, prefix="p "):
 
     logger.info("processing vcd file (%d/%d): %s" % (simulation_trace + 1, len(vcdFiles), vcdFile))
 
