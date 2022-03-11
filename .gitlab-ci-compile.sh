@@ -14,7 +14,7 @@ rm -rf build
 mkdir -p build
 mkdir -p tofu_python
 
-make pep selftest example_aes NR_SIMULATIONS=3000 VENV=false
+make pep selftest example_aes NR_SIMULATIONS=3000 VENV=false LOGLEVEL=warning
 zip -rq build/vcd.zip example-aes-vhdl/vcd
 zip -rq build/testvector.zip example-aes-vhdl/testvector
 cp example-aes-vhdl/correlation.pdf build/
