@@ -161,7 +161,7 @@ def lascarHDF5Export(aqc, traceFileName, writeTracesBatchSize=None, logger=None)
 
     # implement batched trace write here
 
-    for i, _ in progressbar(range(n_traces), prefix="n "):
+    for i, _ in progressbar(range(n_traces)):
         leakage, value = aqc[i]
         if i == 0:
             FHleakages = filehandle.create_dataset("leakages", (n_traces, leakage.shape[0]), dtype=leakage.dtype)
