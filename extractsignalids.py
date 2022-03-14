@@ -19,7 +19,7 @@
 # Technical University of Munich
 # TUM Department of Electrical and Computer Engineering
 # Chair of Security in Information Technology
-# Written by the following authors: Lea Straumann, Lars Tebelmann, Michael Gruber
+# Written by the following authors: Michael Gruber, Lea Straumann, Lars Tebelmann
 
 import logging
 import json
@@ -27,6 +27,7 @@ import pickle
 import argparse
 import os.path
 import helper
+import re
 
 # loading settings from file
 parser = argparse.ArgumentParser(description="TOFU")
@@ -63,33 +64,18 @@ settings = helper.prepareSettings(settingsFile, settings)
 signals_under_inspection = []
 
 if not os.path.isfile(settings["signalsFileNameLiterals"]):
-    logger.error("%s not found." % (settings["signalsFileNameLiterals"]))
-    exit(0)
+    raise Exception("%s not found." % (settings["signalsFileNameLiterals"]))
 else:
-    logger.info("%s found using signals as specified" % (settings["signalsFileNameLiterals"]))
+    logger.info("using signals as specified in %s" % (settings["signalsFileNameLiterals"]))
     with open(settings["signalsFileNameLiterals"], "r", encoding="utf-8") as fid:
         signals_under_inspection_names = json.load(fid)
 
-try:
-    signals_to_include = signals_under_inspection_names["include"]
-    signals_to_exclude = signals_under_inspection_names["exclude"]
-except KeyError:
-    logging.error("Incompatable format. Use 'exlude'/'include'")
-    exit(1)
 
-# case include and exclude
-if signals_to_include != [] and signals_to_exclude != []:
-    signals_under_inspection_names = signals_to_include
-# case only include
-elif signals_to_include != []:
-    signals_under_inspection_names = signals_to_include
-# case only exclude
-elif signals_to_exclude != []:
-    signals_under_inspection_names = signals_to_exclude
-# case whether exclude nor include: ERROR
-else:
-    logging.error("No signals to include nor to exclude")
-    exit(1)
+if "include" not in signals_under_inspection_names.keys() or "exclude" not in signals_under_inspection_names.keys():
+    raise Exception("Incompatable format. Use exlude/include")
+
+# format of signal properties file
+# signal_properties.append((signal["numeric_id"], signal["name"], signal["width"], signal["scope"]))
 
 # extracting signals from database
 logger.info("extracting signals from signal properties")
@@ -97,82 +83,44 @@ signal_properties = []
 with open(settings["signalPropertiesFile"], "rb") as f:
     signal_properties = pickle.load(f)
 
-# find modules and signals
-modules_under_inspection = []
-special_signals = [[], []]
+include_signals = []
+exclude_signals = []
 
-for k in signals_under_inspection_names:
-    # split into submodules
-    tmp = k.split("->")
-    if "module" in tmp[-1]:
-        # if last part is a module, add module
-        modules_under_inspection.append(k)
-    else:
-        # add signal name
-        special_signals[0].append(tmp[-1])
-        # add corresponding module
-        special_signals[1].append("->".join(tmp[:-1]))
+for include_pattern in signals_under_inspection_names["include"]:
+    logger.info(f"processing include pattern: {include_pattern}")
 
-signals = []
+    for signal in signal_properties:
+        foo = signal[3] + "->" + signal[1]
+        signal_match = re.match(f"{re.escape(include_pattern)}.*", foo)
+        if signal_match is not None:
+            logger.debug(f"include adding: {signal}")
+            include_signals.append(signal)
+
+for exclude_pattern in signals_under_inspection_names["exclude"]:
+    logger.info(f"processing exclude pattern: {exclude_pattern}")
+
+    for signal in signal_properties:
+        foo = signal[3] + "->" + signal[1]
+        signal_match = re.match(f"^{re.escape(exclude_pattern)}.*?", foo)
+        if signal_match is not None:
+            logger.debug(f"exclude adding: {signal}")
+            exclude_signals.append(signal)
+
+
+include_signals = [i[0] for i in include_signals]
+exclude_signals = [i[0] for i in exclude_signals]
+signals_under_inspection = list(set(include_signals) - set(exclude_signals))
+
+
 for signal in signal_properties:
-    # signals.append({"numeric_id": int(signal[0]), "name": signal[1], "width": int(signal[2]), "scope": signal[3]})
-    signals.append(int(signal[0]))
-    if any(signal[3] == v for v in modules_under_inspection):
-        # add all signal modules that are tracked entirely
-        signals_under_inspection.append(int(signal[0]))
-    else:
-        # in case of signal (not entire modules)
-        # iterate through all modules corresponding to the desired signal (yes, could be done more pythonic...)
-        for vdx, v in enumerate(special_signals[1]):
-            if signal[3] == v:
-                # if the correct module is found, check whether it's the right signal
-                if signal[1] == special_signals[0][vdx]:
-                    # if module and signal match, add the signal
-                    signals_under_inspection.append(int(signal[0]))
+    if signal[0] in signals_under_inspection:
+        foo = signal[3] + "->" + signal[1]
+        logger.debug(f"inspecting {foo}")
 
-# reduce signals to distinct ones
-signals_under_inspection = list(set(signals_under_inspection))
+logger.debug(signals_under_inspection)
 
-# if there are signals to exclude
-if signals_to_exclude != []:
-    # only exclude
-    if signals_to_include == []:
-        all_signals = []
-        for signal in signal_properties:
-            all_signals.append(int(signal[0]))
-        all_signals = list(set(all_signals))
-        for ids in all_signals:
-            if ids in signals_under_inspection:
-                all_signals.remove(ids)
-        signals_under_inspection = all_signals
-    # include and then exclude
-    else:
-        # find signals to exclude (same as above)
-        modules_under_inspection = []
-        special_signals = [[], []]
-        for k in signals_to_exclude:
-            tmp = k.split("->")
-            if "module" in tmp[-1]:
-                modules_under_inspection.append(k)
-            else:
-                special_signals[0].append(tmp[-1])
-                special_signals[1].append("->".join(tmp[:-1]))
-        # find signal ids to exclude (same as above)
-        signalid_to_exclude = []
-        signals = []
-        for signal in signal_properties:
-            signals.append(int(signal[0]))
-            if any(signal[3] == v for v in modules_under_inspection):
-                signalid_to_exclude.append(int(signal[0]))
-            else:
-                for vdx, v in enumerate(special_signals[1]):
-                    if signal[3] == v:
-                        if signal[1] == special_signals[0][vdx]:
-                            signalid_to_exclude.append(int(signal[0]))
-        # exclude signal_ids from signals_under_inspection
-        for ids in signalid_to_exclude:
-            if ids in signals_under_inspection:
-                signals_under_inspection.remove(ids)
+if not signals_under_inspection:
+    raise Exception("no signals to inspect")
 
 # write file
 with open(settings["signalsFileName"], "w", encoding="utf-8") as fid:
