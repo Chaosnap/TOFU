@@ -12,7 +12,7 @@
     "writeTraces": true,
     "writeTracesBatchSize": 10,
     "traceFileName": "traces.h5",
-    "allign": false,
+    "align": false,
     "downsample": 1e5,
     "format": "lascar"
 }

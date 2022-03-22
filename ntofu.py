@@ -92,7 +92,7 @@ if valueExtractFunction == "valueExtract":
     valueExtractFile = valueExtractFile.encode()
 use_value_extract = valueExtractFile is not None
 write_trace_format = settings["format"]
-align = settings["allign"]
+align = settings["align"]
 downsample = ctypes.c_uint64(int(settings["downsample"]))
 
 lib = ctypes.CDLL(fdir + "/engine/build/library.so")
