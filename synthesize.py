@@ -196,7 +196,7 @@ class AcquisitionSetupToggle:
 
         self.numeric_id_to_width = {i["numeric_id"]: i["width"] for i in self.signal_properties}
 
-        self.allign = settings["allign"]
+        self.align = settings["align"]
         self.downsample = settings["downsample"]
 
     def generate_trace(self, index):
@@ -225,7 +225,7 @@ class AcquisitionSetupToggle:
         # print(updates)
         value = self.valueExtract(self)
 
-        if self.allign:
+        if self.align:
             # extract the simulation time stamps
             self.simulation_time_steps = list(set([i[0] for i in updates]))
             self.simulation_time_steps.sort()
@@ -242,7 +242,7 @@ class AcquisitionSetupToggle:
         # input  : self.numeric_ids_under_inspection_set      type: set of integer
         # output : leakage                                    type: list of integers
 
-        if self.allign:
+        if self.align:
             samples = int(np.floor_divide(self.simulation_time_max, self.downsample))
             leakage = np.zeros((samples,), dtype=np.uint32)
         else:
@@ -266,7 +266,7 @@ class AcquisitionSetupToggle:
         # perform updates inside the loop
         for update in updates:
 
-            if self.allign:
+            if self.align:
                 # binning of updates
                 nextval_index = int(np.floor_divide(update[0], self.downsample))
             else:

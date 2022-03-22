@@ -52,7 +52,7 @@ def validateSettings(settings, mode="tofu"):
         requiredKeys.append("writeTraces")
         requiredKeys.append("writeTracesBatchSize")
         requiredKeys.append("traceFileName")
-        requiredKeys.append("allign")
+        requiredKeys.append("align")
         requiredKeys.append("downsample")
         requiredKeys.append("format")
     elif mode == "ntofu":
@@ -67,7 +67,7 @@ def validateSettings(settings, mode="tofu"):
         requiredKeys.append("writeTraces")
         requiredKeys.append("writeTracesBatchSize")
         requiredKeys.append("traceFileName")
-        requiredKeys.append("allign")
+        requiredKeys.append("align")
         requiredKeys.append("downsample")
         requiredKeys.append("format")
         if settings["valueExtractFunction"] != "valueExtractIndex":
