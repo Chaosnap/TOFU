@@ -171,6 +171,15 @@ class AcquisitionSetupToggle:
             self.signal_properties = pickle.load(f)
         self.signal_properties = [{"numeric_id": int(signal[0]), "name": signal[1], "width": int(signal[2]), "scope": signal[3]} for signal in self.signal_properties]
 
+        # check maximum toggle value
+        self.max_toggle_value = {}
+        for signal in self.signal_properties:
+            self.max_toggle_value[signal["numeric_id"]] = signal["width"]
+        self.max_toggle_value = np.sum(list(self.max_toggle_value.values()))
+        if self.max_toggle_value > np.iinfo(np.uint32).max:
+            raise Exception()
+        logger.info("traces consist from toggles of %d bits" % (self.max_toggle_value))
+
         signals = [i["numeric_id"] for i in self.signal_properties]
         signals = set(signals)
         # reduce signals to distinct ones
