@@ -15,6 +15,7 @@ The according eprint is available at the [Cryptology ePrint Archive](https://epr
 	├── example                      # folder with the basic example
 	├── example-aes-vhdl             # folder with the aes example requires ghdl
 	├── extractsignalids.py          # extract signal ids based on signal names
+	├── HOWTO.md                     # how to get started with tofu
 	├── Makefile                     # Makefile to build venv and run example
 	├── parse.py                     # parse vcd files
 	├── plotme.py                    # sample plotting file for a ttes
@@ -30,14 +31,11 @@ The according eprint is available at the [Cryptology ePrint Archive](https://epr
 
 # HOWTO
 
-  1. Gather VCD traces
-  2. Adjust settings file `settings.json` accordingly
-  3. `python3 parse.py --settings example/settings_example.json`
-  4. `python3 extractsignalids.py --settings example/settings_example.json`
-  5. `python3 synthesize.py --settings example/settings_example.json`
- 
- # Contact
- [Michael Gruber](https://www.ei.tum.de/sec/mitarbeiter/michael-gruber/), [m.gruber@tum.de](mailto:m.gruber@tum.de)
+[Further explanation on the usage](./HOWTO.md).
+
+# Contact
+
+[Michael Gruber](https://www.ei.tum.de/sec/mitarbeiter/michael-gruber/), [m.gruber@tum.de](mailto:m.gruber@tum.de)
 
 # Pipeline
 
