@@ -1,3 +1,24 @@
+# This file is part of TOFU
+#
+# TOFU is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# Copyright 2022 (C)
+# Technical University of Munich
+# TUM Department of Electrical and Computer Engineering
+# Chair of Security in Information Technology
+# Written by the following authors: Michael Gruber
+
 VENV?=source tofu_python/bin/activate
 NRPOC:=$(shell nproc)
 SHELL:=$(shell which bash)
@@ -20,31 +41,16 @@ engine:
 	make -C engine
 
 example: clean venv
-	$(VENV); python3 parse.py --settings example/settings_example.json --loglevel $(LOGLEVEL)
-	$(VENV); python3 extractsignalids.py --settings example/settings_example.json --loglevel $(LOGLEVEL)
-	$(VENV); python3 synthesize.py --settings example/settings_example.json --loglevel $(LOGLEVEL)
+	make -C example all
 
 example_aes: clean venv
-	$(VENV); make -C example-aes-vhdl clean cleansim
-	$(VENV); make -C example-aes-vhdl simulate -j $(NRPOC)
-	$(VENV); python3 parse.py --settings example-aes-vhdl/settings_example.json --loglevel $(LOGLEVEL)
-	$(VENV); python3 synthesize.py --settings example-aes-vhdl/settings_example.json --loglevel $(LOGLEVEL)
-	$(VENV); make -C example-aes-vhdl dpa
+	make -C example-aes-vhdl clean cleansim example_aes
 
 example_aes_filtered: clean venv
-	$(VENV); make -C example-aes-vhdl clean cleansim
-	$(VENV); make -C example-aes-vhdl simulate -j $(NRPOC)
-	$(VENV); python3 parse.py --settings example-aes-vhdl/settings_example.json --loglevel $(LOGLEVEL)
-	@# generate filtered signals.json
-	$(VENV); python3 extractsignalids.py --settings example-aes-vhdl/settings_example.json --loglevel $(LOGLEVEL)
-	$(VENV); python3 synthesize.py --settings example-aes-vhdl/settings_example.json --loglevel $(LOGLEVEL)
-	$(VENV); make -C example-aes-vhdl dpa 
+	make -C example-aes-vhdl clean cleansim example_aes_filtered
 
 ntofu_example_aes: clean venv engine
-	$(VENV); make -C example-aes-vhdl clean cleansim
-	$(VENV); make -C example-aes-vhdl simulate -j $(NRPOC)
-	$(VENV); make -C example-aes-vhdl ntofu
-	$(VENV); make -C example-aes-vhdl dpa DPA_SETTINGS_FILE=ntofu_settings_example.json
+	make -C example-aes-vhdl clean cleansim ntofu_example_aes
 
 selftest: venv engine
 	$(VENV); bash selftest.sh
