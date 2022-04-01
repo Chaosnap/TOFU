@@ -1,0 +1,38 @@
+$date
+   blah
+$end
+$version
+  someversion
+$end
+$timescale
+  1ps
+$end
+$comment
+  this file is a demo and should generate the following leakage
+  Time:  0   100 200 300 400
+  State: 255 254 255 254 255
+  HW:    8   7   8   7   8
+  HD:    X   1   1   1   1
+  length of HW samples should be 5
+  length of HD samples should be 4 as the first value is undefined
+$end
+$scope module LWC_TB $end
+$scope module uut $end
+$scope module Inst_Cipher $end
+$var wire 8 ! foo $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b11111111!
+$end
+#100
+b11111110!
+#200
+b11111111!
+#300
+b11111110!
+#400
+b11111111!
