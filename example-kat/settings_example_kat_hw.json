@@ -1,0 +1,18 @@
+{
+    "vcdGlob": "kat.vcd",
+    "pickleGlob": "kat.pickle",
+    "signalsFileNameLiterals": "signals_name.json",
+    "signalsFileName": "signals.json",
+    "signalPropertiesFile": "signal_properties.pickle",
+    "leakageModel": "HammingWeight",
+    "window": false,
+    "windowFrom": null,
+    "windowTo": null,
+    "valueExtractFunction": "valueExtractIndex",
+    "writeTraces": true,
+    "writeTracesBatchSize": 10,
+    "traceFileName": "traces_hw.h5",
+    "align": false,
+    "downsample": 1e5,
+    "format": "lascar"
+}

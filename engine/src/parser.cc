@@ -423,8 +423,12 @@ void Parser::ParseValueChangeSection(LeakageModel leakage_model, bool align, uin
 
     if (leakage_.size() >= 1)
         leakage_.erase(leakage_.begin());
-    if (leakage_.size() >= 1)
-        leakage_.erase(leakage_.begin());
+
+    if (leakage_model == HammingDistance)
+    {
+        if (leakage_.size() >= 1)
+            leakage_.erase(leakage_.begin());
+    }
 }
 
 inline bool Parser::Parse(const char *keyword)
