@@ -52,6 +52,9 @@ example_aes_filtered: clean venv
 ntofu_example_aes: clean venv engine
 	make -C example-aes-vhdl clean cleansim ntofu_example_aes
 
+kat: clean venv
+	make -C example-kat clean all
+
 selftest: venv engine
 	$(VENV); bash selftest.sh
 
@@ -64,6 +67,7 @@ pep_check: venv
 clean:
 	make -C example clean
 	make -C example-aes-vhdl clean
+	make -C example-kat clean
 	make -C engine clean
 	rm -rf __pycache__
 
