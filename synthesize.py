@@ -329,7 +329,7 @@ class AcquisitionSetupToggle:
             # this extracts the hamming weight
             leakage[nextval_index_old : nextval_index + 1] = sum(state)
             # ignore first point
-            leakage = leakage[1:]
+            # leakage = leakage[1:]
         elif self.leakage == "HammingDistance":
             # calculate the hamming distance
             leakage[nextval_index_old : nextval_index + 1] = state_hamming_distance_change
