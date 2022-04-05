@@ -41,19 +41,19 @@ engine:
 	make -C engine
 
 example: clean venv
-	make -C example all
+	make -C example all LOGLEVEL=$(LOGLEVEL)
 
 example_aes: clean venv
-	make -C example-aes-vhdl clean cleansim example_aes
+	make -C example-aes-vhdl clean cleansim example_aes LOGLEVEL=$(LOGLEVEL)
 
 example_aes_filtered: clean venv
-	make -C example-aes-vhdl clean cleansim example_aes_filtered
+	make -C example-aes-vhdl clean cleansim example_aes_filtered LOGLEVEL=$(LOGLEVEL)
 
 ntofu_example_aes: clean venv engine
-	make -C example-aes-vhdl clean cleansim ntofu_example_aes
+	make -C example-aes-vhdl clean cleansim ntofu_example_aes LOGLEVEL=$(LOGLEVEL)
 
 kat: clean venv
-	make -C example-kat clean all
+	make -C example-kat clean all LOGLEVEL=$(LOGLEVEL)
 
 selftest: venv engine
 	$(VENV); bash selftest.sh
