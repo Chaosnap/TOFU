@@ -77,8 +77,9 @@ def export(container, settings, settingsFileLocation="./"):
 
     config = {"HDF5": {"output_file": outputfilename}}
     # create a dataset according the size and datatype of leakages
-    config["HDF5"]["datasets"] = {"samples": {"datatype": container.leakages.dtype, "dim": None, "create": True}}
-    num_samples = container.leakages.shape[1]
+    config["HDF5"]["datasets"] = {"samples": {"datatype": np.uint32, "dim": None, "create": True}}
+    first_trace = container[0]
+    num_samples = first_trace[0].shape[0]
     try:
         # load the VCD metadata
         with open(container.signalPropertiesFile.rsplit(".", 1)[0] + "_meta.pickle", "rb") as f:
@@ -103,7 +104,7 @@ def export(container, settings, settingsFileLocation="./"):
 
     # Initialize the HDF5 file
     h5filehandle = h5utils.hdf5_file_init(config, target_info="VCD dump simulation by TOFU tool.")
-    n_traces = container.leakages.shape[0]
+    n_traces = len(container)
     # create group
     h5utils.hdf5_add_group(h5filehandle, config, N_traces=n_traces, noSamples=num_samples)
 
@@ -121,7 +122,12 @@ def export(container, settings, settingsFileLocation="./"):
 
     # add traces (could also be done by h5utils.hdf5_add_data_multitrace?!)
     for trace_idx in range(0, n_traces):
-        h5utils.hdf5_add_data(h5filehandle=h5filehandle, dataset_name="samples", data=container[trace_idx][0], trace_number=trace_idx, group=0)
+        # avoid synthesizing the first trace again
+        if trace_idx == 0:
+            data = first_trace[0]
+        else:
+            data = container[trace_idx][0]
+        h5utils.hdf5_add_data(h5filehandle=h5filehandle, dataset_name="samples", data=data, trace_number=trace_idx, group=0)
 
     # close HDF5 file
     h5utils.hdf5_file_close(h5filehandle)
