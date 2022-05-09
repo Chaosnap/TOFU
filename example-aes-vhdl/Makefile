@@ -44,7 +44,7 @@ all:
 
 aes_vhdl: test_enc
 
-simulate: test_enc $(TVS) $(SIMS)
+simulate: cleansim test_enc $(TVS) $(SIMS)
 
 attack: dpa
 
@@ -52,28 +52,26 @@ dpa:
 	$(VENV); python3 dpa_lascar.py --settings $(DPA_SETTINGS_FILE)
 	cat generate_testvectors.py | grep key | head -n 1
 	
-example_aes: clean
-	make simulate -j $(NRPOC)
+example_aes: clean cleansim
+	make simulate -j $(nproc) NR_SIMULATIONS=3000
 	$(VENV); python3 $(TOFU_PATH)/parse.py --settings settings_example.json --loglevel $(LOGLEVEL)
 	$(VENV); python3 $(TOFU_PATH)/synthesize.py --settings settings_example.json --loglevel $(LOGLEVEL)
 	make dpa
 
-example_aes_filtered: clean
-	make simulate -j $(NRPOC)
+example_aes_filtered: clean cleansim
+	make simulate -j $(nproc) NR_SIMULATIONS=100
 	$(VENV); python3 $(TOFU_PATH)/parse.py --settings settings_example.json --loglevel $(LOGLEVEL)
 	@# generate filtered signals.json
 	$(VENV); python3 $(TOFU_PATH)/extractsignalids.py --settings settings_example.json --loglevel $(LOGLEVEL)
 	$(VENV); python3 $(TOFU_PATH)/synthesize.py --settings settings_example.json --loglevel $(LOGLEVEL)
 	make dpa
 
-
 ntofu:
 	$(VENV); python3 $(TOFU_PATH)/ntofu.py --settings ntofu_settings_example.json
 
-ntofu_example_aes: clean
-	$(VENV); make -C example-aes-vhdl clean cleansim
-	make simulate -j $(NRPOC)
-	make ntofu
+ntofu_example_aes: clean cleansim
+	make simulate -j $(nproc) NR_SIMULATIONS=3000
+	$(VENV); python3 $(TOFU_PATH)/ntofu.py --settings ntofu_settings_example.json
 	make dpa DPA_SETTINGS_FILE=ntofu_settings_example.json
 
 clean:
