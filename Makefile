@@ -66,7 +66,8 @@ pep_check: venv
 
 clean:
 	make -C example clean
-	make -C example-aes-vhdl clean
+	make -C example-aes-vhdl clean 
+	make -C example-aes-vhdl cleansim
 	make -C example-kat clean
 	make -C engine clean
 	rm -rf __pycache__
