@@ -96,5 +96,7 @@ def valueExtractPlaintext(self):
 def valueExtractIndex(self):
     # create a logger
     logger = logging.getLogger("synthesize")
+    if self.index > np.iinfo(np.uint32).max:
+        raise Exception()
     logger.info("extracting value (key) i.e. index: %d" % (self.index))
-    return np.array([[self.index]], dtype=np.uint8)
+    return np.array([[self.index]], dtype=np.uint32)
