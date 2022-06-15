@@ -37,6 +37,9 @@ Paths specified in the settings are always relative to the settings file locatio
 | align | boolean | if the timestamps are not aligned use true |
 | downsample | integer | downsample factor for non aligned vcd timestamps |
 | format | string | trace format either `tueisec` or `lascar` |
+| *optional entries* |  |  |
+| tueisecDocumentationFiles | dictionary | files stored in the `__documentation__` entry of the [TUEISEC Attack-Framework](https://gitlab.lrz.de/TUEISEC-Intern/Attack-Framework) HDF5 format - [c.f. details](#tueisecdocumentationfiles) |
+| tueisecAdditionalDataSets | dictionary | files stored as datasets in `0000` group of the [TUEISEC Attack-Framework](https://gitlab.lrz.de/TUEISEC-Intern/Attack-Framework) HDF5 format - [c.f. details](#tueisecadditionaldatasets) |
 
 ## Recipe
 
@@ -99,3 +102,44 @@ def valueExtractExample(self):
     return value
 
 ```
+
+## Details Regarding TUEISEC Usage
+Using the data format from the [TUEISEC Attack-Framework](https://gitlab.lrz.de/TUEISEC-Intern/Attack-Framework), allows for storing additional data with the simulated power traces.
+### `tueisecDocumentationFiles`
+Similiarly to normal side-channel measurements storing files for documentation purposes can be beneficial.
+For example, the source file of the implementation or a block diagram could be added in order to understand the datasets a later point in time.
+When using the `tueisec` format, these files can be specified in the following way 
+```json
+{
+  "format": "tueisec",
+  "tueisecDocumentationFiles": {
+    "blockdiagram.png": "blockdiagram.png",
+    "Source code": "./src/top.vhd"
+  }
+}
+```
+where the dictionary key (e.g. `Source code`) defines the HDF5 dataset name that is created in the `__documentation__` group of the HDF5 and the dictionary value (e.g. `./src/top.vhd`) defines the path to the respective file.
+All relative paths are assumed relative to the settings file, absolute paths can also be provided.
+
+**Note:** The `settings.json` file is always stored in the documentation, even if no explicit files are given - it is not necessary to pass it explicitly.
+### `tueisecAdditionalDataSets`
+Sometimes, the data processed by the target from which the simulations are generated are of interest, e.g. when conducting DPA, CPA oder template attacks.
+When using the `tueisec` format, additional data sets in the HDF5 can be specified in the following way 
+```json
+{
+  "format": "tueisec",
+  "tueisecAdditionalDataSets": {
+    "ptxt": "./data/plaintext.npy",
+    "ctxt": "./data/ciphertext.npy",
+    "k": "./data/key.npy"
+  }
+}
+```
+where the dictionary key (e.g. `ptxt`) defines the HDF5 dataset name that is created in the `0000` group of the HDF5 and the dictionary value (e.g. `./data/plaintext.npy`) defines the path to the respective file.
+In the example above, the datasets `0000/ptxt`, `0000/ctxt` and `0000/k` would be generated.
+All relative paths are assumed relative to the settings file, absolute paths can also be provided.
+The files are assumed to be numpy datasets, where the first dimension is the number of traces `n_traces` and the second dimension depends on the type of data.
+For example for AES, the plaintext array could be of size `n_traces x 16`, i.e. 16 bytes of plaintext. 
+
+**Note:** If the `tueisecAdditionalDataSets` entry does not exist, all `*.npy` files that reside in the folder defined by `pickleGlob` are added as additional datasets.
+The file name is used as the dataset name in this case, e.g. a file `plaintext.npy` would result in a dataset `0000/plaintext` in the HDF5.
