@@ -25,6 +25,7 @@ import pickle
 import re
 import os
 import numpy as np
+import logging
 
 
 class tueisecException(Exception):
@@ -99,8 +100,20 @@ def export(container, settings, settingsFileLocation="./"):
     # Add the Leakage model
     config["scope"]["sampling"]["leakage model"] = container.leakage
 
-    # save the settings file in the HDF5
-    config["HDF5"]["documentation"] = {settingsFileName: settingsFileLocation}
+    # save additional files in the __documentation__ entry of the HDF5 file
+    try:
+        # Add the desired files
+        config["HDF5"]["documentation"] = settings["tueisecDocumentationFiles"]
+        # Add the setting file
+        config["HDF5"]["documentation"][settingsFileName] = settingsFileLocation
+    except KeyError:
+        # if the entry "tueisecDocumentationFiles" does not exist in the settings file, store only the settings file
+        config["HDF5"]["documentation"] = {settingsFileName: settingsFileLocation}
+
+    # convert relative paths to absolute paths (to ensure that relative paths are relative to the settings file)
+    for key in config["HDF5"]["documentation"]:
+        if not os.path.isabs(config["HDF5"]["documentation"][key]):
+            config["HDF5"]["documentation"][key] = settingsFilePath + config["HDF5"]["documentation"][key]
 
     # Initialize the HDF5 file
     h5filehandle = h5utils.hdf5_file_init(config, target_info="VCD dump simulation by TOFU tool.")
@@ -108,17 +121,33 @@ def export(container, settings, settingsFileLocation="./"):
     # create group
     h5utils.hdf5_add_group(h5filehandle, config, N_traces=n_traces, noSamples=num_samples)
 
-    # find all .npy files in the same folder as the .vcd files and add the data contained as datasets to the HDF5
-    vcd_dump_path = settings["pickleGlob"]
-    if not os.path.isabs(settings["pickleGlob"]):
-        vcd_dump_path = settingsFilePath + vcd_dump_path
-    vcddir = os.path.dirname(vcd_dump_path) + "/"  # same folder as VCD files
-    npyfiles = [f for f in os.listdir(vcddir) if f.endswith(".npy")]  # get list of .npy files
-    for file in npyfiles:
-        # use filename as dataset name
-        datasetname = os.path.splitext(file)[0]
+    # specify additional datasets, e.g. with input, output and secret data/key
+    try:
+        # if specified in the settings file, use datasetnames and files specified
+        file_dict = settings["tueisecAdditionalDataSets"]
+        datasetname = list(file_dict.keys())
+        npyfiles = list(file_dict.values())
+    except KeyError:
+        # if entry does not exist in settingss, find all .npy files in the same folder as the .vcd files and add the data contained as datasets to the HDF5
+        vcd_dump_path = settings["pickleGlob"]
+        if not os.path.isabs(settings["pickleGlob"]):
+            vcd_dump_path = settingsFilePath + vcd_dump_path
+        vcddir = os.path.dirname(vcd_dump_path) + "/"  # same folder as VCD files
+        npyfiles = [vcddir + f for f in os.listdir(vcddir) if f.endswith(".npy")]  # get list of .npy files
+        datasetname = [os.path.splitext(os.path.split(f)[1])[0] for f in npyfiles]  # use the filename of .npy files for the dataset name in the hdf5
+
+    # convert relative paths to absolute paths (to ensure that relative paths are relative to the settings file)
+    for fdx, f in enumerate(npyfiles):
+        if not os.path.isabs(f):
+            npyfiles[fdx] = settingsFilePath + npyfiles[fdx]
+
+    # save additional datasets in HDF5
+    for file, dataset in zip(npyfiles, datasetname):
         # directly copy data. Requires the user to take care that the correct data is present
-        h5filehandle["0000"][datasetname] = np.atleast_3d(np.load(vcddir + file, "r"))
+        data = np.atleast_3d(np.load(file, "r"))
+        h5filehandle["0000"][dataset] = data
+        if data.shape[0] != n_traces:
+            logging.warning("The file %s contains data for %i trace, but %i are simulated." % (file, data.shape[0], n_traces))
 
     # add traces (could also be done by h5utils.hdf5_add_data_multitrace?!)
     for trace_idx in range(0, n_traces):
