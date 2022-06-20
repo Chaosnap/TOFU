@@ -27,6 +27,7 @@ import re
 import time
 import sys
 import h5py
+import logging
 
 
 def loadSettings(settingsFile):
@@ -119,11 +120,15 @@ def natural_sort_key(s):
     return [int(part) if part.isdigit() else part.lower() for part in natural_sort_regex.split(s)]
 
 
-def progressbar(iterable, prefix="", size=100):
+def progressbar(iterable, prefix="", size=100, logger=None):
     len_iterable = len(iterable)
     start_time = time.time()
 
     def update(index):
+        if logger is not None and logger.level < logging.WARNING:
+            logger.info("-" * 10)
+            return
+
         elapsed_time = time.time() - start_time
         percent = (index / len_iterable) * 100
         estimated_time = elapsed_time if index == len_iterable else 0 if percent == 0 else (100 - percent) * (elapsed_time / percent)
@@ -141,8 +146,10 @@ def progressbar(iterable, prefix="", size=100):
     for i, item in enumerate(iterable):
         yield i, item
         update(i + 1)
-    sys.stdout.write("\n")
-    sys.stdout.flush()
+
+    if logger is None or logger.level >= logging.WARNING:
+        sys.stdout.write("\n")
+        sys.stdout.flush()
 
 
 def lascarHDF5Export(aqc, traceFileName, writeTracesBatchSize=None, logger=None):
@@ -161,7 +168,7 @@ def lascarHDF5Export(aqc, traceFileName, writeTracesBatchSize=None, logger=None)
 
     # implement batched trace write here
 
-    for i, _ in progressbar(range(n_traces)):
+    for i, _ in progressbar(range(n_traces), logger=logger):
         leakage, value = aqc[i]
         if i == 0:
             FHleakages = filehandle.create_dataset("leakages", (n_traces, leakage.shape[0]), dtype=leakage.dtype)
