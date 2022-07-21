@@ -287,6 +287,15 @@ class AcquisitionSetupToggle:
             # das bremst aus wie noch was
             # check if signal is tracked
             if numeric_id not in self.numeric_ids_under_inspection_set:
+                if nextval_index != nextval_index_old:
+                    if self.leakage == "HammingWeight":
+                        pass
+                    elif self.leakage == "HammingDistance":
+                        leakage[nextval_index_old : nextval_index + 1] = state_hamming_distance_change
+                        state_hamming_distance_change = 0
+                        nextval_index_old = nextval_index
+                    else:
+                        raise Exception("undefined leakage model: %s" % self.leakage)
                 continue
 
             # bottleneck
