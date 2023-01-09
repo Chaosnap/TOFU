@@ -1,7 +1,7 @@
 {
-    "python.pythonPath": "${workspaceFolder}/tofu_python/bin/python",
-    "python.pipenvPath": "${workspaceFolder}/tofu_python",
-    "python.globalModuleInstallation": true,
+    // "python.pythonPath": "${workspaceFolder}/tofu_python/bin/python",
+    // "python.pipenvPath": "${workspaceFolder}/tofu_python",
+    // "python.globalModuleInstallation": true,
     "python.linting.pylintEnabled": false,
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
@@ -12,7 +12,7 @@
         "--max-line-length=300"
     ],
     "python.formatting.provider": "black",
-    "python.formatting.blackPath": "${workspaceFolder}/tofu_python/bin/black",
+    // "python.formatting.blackPath": "${workspaceFolder}/tofu_python/bin/black",
     "python.formatting.blackArgs": [
         "--line-length",
         "300"
