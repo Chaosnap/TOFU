@@ -1,0 +1,18 @@
+{
+    "vcdGlob": "vcd/aes*.vcd",
+    "pickleGlob": "vcd/aes*.pickle",
+    "signalsFileNameLiterals": "signals_name.json",
+    "signalsFileName": "signals.json",
+    "signalPropertiesFile": "signal_properties.pickle",
+    "leakageModel": "HammingWeight",
+    "window": false,
+    "windowFrom": null,
+    "windowTo": null,
+    "valueExtractFunction": "valueExtractPlaintextCortex",
+    "writeTraces": true,
+    "writeTracesBatchSize": 100,
+    "traceFileName": "traces.h5",
+    "align": false,
+    "downsample": 1,
+    "format": "lascar"
+}
