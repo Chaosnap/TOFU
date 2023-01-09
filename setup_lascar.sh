@@ -32,6 +32,7 @@ source tofu_python/bin/activate
 python3 -m  pip uninstall pyparsing
 python3 -m  pip install pyparsing==2.4.7
 
+# install lascar from git repository
 git clone https://github.com/Ledger-Donjon/lascar lascar.git
 cd lascar.git
 python3 setup.py install
