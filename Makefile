@@ -24,12 +24,15 @@ NRPOC:=$(shell nproc)
 SHELL:=$(shell which bash)
 LOGLEVEL?=info
 
-
 all:
 	@echo "ich bin eine katze und weiß von nichts"
 
 venv:
 	@[ -d tofu_python ] || bash setup_tofu_python.sh
+
+venvfake: venvclean
+	mkdir -p tofu_python/bin
+	touch tofu_python/bin/activate
 
 venv_lascar: venv
 	bash setup_lascar.sh
@@ -43,14 +46,17 @@ engine:
 example: clean venv
 	make -C example all LOGLEVEL=$(LOGLEVEL)
 
-example_aes: clean venv
+example_aes_vhdl: clean venv
 	make -C example-aes-vhdl clean cleansim example_aes LOGLEVEL=$(LOGLEVEL)
 
-example_aes_filtered: clean venv
+example_aes_vhdl_filtered: clean venv
 	make -C example-aes-vhdl clean cleansim example_aes_filtered LOGLEVEL=$(LOGLEVEL)
 
-ntofu_example_aes: clean venv engine
+ntofu_example_aes_vhdl: clean venv engine
 	make -C example-aes-vhdl clean cleansim ntofu_example_aes LOGLEVEL=$(LOGLEVEL)
+
+example_aes_cortex: clean venv
+	make -C example-aes-cortex clean cleansim example_aes LOGLEVEL=$(LOGLEVEL)
 
 kat: clean venv
 	make -C example-kat clean all LOGLEVEL=$(LOGLEVEL)
@@ -66,8 +72,10 @@ pep_check: venv
 
 clean:
 	make -C example clean
-	make -C example-aes-vhdl clean 
+	make -C example-aes-vhdl clean
 	make -C example-aes-vhdl cleansim
+	make -C example-aes-cortex clean
+	make -C example-aes-cortex cleansim
 	make -C example-kat clean
 	make -C engine clean
 	rm -rf __pycache__
