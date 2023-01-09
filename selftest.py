@@ -22,8 +22,16 @@
 # Written by the following authors: Michael Gruber
 
 import logging
-from lascar.container import Hdf5Container
+import h5py
 import numpy as np
+
+
+def load_hdf5_file(file_name):
+    with h5py.File(file_name, "r") as fid:
+        leakages = np.array(fid["/leakages"])
+        values = np.array(fid["/values"])
+    return (leakages, values)
+
 
 # create a logger
 logger = logging.getLogger("selftest")
@@ -37,44 +45,34 @@ logger.addHandler(ch)
 # logger.setLevel(logging.DEBUG)
 logger.setLevel(logging.INFO)
 
+###################################################################################################
 tofu_file_name = "example/tofu_traces.h5"
 ntofu_file_name = "example/ntofu_traces.h5"
 
-tofu_container = Hdf5Container(tofu_file_name)
-ntofu_container = Hdf5Container(ntofu_file_name)
-
-tofu_traces = np.array(tofu_container.leakages)
-ntofu_traces = np.array(ntofu_container.leakages)
+(tofu_traces, tofu_values) = load_hdf5_file(tofu_file_name)
+(ntofu_traces, ntofu_values) = load_hdf5_file(ntofu_file_name)
 
 # check if traces are equal
 if not np.array_equal(tofu_traces, ntofu_traces):
     raise Exception("simple example traces failed")
 logger.info("simple example traces passed")
 
-tofu_values = np.array(tofu_container.values)
-ntofu_values = np.array(ntofu_container.values)
-
 # check if values are equal
 if not np.array_equal(tofu_values, ntofu_values):
     raise Exception("simple example values failed")
 logger.info("simple example values passed")
 
+###################################################################################################
 tofu_file_name = "example-aes-vhdl/tofu_traces.h5"
 ntofu_file_name = "example-aes-vhdl/ntofu_traces.h5"
 
-tofu_container = Hdf5Container(tofu_file_name)
-ntofu_container = Hdf5Container(ntofu_file_name)
-
-tofu_traces = np.array(tofu_container.leakages)
-ntofu_traces = np.array(ntofu_container.leakages)
+(tofu_traces, tofu_values) = load_hdf5_file(tofu_file_name)
+(ntofu_traces, ntofu_values) = load_hdf5_file(ntofu_file_name)
 
 # check if traces are equal
 if not np.array_equal(tofu_traces, ntofu_traces):
     raise Exception("aes example traces failed")
 logger.info("aes example traces passed")
-
-tofu_values = np.array(tofu_container.values)
-ntofu_values = np.array(ntofu_container.values)
 
 # check if values are equal
 if not np.array_equal(tofu_values, ntofu_values):
