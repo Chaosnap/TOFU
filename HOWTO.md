@@ -67,7 +67,7 @@ python3 parse.py --settings traces-foo/settings_example.json
 cp example/signals_name.json traces-foo/
 # to find out which signals are inside your simulation use either gtkwave or
 # inside an interactive ipython session
-# %run python3 signals.py --settings traces-foo/settings_example.json
+# %run signals.py --settings traces-foo/settings_example.json
 # print(signals)
 
 # extract signal ids based on the include exclude pattern of signalsFileNameLiterals

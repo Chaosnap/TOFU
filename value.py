@@ -93,6 +93,35 @@ def valueExtractPlaintext(self):
     return value
 
 
+def valueExtractPlaintextCortex(self):
+    # create a logger
+    logger = logging.getLogger("synthesize")
+    logger.info("extracting value (plaintext)")
+
+    value_signal_numeric_id = 0x11
+    value_signal_time_from = 0
+
+    foo = None
+    # if value_signal_numeric_id not in self.numeric_ids_under_inspection_set:
+    #     raise Exception("signal %s is not in the loaded pickle" % value_signal_numeric_id)
+
+    for update in self.updates:
+        if update[0] == value_signal_time_from and update[1] == value_signal_numeric_id:
+            plain = bin(update[2])[2:].rjust(256, "0")
+            foo = int(plain, 2).to_bytes(-(-len(plain) // 8), byteorder="big")
+            foo = list(foo)
+            break
+    if foo is None:
+        raise Exception()
+
+    # print(update)
+    # print(plain)
+
+    value = np.array(foo, dtype=np.uint8)[:16]
+
+    return value
+
+
 def valueExtractIndex(self):
     # create a logger
     logger = logging.getLogger("synthesize")

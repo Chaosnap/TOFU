@@ -12,8 +12,10 @@ The according eprint is available at the [Cryptology ePrint Archive](https://epr
 # List of files
 
 	.
-	├── example                      # folder with the basic example
-	├── example-aes-vhdl             # folder with the aes example requires ghdl
+	├── example                      # folder with the basic example (use this folder as a template)
+	├── example-aes-vhdl             # folder with the vhdl aes example requires ghdl
+	├── example-aes-cortex           # folder with the cortex aes example requires unicorn
+	├── example-kat                  # folder with the kat example
 	├── extractsignalids.py          # extract signal ids based on signal names
 	├── HOWTO.md                     # how to get started with tofu
 	├── Makefile                     # Makefile to build venv and run example
@@ -35,7 +37,7 @@ The according eprint is available at the [Cryptology ePrint Archive](https://epr
 
 # Contact
 
-[Michael Gruber](https://www.ei.tum.de/sec/mitarbeiter/michael-gruber/), [m.gruber@tum.de](mailto:m.gruber@tum.de)
+[Michael Gruber](https://www.ce.cit.tum.de/eisec/mitarbeiter/michael-gruber/), [m.gruber@tum.de](mailto:m.gruber@tum.de)
 
 # Pipeline
 
