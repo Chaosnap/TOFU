@@ -8,7 +8,7 @@
     "window": false,
     "windowFrom": null,
     "windowTo": null,
-    "valueExtractFunction": "valueExtractPlaintextCortex",
+    "valueExtractFunction": "valueExtractPlaintext",
     "writeTraces": true,
     "writeTracesBatchSize": 100,
     "traceFileName": "traces.h5",
