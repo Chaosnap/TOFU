@@ -27,16 +27,15 @@ import os
 import sys
 import h5py
 import numpy as np
-import inspect
+import importlib.util
 
-# appent directory to path
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-try:
-    import helper
-except ImportError():
-    pass
+# importing helper source file directly
+helperRelPath = "../helper.py"
+helperAbsPath = os.path.abspath(helperRelPath)
+spec = importlib.util.spec_from_file_location("helper", helperAbsPath)
+helper = importlib.util.module_from_spec(spec)
+sys.modules["helper"] = helper
+spec.loader.exec_module(helper)
 
 # loading settings from file
 parser = argparse.ArgumentParser(description="TOFU")

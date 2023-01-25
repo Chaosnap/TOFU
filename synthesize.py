@@ -21,7 +21,6 @@
 # Chair of Security in Information Technology
 # Written by the following authors: Michael Gruber
 
-import value
 import argparse
 import logging
 import json
@@ -33,6 +32,7 @@ import time
 import tueisec
 import helper
 import sys
+import importlib.util
 
 
 # loading settings from file
@@ -64,6 +64,18 @@ logger.info("loading settings from file: %s" % (settingsFile))
 settings = helper.loadSettings(settingsFile)
 settings = helper.validateSettings(settings, mode="tofu")
 settings = helper.prepareSettings(settingsFile, settings, mode="tofu")
+
+
+if settings["valueExtractFunction"] != "valueExtractIndex":
+    # importing value source file directly
+    spec = importlib.util.spec_from_file_location("value", settings["valueExtractFile"])
+    value = importlib.util.module_from_spec(spec)
+    sys.modules["value"] = value
+    spec.loader.exec_module(value)
+    # instead of appending to path
+    # sys.path.insert(0, settings["settingsFilePath"])
+else:
+    import value
 
 
 def hammingWeightFromBitString(x):

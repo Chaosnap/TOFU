@@ -82,7 +82,9 @@ python3 synthesize.py --settings traces-foo/settings_example.json
 
 ## How to extract Values from VCD traces
 
-Implement your value extract function inside the `value.py` file and configure your settings accordingly.
+If you need to extract only the index stick to `valueExtractIndex`, no additional file needed.
+Otherwise, implement your value extract function inside the `value.py` file located in the same directory as your settings file and configure your settings accordingly.
+
 
 ``` python
 
