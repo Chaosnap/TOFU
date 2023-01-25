@@ -28,6 +28,7 @@ import time
 import sys
 import h5py
 import logging
+import importlib.util
 
 
 def loadSettings(settingsFile):
@@ -103,6 +104,23 @@ def prepareSettings(settingsFile, settings, mode="tofu"):
         settings["pickleGlob"] = settingsFilePath + settings["pickleGlob"]
         settings["signalPropertiesFile"] = settingsFilePath + settings["signalPropertiesFile"]
         settings["signalsFileName"] = settingsFilePath + settings["signalsFileName"]
+
+        if settings["valueExtractFunction"] != "valueExtractIndex":
+            valueExtractFile = settingsFilePath + "value.py"
+            valueExtractFunction = settings["valueExtractFunction"]
+
+            if not os.path.isfile(valueExtractFile):
+                raise Exception(f"value.py is missing {valueExtractFile}")
+
+            settings["valueExtractFile"] = valueExtractFile
+            spec = importlib.util.spec_from_file_location("value", settings["valueExtractFile"])
+            value = importlib.util.module_from_spec(spec)
+            sys.modules["value"] = value
+            spec.loader.exec_module(value)
+            try:
+                getattr(value, settings["valueExtractFunction"])
+            except AttributeError:
+                raise Exception(f"function {valueExtractFunction} not found in {valueExtractFile}")
 
     elif mode == "ntofu":
         if "valueExtractFile" in settings.keys():
