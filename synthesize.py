@@ -220,6 +220,9 @@ class AcquisitionSetupToggle:
         self.align = settings["align"]
         self.downsample = settings["downsample"]
 
+        if self.align and self.downsample != 1 and self.number_of_traces > 1:
+            logger.warning("traces may not be aligned")
+
     def generate_trace(self, index):
         assert index < self.number_of_traces
 
@@ -264,7 +267,7 @@ class AcquisitionSetupToggle:
         # output : leakage                                    type: list of integers
 
         if self.align:
-            samples = int(np.floor_divide(self.simulation_time_max, self.downsample))
+            samples = self.simulation_time_max // self.downsample + 1
             leakage = np.zeros((samples,), dtype=np.uint32)
         else:
             # extract the leakage
@@ -289,7 +292,7 @@ class AcquisitionSetupToggle:
 
             if self.align:
                 # binning of updates
-                nextval_index = int(np.floor_divide(update[0], self.downsample))
+                nextval_index = update[0] // self.downsample
             else:
                 nextval_index = self.simulation_time_to_index[update[0]]
 
@@ -303,7 +306,7 @@ class AcquisitionSetupToggle:
                     if self.leakage == "HammingWeight":
                         pass
                     elif self.leakage == "HammingDistance":
-                        leakage[nextval_index_old : nextval_index + 1] = state_hamming_distance_change
+                        leakage[nextval_index_old] = state_hamming_distance_change
                         state_hamming_distance_change = 0
                         nextval_index_old = nextval_index
                     else:
@@ -328,7 +331,7 @@ class AcquisitionSetupToggle:
                     # leakage[nextval_index_old : nextval_index + 1] = sum(state)
                 elif self.leakage == "HammingDistance":
                     # calculate the hamming distance
-                    leakage[nextval_index_old : nextval_index + 1] = state_hamming_distance_change
+                    leakage[nextval_index_old] = state_hamming_distance_change
                     state_hamming_distance_change = 0
                 else:
                     raise Exception("undefined leakage model: %s" % self.leakage)
@@ -353,7 +356,7 @@ class AcquisitionSetupToggle:
             # leakage = leakage[1:]
         elif self.leakage == "HammingDistance":
             # calculate the hamming distance
-            leakage[nextval_index_old : nextval_index + 1] = state_hamming_distance_change
+            leakage[nextval_index_old] = state_hamming_distance_change
             # ignore first point
             leakage = leakage[1:]
         else:
