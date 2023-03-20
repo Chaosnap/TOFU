@@ -171,7 +171,6 @@ def progressbar(iterable, prefix="", size=100, logger=None):
 
 
 def lascarHDF5Export(aqc, traceFileName, writeTracesBatchSize=None, logger=None):
-
     if os.path.isfile(traceFileName):
         if logger is None:
             print("file %s already exists, overwriting..." % (traceFileName))
