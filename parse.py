@@ -130,7 +130,6 @@ signal_properties = []
 # for (simulation_trace, vcdFile) in enumerate(vcdFiles):
 
 for simulation_trace, vcdFile in helper.progressbar(vcdFiles, logger=logger):
-
     logger.info("processing vcd file (%d/%d): %s" % (simulation_trace + 1, len(vcdFiles), vcdFile))
 
     fid = open(vcdFile)

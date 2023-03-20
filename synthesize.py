@@ -289,7 +289,6 @@ class AcquisitionSetupToggle:
 
         # perform updates inside the loop
         for update in updates:
-
             if self.align:
                 # binning of updates
                 nextval_index = update[0] // self.downsample
@@ -317,7 +316,6 @@ class AcquisitionSetupToggle:
             # logger.debug("simulation_time: %d index: %d  numeric_id: %d nextval: %s" % (update[0], nextval_index, numeric_id, nextval))
 
             if nextval_index != nextval_index_old:
-
                 # this extracts the hamming weight
                 if self.leakage == "HammingWeight":
                     # fast approach track changes

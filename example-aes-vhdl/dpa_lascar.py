@@ -83,7 +83,6 @@ else:
 
 cpa_engines = [
     CpaEngine(
-        "byte_%02d" % i,
         generate_selection_function(i),
         guess_range,
     )
@@ -108,7 +107,6 @@ session.run(batch_size=1000)
 key = np.ones((16,), np.uint8) * -1
 
 with PdfPages("correlation.pdf") as pdf:
-
     for i in range(16):
         results = cpa_engines[i].finalize()
         results = np.abs(results)
