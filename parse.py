@@ -63,9 +63,9 @@ settings = helper.prepareSettings(settingsFile, settings, mode="tofu")
 
 # compiled regexes for faster matching tested to be faster
 re_match_time = re.compile(r"^#([0-9]+)$")
-re_match_scalar_or_vector = re.compile(r"^([bB]{0,1}[01xXzZuU]+)\s*([^\s]+)$")
+# re_match_scalar_or_vector = re.compile(r"^([bB]{0,1}[01xXzZuU]+)\s*(\S+)$")
 re_match_scalar = re.compile(r"^([01xXzZuU])(.+)$")
-re_match_vector = re.compile(r"^([bB][01xXzZuU]+)\s+(.*)$")
+re_match_vector = re.compile(r"^([bB][01xXzZuU]+)\s+(\S+)$")
 re_match_dumpvars = re.compile(r"^(\$dumpvars)$")
 re_match_end = re.compile(r"^(\$end)$")
 re_match_variable = re.compile(r"^(wire|reg|logic|parameter|int|bit|byte)\s+([0-9]+)\s+(\S*)\s+(.*)$")
@@ -240,17 +240,42 @@ for simulation_trace, vcdFile in helper.progressbar(vcdFiles, logger=logger):
     for line in lines:
         # logger.debug(line)
 
-        match_update = re_match_scalar_or_vector.match(line)
-        if match_update is not None:
-            # update scalar signal values
-            (val, var) = match_update.groups()
-            # logger.debug("update: %s ---> %s" % (var, val))
+        # matching via combined regex is messed up if a scalar contains a identifier suffix which can also be interpreted as value
+        # 01! => 0 1!
+        # 01! => 01 !
 
+        # match_update = re_match_scalar_or_vector.match(line)
+        # if match_update is not None:
+        #     # update scalar signal values
+        #     (val, var) = match_update.groups()
+        #     # logger.debug("update: %s ---> %s" % (var, val))
+        #     numeric_id = itons[var][0]["numeric_id"]
+        #     # interpret all values despite 1 as 0 and remove b prefix for vectors
+        #     val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+        #     updates_append((simulation_time, numeric_id, val))
+        #     match_update = None
+        #     continue
+
+        match_update_scalar = re_match_scalar.match(line)
+        if match_update_scalar is not None:
+            (val, var) = match_update_scalar.groups()
+            # logger.debug("update: %s ---> %s" % (var, val))
             numeric_id = itons[var][0]["numeric_id"]
             # interpret all values despite 1 as 0 and remove b prefix for vectors
             val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
             updates_append((simulation_time, numeric_id, val))
-            match_update = None
+            match_update_scalar = None
+            continue
+
+        match_update_vector = re_match_vector.match(line)
+        if match_update_vector is not None:
+            (val, var) = match_update_vector.groups()
+            # logger.debug("update: %s ---> %s" % (var, val))
+            numeric_id = itons[var][0]["numeric_id"]
+            # interpret all values despite 1 as 0 and remove b prefix for vectors
+            val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+            updates_append((simulation_time, numeric_id, val))
+            match_update_vector = None
             continue
 
         match_time = re_match_time.match(line)
@@ -270,17 +295,39 @@ for simulation_trace, vcdFile in helper.progressbar(vcdFiles, logger=logger):
                 if re_match_end.match(line) is not None:
                     break
 
-                match_update = re_match_scalar_or_vector.match(line)
-                if match_update is not None:
-                    # update scalar signal values
-                    (val, var) = match_update.groups()
-                    # logger.debug("update: %s ---> %s" % (var, val))
+                # match_update = re_match_scalar_or_vector.match(line)
+                # if match_update is not None:
+                #     # update scalar signal values
+                #     (val, var) = match_update.groups()
+                #     # logger.debug("update: %s ---> %s" % (var, val))
 
+                #     numeric_id = itons[var][0]["numeric_id"]
+                #     # interpret all values despite 1 as 0 and remove b prefix for vectors
+                #     val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+                #     updates_append((simulation_time, numeric_id, val))
+                #     match_update = None
+                #     continue
+
+                match_update_scalar = re_match_scalar.match(line)
+                if match_update_scalar is not None:
+                    (val, var) = match_update_scalar.groups()
+                    # logger.debug("update: %s ---> %s" % (var, val))
                     numeric_id = itons[var][0]["numeric_id"]
                     # interpret all values despite 1 as 0 and remove b prefix for vectors
                     val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
                     updates_append((simulation_time, numeric_id, val))
-                    match_update = None
+                    match_update_scalar = None
+                    continue
+
+                match_update_vector = re_match_vector.match(line)
+                if match_update_vector is not None:
+                    (val, var) = match_update_vector.groups()
+                    # logger.debug("update: %s ---> %s" % (var, val))
+                    numeric_id = itons[var][0]["numeric_id"]
+                    # interpret all values despite 1 as 0 and remove b prefix for vectors
+                    val = int(val.upper().replace("B", "").replace("X", "0").replace("U", "0").replace("Z", "0"), 2)
+                    updates_append((simulation_time, numeric_id, val))
+                    match_update_vector = None
                     continue
 
                 raise Exception("unable to parse line: %s" % line)
