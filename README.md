@@ -20,7 +20,6 @@ The according eprint is available at the [Cryptology ePrint Archive](https://epr
 	├── HOWTO.md                     # how to get started with tofu
 	├── Makefile                     # Makefile to build venv and run example
 	├── parse.py                     # parse vcd files
-	├── plotme.py                    # sample plotting file for a ttes
 	├── README.md                    # the file you are looking at
 	├── selftest.sh                  # selftest wrapper script
 	├── selftest.py                  # selftest compare ntofu with tofu (AES example)
